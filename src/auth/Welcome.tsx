@@ -8,10 +8,12 @@ export default function Welcome({
   onEnter,
   inApp,
   authError,
+  busy = false,
 }: {
   onEnter: () => void
   inApp: boolean
   authError: string | null
+  busy?: boolean
 }) {
   return (
     <div className="flex min-h-dvh justify-center bg-bg">
@@ -56,16 +58,16 @@ export default function Welcome({
 
           {/* Wordmark + tagline */}
           <div className="mt-8 flex flex-col items-center">
-            <div className="animate-fade-up h-5 w-px bg-teal/45" style={rise(1.5)} />
+            <div className="animate-fade-up h-5 w-px bg-teal/45" style={rise(0.9)} />
             <h1
               className="animate-fade-up mt-4 font-brand text-3xl font-extralight tracking-[0.42em] text-ink"
-              style={rise(1.62)}
+              style={rise(1.0)}
             >
               CHOWA
             </h1>
             <p
               className="animate-fade-up mt-3 text-[11px] font-medium uppercase tracking-[0.34em] text-muted"
-              style={rise(1.74)}
+              style={rise(1.12)}
             >
               Strength in Balance
             </p>
@@ -86,10 +88,14 @@ export default function Welcome({
           {/* Azione */}
           <button
             onClick={onEnter}
-            className="animate-fade-up w-full rounded-2xl bg-teal/90 py-3.5 text-[13px] font-medium uppercase tracking-[0.24em] text-[#1a1012] shadow-[0_10px_26px_-18px_rgba(244,240,231,0.45)] transition active:scale-[0.98]"
-            style={rise(1.9)}
+            disabled={busy}
+            className="animate-fade-up flex w-full items-center justify-center gap-2.5 rounded-2xl bg-teal/90 py-3.5 text-[13px] font-medium uppercase tracking-[0.24em] text-[#1a1012] shadow-[0_10px_26px_-18px_rgba(244,240,231,0.45)] transition active:scale-[0.98] disabled:opacity-80"
+            style={rise(1.3)}
           >
-            Enter your dojo
+            {busy && (
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#1a1012]/30 border-t-[#1a1012]" />
+            )}
+            {busy ? 'Attendi…' : 'Enter your dojo'}
           </button>
           {authError && <p className="mt-3 text-center text-xs text-red-400">{authError}</p>}
         </div>

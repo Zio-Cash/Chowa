@@ -34,15 +34,31 @@ export default function LoginGate({ children }: { children: ReactNode }) {
   const { user, loading, signIn, authError } = useAuth()
   // La schermata di benvenuto compare a ogni apertura: si entra solo al tocco.
   const [entered, setEntered] = useState(false)
-  const pending = useRef(false)
+  // "busy" = ho toccato Entra e sto aspettando (auth o login). Mostra lo spinner.
+  const [busy, setBusy] = useState(false)
+  const intent = useRef(false)
 
-  // Dopo un login riuscito partito dalla Welcome, entra automaticamente.
+  // Login riuscito → entra automaticamente.
   useEffect(() => {
-    if (user && pending.current) {
-      pending.current = false
+    if (user && busy) {
+      setBusy(false)
       setEntered(true)
     }
-  }, [user])
+  }, [user, busy])
+
+  // Se ho toccato Entra mentre l'auth non era ancora risolta, completo appena si risolve.
+  useEffect(() => {
+    if (!loading && intent.current) {
+      intent.current = false
+      if (user) setEntered(true)
+      else signIn() // resto "busy": al login riuscito entra l'effetto sopra
+    }
+  }, [loading, user, signIn])
+
+  // Login fallito o annullato → sblocco il pulsante.
+  useEffect(() => {
+    if (authError) setBusy(false)
+  }, [authError])
 
   if (!firebaseReady) {
     return (
@@ -59,23 +75,23 @@ export default function LoginGate({ children }: { children: ReactNode }) {
     )
   }
 
-  if (loading) {
-    return (
-      <Centered>
-        <p className="text-center text-sm text-muted">Caricamento…</p>
-      </Centered>
-    )
-  }
-
   if (!entered || !user) {
     const handleEnter = () => {
-      if (user) setEntered(true)
-      else {
-        pending.current = true
+      setBusy(true)
+      if (loading) {
+        intent.current = true // aspetta che l'auth si risolva
+        return
+      }
+      if (user) {
+        setBusy(false)
+        setEntered(true)
+      } else {
         signIn()
       }
     }
-    return <Welcome onEnter={handleEnter} inApp={isInAppBrowser()} authError={authError} />
+    return (
+      <Welcome onEnter={handleEnter} busy={busy} inApp={isInAppBrowser()} authError={authError} />
+    )
   }
 
   return <>{children}</>
