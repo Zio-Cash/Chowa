@@ -1,4 +1,11 @@
-# React + TypeScript + Vite
+# Chōwa 調和 — Strength in Balance
+
+[![Netlify Status](https://api.netlify.com/api/v1/badges/883a6b19-350a-4b56-a4fe-6439950ebabb/deploy-status)](https://app.netlify.com/projects/chowamyapp/deploys)
+
+App mobile-first di fitness e nutrizione (PWA). Stack: Vite + React + TypeScript
++ Tailwind v4 + Firebase. Design system **Onyx & Perla** (vedi `DESIGN.md`).
+
+---
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
