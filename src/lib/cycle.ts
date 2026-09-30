@@ -104,6 +104,8 @@ export interface CurrentCycle {
   length: number
   phase: PhaseInfo
   start: string
+  /** true se il giorno corrente supera la durata prevista (ciclo in ritardo). */
+  late: boolean
 }
 
 export function currentCycle(cycle: CycleData, today: string): CurrentCycle | null {
@@ -112,8 +114,9 @@ export function currentCycle(cycle: CycleData, today: string): CurrentCycle | nu
   const start = past[past.length - 1]
   const length = cycle.cycleLength > 0 ? cycle.cycleLength : 28
   const day = daysBetween(start, today) + 1
+  const late = day > length
   const phase = PHASES[phaseOf(day, length, cycle.periodLength)]
-  return { day, length, phase, start }
+  return { day, length, phase, start, late }
 }
 
 export function averageCycleLength(cycle: CycleData): number | null {

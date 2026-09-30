@@ -69,8 +69,11 @@ export default function Passi() {
                 formatter={(v) => [fmtSteps(Number(v)), 'media']}
               />
               <Bar dataKey="avg" radius={[6, 6, 0, 0]}>
-                {chart.map((_, i) => (
-                  <Cell key={i} fill={i === now.getMonth() && year === now.getFullYear() ? '#f4f0e7' : '#6f6a62'} />
+                {chart.map((r) => (
+                  <Cell
+                    key={r.i}
+                    fill={r.i === now.getMonth() && year === now.getFullYear() ? '#f4f0e7' : '#6f6a62'}
+                  />
                 ))}
               </Bar>
             </BarChart>

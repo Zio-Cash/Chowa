@@ -152,6 +152,7 @@ export default function Calorie() {
             label="Passi"
             value={goals.stepTarget}
             step={500}
+            min={500}
             suffix=""
             onChange={(stepTarget) => setGoals({ ...goals, stepTarget })}
           />
@@ -161,6 +162,7 @@ export default function Calorie() {
             label="Acqua"
             value={goals.waterTarget}
             step={250}
+            min={250}
             suffix="ml"
             onChange={(waterTarget) => setGoals({ ...goals, waterTarget })}
           />
@@ -191,6 +193,7 @@ function GoalRow({
   step,
   suffix,
   onChange,
+  min,
 }: {
   color: string
   icon: string
@@ -199,6 +202,7 @@ function GoalRow({
   step: number
   suffix: string
   onChange: (v: number) => void
+  min?: number
 }) {
   return (
     <div className="flex items-center justify-between rounded-2xl bg-white/[0.05] px-3 py-2">
@@ -208,7 +212,7 @@ function GoalRow({
         </span>
         <span className="text-sm font-semibold">{label}</span>
       </div>
-      <Stepper value={value} onChange={onChange} step={step} suffix={suffix} />
+      <Stepper value={value} onChange={onChange} step={step} suffix={suffix} min={min} />
     </div>
   )
 }

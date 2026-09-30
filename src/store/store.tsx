@@ -55,24 +55,53 @@ function migraCatalogo(loaded: Partial<AppState>, base: AppState): AppState['exe
   return vecchio ? base.exerciseCatalog : cat
 }
 
+// Guardie di tipo: un file di import o un doc cloud/legacy malformato non deve
+// sovrascrivere i default validi né far crashare le schermate.
+const isObj = (v: unknown): v is Record<string, unknown> =>
+  typeof v === 'object' && v !== null && !Array.isArray(v)
+const asArr = <T,>(v: unknown, fallback: T[]): T[] => (Array.isArray(v) ? (v as T[]) : fallback)
+const asMap = <T,>(v: unknown, fallback: T): T => (isObj(v) ? (v as T) : fallback)
+
 /** Fonde uno stato parziale (da cache locale o cloud) sui valori di default. */
 function mergeState(loaded: Partial<AppState> | null): AppState {
   const base = seedState()
-  if (!loaded) return base
+  if (!isObj(loaded)) return base
+  const l = loaded as Partial<AppState>
   return {
     ...base,
-    ...loaded,
+    // mappe per-giorno (oggetti { 'YYYY-MM-DD': ... })
+    diario: asMap(l.diario, base.diario),
+    workoutProgress: asMap(l.workoutProgress, base.workoutProgress),
+    weightLog: asMap(l.weightLog, base.weightLog),
+    stepsLog: asMap(l.stepsLog, base.stepsLog),
+    waterLog: asMap(l.waterLog, base.waterLog),
+    activeKcalLog: asMap(l.activeKcalLog, base.activeKcalLog),
+    // liste
+    foods: asArr(l.foods, base.foods),
+    mealPresets: asArr(l.mealPresets, base.mealPresets),
+    mealDefault: asArr(l.mealDefault, base.mealDefault),
+    // oggetti strutturati
+    executionPlan: asMap(l.executionPlan, base.executionPlan),
+    workoutPlan: asMap(l.workoutPlan, base.workoutPlan),
     settings: {
       ...base.settings,
-      ...loaded.settings,
-      profilo: { ...base.settings.profilo, ...loaded.settings?.profilo },
-      targets: { ...base.settings.targets, ...loaded.settings?.targets },
-      goals: { ...base.settings.goals, ...loaded.settings?.goals },
+      ...(isObj(l.settings) ? l.settings : {}),
+      profilo: { ...base.settings.profilo, ...asMap(l.settings?.profilo, {}) },
+      targets: { ...base.settings.targets, ...asMap(l.settings?.targets, {}) },
+      goals: { ...base.settings.goals, ...asMap(l.settings?.goals, {}) },
     },
-    cycle: { ...base.cycle, ...loaded.cycle },
-    account: { ...base.account, ...loaded.account },
-    exerciseCatalog: migraCatalogo(loaded, base),
-    gamification: { ...base.gamification, ...loaded.gamification },
+    cycle: {
+      ...base.cycle,
+      ...(isObj(l.cycle) ? l.cycle : {}),
+      starts: asArr(l.cycle?.starts, base.cycle.starts),
+    },
+    account: asMap(l.account, base.account),
+    exerciseCatalog: migraCatalogo(l, base),
+    gamification: {
+      ...base.gamification,
+      ...(isObj(l.gamification) ? l.gamification : {}),
+      eventi: asMap(l.gamification?.eventi, base.gamification.eventi),
+    },
   }
 }
 
@@ -85,19 +114,22 @@ function applyAward(s: AppState, date: string, eventId: string, amount: number):
   const done = s.gamification.eventi[date] ?? []
   if (done.includes(eventId)) return s
   const g = s.gamification
-  const streak =
-    g.ultimaData === date
-      ? g.streak
-      : g.ultimaData && isYesterday(g.ultimaData, date)
-        ? g.streak + 1
-        : 1
+  // La streak e "ultimaData" si aggiornano SOLO per il giorno più recente
+  // registrato. Compilare un giorno passato (date < ultimaData) o ri-registrare
+  // lo stesso giorno dà XP ma non tocca la streak → niente reset sui backfill.
+  let streak = g.streak
+  let ultimaData = g.ultimaData
+  if (!g.ultimaData || date > g.ultimaData) {
+    streak = g.ultimaData && isYesterday(g.ultimaData, date) ? g.streak + 1 : 1
+    ultimaData = date
+  }
   return {
     ...s,
     gamification: {
       ...g,
       xp: g.xp + amount,
       streak,
-      ultimaData: date,
+      ultimaData,
       eventi: { ...g.eventi, [date]: [...done, eventId] },
     },
   }
@@ -216,11 +248,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   // Cache locale (solo dei miei dati, mai di quelli che sto guardando)
   const first = useRef(true)
+  const prevReadOnly = useRef(readOnly)
   useEffect(() => {
+    const justExitedReadOnly = prevReadOnly.current && !readOnly
+    prevReadOnly.current = readOnly
     if (first.current) {
       first.current = false
       return
     }
+    // Appena esco dalla sola-lettura, "state" contiene ancora i dati dell'altra
+    // persona (il mio snapshot non è ancora arrivato): NON salvarli nella mia
+    // cache. Il salvataggio riparte quando arriva il mio stato reale.
+    if (justExitedReadOnly) return
     if (!readOnly) saveJSON(KEY, state)
   }, [state, readOnly])
 
@@ -261,19 +300,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           setCloudViewers(Array.isArray(d.viewers) ? d.viewers : [])
         } else if (!readOnly && user) {
           // Primo accesso: crea il documento col mio stato locale attuale
-          void setDoc(ref, {
+          setDoc(ref, {
             data: JSON.stringify(stateRef.current),
             viewers: [],
             writer: clientId.current,
             rev: localRev.current,
             updatedAt: serverTimestamp(),
-          })
+          }).catch((e) => console.warn('[cloud] creazione documento fallita', e))
         } else {
           setCloudViewers([])
         }
       },
-      () => {
-        // permesso negato (es. spettatore non autorizzato): nessun aggiornamento
+      (err) => {
+        // permesso negato (es. spettatore non autorizzato) o rete: nessun update
+        console.warn('[cloud] snapshot non disponibile', err)
       },
     )
   }, [targetUid, readOnly, user])
@@ -288,7 +328,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return
     }
     const t = setTimeout(() => {
-      void setDoc(
+      setDoc(
         doc(db, 'states', user.uid),
         {
           data: JSON.stringify(state),
@@ -297,7 +337,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           updatedAt: serverTimestamp(),
         },
         { merge: true },
-      )
+      ).catch((e) => console.warn('[cloud] salvataggio fallito', e))
     }, 800)
     return () => clearTimeout(t)
   }, [state, readOnly, user])
@@ -313,8 +353,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const removeViewer = useCallback(
     async (viewer: string) => {
-      if (!user) return
-      await setDoc(doc(db, 'states', user.uid), { viewers: arrayRemove(viewer) }, { merge: true })
+      const v = viewer.trim()
+      if (!user || !v) return
+      await setDoc(doc(db, 'states', user.uid), { viewers: arrayRemove(v) }, { merge: true })
     },
     [user],
   )
@@ -686,23 +727,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const importData = useCallback((json: string) => {
     try {
-      const parsed = JSON.parse(json) as Partial<AppState>
-      if (!parsed || typeof parsed !== 'object') return false
-      const base = seedState()
-      setState({
-        ...base,
-        ...parsed,
-        settings: {
-          ...base.settings,
-          ...parsed.settings,
-          profilo: { ...base.settings.profilo, ...parsed.settings?.profilo },
-          targets: { ...base.settings.targets, ...parsed.settings?.targets },
-          goals: { ...base.settings.goals, ...parsed.settings?.goals },
-        },
-        cycle: { ...base.cycle, ...parsed.cycle },
-        account: { ...base.account, ...parsed.account },
-        gamification: { ...base.gamification, ...parsed.gamification },
-      })
+      const parsed = JSON.parse(json)
+      if (!isObj(parsed)) return false
+      // stessa validazione tipi di cache/cloud: campi malformati → default
+      setState(mergeState(parsed as Partial<AppState>))
       return true
     } catch {
       return false

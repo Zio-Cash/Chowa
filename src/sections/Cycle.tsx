@@ -36,13 +36,15 @@ export default function Cycle() {
 function CycleOrbit({ day, length, size = 132 }: { day: number; length: number; size?: number }) {
   const R = size / 2
   const orbit = R - 8
+  // Se il ciclo è in ritardo (day > length) l'indicatore resta sull'ultimo giorno.
+  const d = Math.min(Math.max(day, 1), length)
   const dots = Array.from({ length }).map((_, i) => {
     const ang = ((-90 + (i / length) * 360) * Math.PI) / 180
     return {
       cx: R + orbit * Math.cos(ang),
       cy: R + orbit * Math.sin(ang),
-      current: i === day - 1,
-      passed: i < day,
+      current: i === d - 1,
+      passed: i < d,
     }
   })
   return (
@@ -110,7 +112,18 @@ function FaseView({ cur, onGoCalendar }: { cur: CurrentCycle | null; onGoCalenda
         <div className="min-w-0">
           <div className="text-[11px] font-medium uppercase tracking-[0.2em] text-muted">Fase attuale</div>
           <h1 className="mt-1 font-display text-3xl tracking-tight">{p.nome}</h1>
-          <div className="mt-1 text-sm text-muted">Giorno {cur.day} di {cur.length}</div>
+          <div className="mt-1 text-sm text-muted">
+            {cur.late ? (
+              <>
+                Giorno {cur.day} ·{' '}
+                <span className="text-arancio">in ritardo di {cur.day - cur.length}</span>
+              </>
+            ) : (
+              <>
+                Giorno {cur.day} di {cur.length}
+              </>
+            )}
+          </div>
           <p className="mt-3 max-w-[24ch] text-sm leading-relaxed text-muted">{p.descrizione}</p>
         </div>
         <CycleOrbit day={cur.day} length={cur.length} />
