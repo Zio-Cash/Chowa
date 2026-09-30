@@ -1,7 +1,15 @@
 import { useMemo, useState } from 'react'
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useStore } from '../store/store'
-import { dateKey, MESI_BREVI, MONITOR_START, parseKey, rangeLabel, weeksOfMonth } from '../lib/date'
+import {
+  dateKey,
+  MESI_BREVI,
+  MONITOR_START,
+  parseKey,
+  rangeLabel,
+  weekMonthOf,
+  weeksOfMonth,
+} from '../lib/date'
 import { Card, CardTitle, NumberInput } from '../components/ui'
 
 const fmt = (n?: number) => (n ? n.toFixed(1) : '—')
@@ -9,11 +17,10 @@ const avg = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.le
 
 export default function Peso() {
   const { state, setWeight } = useStore()
-  const now = new Date()
   const oggi = dateKey()
-  const [openMonth, setOpenMonth] = useState<string | null>(
-    `${now.getFullYear()}-${now.getMonth()}`,
-  )
+  // Mese corrente = quello della settimana in corso (regola del giovedì).
+  const cur = weekMonthOf()
+  const [openMonth, setOpenMonth] = useState<string | null>(`${cur.year}-${cur.month0}`)
 
   // Serie reale delle pesate (dall'inizio monitoraggio a oggi), in ordine di data
   const { serie, primo, ultimo, delta } = useMemo(() => {
@@ -30,19 +37,19 @@ export default function Peso() {
     return { serie, primo, ultimo, delta }
   }, [state.weightLog, oggi])
 
-  // Mesi visibili: dall'inizio monitoraggio fino al mese corrente
+  // Mesi visibili: dall'inizio monitoraggio fino al mese della settimana in corso
   const mesi = useMemo(() => {
     const startY = Number(MONITOR_START.slice(0, 4))
     const startM = Number(MONITOR_START.slice(5, 7)) - 1
     const out: { y: number; m: number }[] = []
     let y = startY
     let m = startM
-    while (y < now.getFullYear() || (y === now.getFullYear() && m <= now.getMonth())) {
+    while (y < cur.year || (y === cur.year && m <= cur.month0)) {
       out.push({ y, m })
       if (m === 11) { m = 0; y++ } else m++
     }
     return out.reverse() // il mese più recente in cima
-  }, [now])
+  }, [cur.year, cur.month0])
 
   return (
     <div className="space-y-4 pb-4">
@@ -116,7 +123,7 @@ export default function Peso() {
       <div className="space-y-2">
         {mesi.map(({ y, m }) => {
           const id = `${y}-${m}`
-          const isCurrent = m === now.getMonth() && y === now.getFullYear()
+          const isCurrent = m === cur.month0 && y === cur.year
           const open = openMonth === id
           // variazione del mese: ultima pesata − prima pesata del mese
           const vals = Object.entries(state.weightLog)
@@ -204,6 +211,7 @@ function MonthBody({
                         suffix="kg"
                         placeholder="—"
                         className="flex-1"
+                        commitOnBlur
                       />
                     </div>
                   )

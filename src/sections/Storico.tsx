@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useStore } from '../store/store'
-import { dateKey, MONITOR_START, parseKey, rangeLabel } from '../lib/date'
+import { dateKey, MONITOR_START, parseKey, rangeLabel, weekMonthOf } from '../lib/date'
 import { fmtSteps, fmtWater } from '../lib/goals'
-import { dayRating, monthSummaries, periodStats, weeksForMonth, type DaySummary } from '../lib/history'
+import { dayRating, periodStats, weeksForMonth, type DaySummary } from '../lib/history'
 import { Card, CardTitle } from '../components/ui'
 
 const MESI = [
@@ -32,23 +32,31 @@ const fmtDeficit = (n: number) => (n === 0 ? '—' : `${n > 0 ? '+' : '−'}${Ma
 
 export default function Storico() {
   const { state } = useStore()
-  const now = new Date()
-  const [year, setYear] = useState(now.getFullYear())
-  const [month, setMonth] = useState(now.getMonth())
+  // Mese "corrente" = quello a cui appartiene la settimana in corso (regola del
+  // giovedì): così a fine mese ottobre e la settimana in corso si vedono subito.
+  const cur = weekMonthOf()
+  const [year, setYear] = useState(cur.year)
+  const [month, setMonth] = useState(cur.month0)
   const [openDay, setOpenDay] = useState<string | null>(dateKey())
 
   const todayKey = dateKey()
-  const days = useMemo(() => monthSummaries(state, year, month), [state, year, month])
 
-  // solo i giorni fino ad oggi e dall'inizio del monitoraggio (giugno 2026)
-  const visibleDays = days.filter((d) => d.date <= todayKey && d.date >= MONITOR_START)
+  // Settimane sempre lunedì→domenica (7 giorni), assegnate al mese col giovedì.
+  const weeks = useMemo(
+    () => weeksForMonth(state, year, month, todayKey),
+    [state, year, month, todayKey],
+  )
+
+  // Le statistiche del mese derivano dalle stesse settimane mostrate: un solo
+  // calcolo (niente doppio scan) e numeri coerenti con le card sotto.
+  const visibleDays = useMemo(() => weeks.flatMap((w) => w.days), [weeks])
   const stats = useMemo(() => periodStats(visibleDays), [visibleDays])
 
   // limiti di navigazione: non si va prima dell'inizio monitoraggio
   const startY = Number(MONITOR_START.slice(0, 4))
   const startM = Number(MONITOR_START.slice(5, 7)) - 1
   const atStart = year === startY && month === startM
-  const atEnd = year === now.getFullYear() && month === now.getMonth()
+  const atEnd = year === cur.year && month === cur.month0
 
   const prev = () => {
     if (atStart) return
@@ -58,12 +66,6 @@ export default function Storico() {
     if (atEnd) return
     if (month === 11) { setMonth(0); setYear((y) => y + 1) } else setMonth((m) => m + 1)
   }
-
-  // settimane sempre lunedì→domenica (7 giorni), anche a cavallo di due mesi
-  const weeks = useMemo(
-    () => weeksForMonth(state, year, month, todayKey),
-    [state, year, month, todayKey],
-  )
 
   return (
     <div className="space-y-4 pb-4">

@@ -161,12 +161,19 @@ export function NumberInput({
   suffix,
   placeholder,
   className = '',
+  commitOnBlur = false,
 }: {
   value: number | ''
   onChange: (v: number) => void
   suffix?: string
   placeholder?: string
   className?: string
+  /**
+   * Se true, `onChange` scatta solo all'uscita dal campo (blur), non ad ogni
+   * tasto. Utile dove ogni onChange scrive sullo store (Peso/Passi): evita un
+   * update globale per ogni battitura.
+   */
+  commitOnBlur?: boolean
 }) {
   // Buffer di testo locale: consente di digitare valori decimali con la
   // virgola o il punto (es. "70,5") senza che il valore venga azzerato a ogni
@@ -178,10 +185,18 @@ export function NumberInput({
     if (!focused.current) setText(value === '' ? '' : String(value))
   }, [value])
 
+  const parse = (raw: string): number => {
+    const cleaned = raw.trim()
+    if (cleaned === '') return 0
+    const n = parseFloat(cleaned.replace(',', '.'))
+    return Number.isNaN(n) ? (value === '' ? 0 : value) : n
+  }
+
   const handle = (raw: string) => {
     // accetta solo cifre e un separatore decimale
     const cleaned = raw.replace(/[^0-9.,]/g, '')
     setText(cleaned)
+    if (commitOnBlur) return // in modalità "commit al blur" non scriviamo live
     if (cleaned.trim() === '') {
       onChange(0)
       return
@@ -202,7 +217,13 @@ export function NumberInput({
         }}
         onBlur={() => {
           focused.current = false
-          setText(value === '' ? '' : String(value))
+          if (commitOnBlur) {
+            const v = parse(text)
+            onChange(v)
+            setText(v === 0 && text.trim() === '' ? '' : String(v))
+          } else {
+            setText(value === '' ? '' : String(value))
+          }
         }}
         onChange={(e) => handle(e.target.value)}
         className="min-h-[44px] w-full bg-transparent text-right font-mono text-base font-bold tabular outline-none"

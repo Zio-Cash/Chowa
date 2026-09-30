@@ -69,6 +69,17 @@ export function weekBelongsToMonth(weekMon: Date, year: number, month0: number):
 }
 
 /**
+ * Mese { year, month0 } a cui appartiene la settimana che contiene `d`
+ * (regola del giovedì). È il mese "corrente" ai fini del monitoraggio: p.es.
+ * il 30 settembre la settimana 28 set–4 ott appartiene già a ottobre, quindi
+ * ottobre e la settimana in corso devono comparire subito.
+ */
+export function weekMonthOf(d: Date = new Date()): { year: number; month0: number } {
+  const thu = addDays(mondayOf(d), 3)
+  return { year: thu.getFullYear(), month0: thu.getMonth() }
+}
+
+/**
  * Settimane del mese indicato. Ogni settimana va sempre da lunedì a domenica
  * (7 giorni esatti) e appartiene a UN SOLO mese: quello in cui cade il giovedì.
  * Così le settimane a cavallo non vengono contate due volte.
@@ -86,11 +97,6 @@ export function weeksOfMonth(year: number, month0: number): WeekRange[] {
     cursor = addDays(cursor, 7)
   }
   return out
-}
-
-/** Settimana del mese (1..5). */
-export function weekOfMonth(day: number): number {
-  return Math.min(5, Math.ceil(day / 7))
 }
 
 export function daysInMonth(year: number, month0: number): number {

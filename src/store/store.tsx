@@ -21,7 +21,6 @@ import type {
   MealItem,
   SessionProgress,
   Targets,
-  WorkoutPlan,
 } from '../types'
 import { isYesterday } from '../lib/date'
 import { XP } from '../lib/gamification'
@@ -82,7 +81,6 @@ function mergeState(loaded: Partial<AppState> | null): AppState {
     mealDefault: asArr(l.mealDefault, base.mealDefault),
     // oggetti strutturati
     executionPlan: asMap(l.executionPlan, base.executionPlan),
-    workoutPlan: asMap(l.workoutPlan, base.workoutPlan),
     settings: {
       ...base.settings,
       ...(isObj(l.settings) ? l.settings : {}),
@@ -199,7 +197,6 @@ interface StoreCtx {
   setCycleSettings: (patch: Partial<Pick<CycleData, 'cycleLength' | 'periodLength'>>) => void
   // workout
   updateExecutionPlan: (fn: (p: ExecutionPlan) => ExecutionPlan) => void
-  updateWorkoutPlan: (fn: (p: WorkoutPlan) => WorkoutPlan) => void
   getSession: (date: string) => SessionProgress | undefined
   toggleSet: (date: string, dayId: string, exId: string, index: number, serie: number) => void
   setSessionLoad: (date: string, dayId: string, exId: string, carico: number) => void
@@ -663,10 +660,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setState((s) => ({ ...s, executionPlan: fn(s.executionPlan) }))
   }, [])
 
-  const updateWorkoutPlan = useCallback((fn: (p: WorkoutPlan) => WorkoutPlan) => {
-    setState((s) => ({ ...s, workoutPlan: fn(s.workoutPlan) }))
-  }, [])
-
   const getSession = useCallback(
     (date: string) => state.workoutProgress[date],
     [state.workoutProgress],
@@ -782,7 +775,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       updateMealDefault,
       setWeight,
       updateExecutionPlan,
-      updateWorkoutPlan,
       getSession,
       toggleSet,
       setSessionLoad,
@@ -835,7 +827,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       updateMealDefault,
       setWeight,
       updateExecutionPlan,
-      updateWorkoutPlan,
       getSession,
       toggleSet,
       setSessionLoad,

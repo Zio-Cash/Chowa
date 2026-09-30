@@ -124,37 +124,6 @@ export interface ExDay {
 
 export type ExecutionPlan = ExDay[]
 
-// ===== Workout: periodizzazione =====
-export interface Mesociclo {
-  id: string
-  nome: string // "A", "B"...
-  schema: string // es. "5/5/5/5"
-  settimane: number[] // settimane gemelle, es. [1,4,7]
-  carichi: Record<number, number> // carico per settimana
-}
-
-export interface PlanExercise {
-  id: string
-  nome: string
-  mesocicli: Mesociclo[]
-}
-
-export interface PlanDay {
-  id: string
-  nome: string
-  emoji: string
-  esercizi: PlanExercise[]
-}
-
-export interface PlanCard {
-  id: string
-  nome: string
-  etichetta: string
-  giornate: PlanDay[]
-}
-
-export type WorkoutPlan = PlanCard[]
-
 // ===== Progressi sessione (esecuzione) =====
 export interface ExerciseProgress {
   sets: boolean[]
@@ -208,7 +177,6 @@ export interface AppState {
   foods: Food[]
   diario: Diario
   executionPlan: ExecutionPlan
-  workoutPlan: WorkoutPlan
   workoutProgress: WorkoutProgress
   weightLog: WeightLog
   stepsLog: StepsLog

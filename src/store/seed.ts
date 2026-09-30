@@ -7,7 +7,6 @@ import type {
   ExecutionPlan,
   Food,
   Meal,
-  PlanCard,
 } from '../types'
 
 export const uid = () => Math.random().toString(36).slice(2, 10)
@@ -143,42 +142,6 @@ export function seedExerciseCatalog(): CatalogExercise[] {
   ]
 }
 
-// ===== Periodizzazione (scheda d'esempio) =====
-export function seedWorkoutPlan(): PlanCard[] {
-  return [
-    {
-      id: uid(),
-      nome: 'Workout 1',
-      etichetta: 'Preparazione',
-      giornate: [
-        {
-          id: uid(),
-          nome: 'Day 1 · Legs',
-          emoji: '🦵',
-          esercizi: [
-            {
-              id: uid(),
-              nome: 'Squat',
-              mesocicli: [
-                { id: uid(), nome: 'A', schema: '5/5/5/5', settimane: [1, 4, 7], carichi: { 1: 40, 4: 45, 7: 50 } },
-                { id: uid(), nome: 'B', schema: '4/4/4/4', settimane: [2, 5, 8], carichi: { 2: 50, 5: 55, 8: 60 } },
-              ],
-            },
-            {
-              id: uid(),
-              nome: 'Hip Thrust',
-              mesocicli: [
-                { id: uid(), nome: 'A', schema: '5/5/5/5', settimane: [1, 4, 7], carichi: { 1: 50, 4: 55, 7: 60 } },
-                { id: uid(), nome: 'B', schema: '4/4/4/4', settimane: [2, 5, 8], carichi: { 2: 60, 5: 65, 8: 70 } },
-              ],
-            },
-          ],
-        },
-      ],
-    },
-  ]
-}
-
 // ===== Stato iniziale completo =====
 export function seedState(): AppState {
   const targets = computeTargets(defaultProfile)
@@ -196,7 +159,6 @@ export function seedState(): AppState {
     foods: seedFoods(),
     diario: {},
     executionPlan: seedExecutionPlan(),
-    workoutPlan: seedWorkoutPlan(),
     workoutProgress: {},
     weightLog: {},
     stepsLog: {},

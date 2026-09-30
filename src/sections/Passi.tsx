@@ -8,7 +8,15 @@ import {
   XAxis,
 } from 'recharts'
 import { useStore } from '../store/store'
-import { dateKey, MESI_BREVI, MONITOR_START, parseKey, rangeLabel, weeksOfMonth } from '../lib/date'
+import {
+  dateKey,
+  MESI_BREVI,
+  MONITOR_START,
+  parseKey,
+  rangeLabel,
+  weekMonthOf,
+  weeksOfMonth,
+} from '../lib/date'
 import { fmtSteps } from '../lib/goals'
 import { Card, CardTitle, NumberInput } from '../components/ui'
 
@@ -18,14 +26,18 @@ export default function Passi() {
   const { state, setSteps } = useStore()
   const stepTarget = state.settings.goals.stepTarget
   const now = new Date()
-  const [year, setYear] = useState(now.getFullYear())
-  const [openMonth, setOpenMonth] = useState<number | null>(now.getMonth())
+  // Mese corrente = quello della settimana in corso (regola del giovedì).
+  const cur = weekMonthOf()
+  const [year, setYear] = useState(cur.year)
+  const [openMonth, setOpenMonth] = useState<number | null>(cur.month0)
 
-  // Mesi visibili: solo dall'inizio del monitoraggio (giugno 2026) in poi
+  // Mesi visibili: dall'inizio del monitoraggio (giugno 2026) fino al mese
+  // della settimana in corso (i mesi futuri vuoti restano nascosti).
   const startY = Number(MONITOR_START.slice(0, 4))
   const startM = Number(MONITOR_START.slice(5, 7)) - 1
   const monthVisible = (mi: number) =>
-    year > startY || (year === startY && mi >= startM)
+    (year > startY || (year === startY && mi >= startM)) &&
+    (year < cur.year || (year === cur.year && mi <= cur.month0))
 
   const { monthly, yearAvg, chart } = useMemo(() => {
     const monthly: number[][] = Array.from({ length: 12 }, () => [])
@@ -84,7 +96,7 @@ export default function Passi() {
       <div className="space-y-2">
         {MESI_BREVI.map((nome, mi) => {
           if (!monthVisible(mi)) return null
-          const isCurrent = mi === now.getMonth() && year === now.getFullYear()
+          const isCurrent = mi === cur.month0 && year === cur.year
           const mAvg = avg(monthly[mi])
           const open = openMonth === mi
           return (
@@ -161,6 +173,7 @@ function MonthBody({
                         suffix="passi"
                         placeholder="—"
                         className="flex-1"
+                        commitOnBlur
                       />
                     </div>
                   )

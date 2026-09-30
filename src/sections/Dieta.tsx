@@ -767,146 +767,185 @@ function FoodDB({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [q, setQ] = useState('')
   const [draft, setDraft] = useState<Omit<Food, 'id'>>(emptyFood)
   const [editId, setEditId] = useState<string | null>(null)
+  // Il form (aggiungi/modifica) è a comparsa: chiuso, la lista occupa tutta
+  // l'altezza; si apre col pulsante "Nuovo" o toccando la matita di un alimento.
+  const [formOpen, setFormOpen] = useState(false)
 
   const list = state.foods.filter((f) => f.nome.toLowerCase().includes(q.toLowerCase()))
 
+  function openNew() {
+    setDraft(emptyFood)
+    setEditId(null)
+    setFormOpen(true)
+  }
+  function openEdit(f: Food) {
+    const { id: _id, ...rest } = f
+    void _id
+    setDraft({ ...rest, categoria: bucketOf(rest.categoria) })
+    setEditId(f.id)
+    setFormOpen(true)
+  }
+  function closeForm() {
+    setDraft(emptyFood)
+    setEditId(null)
+    setFormOpen(false)
+  }
   function save() {
     if (!draft.nome.trim()) return
     if (editId) updateFood(editId, draft)
     else addFood(draft)
-    setDraft(emptyFood)
-    setEditId(null)
+    closeForm()
   }
 
   return (
     <Sheet open={open} onClose={onClose} title="Database alimenti" flush>
-      <div className="shrink-0">
-      <Card className="mb-3 !bg-surface">
-        <div className="space-y-2">
-          <input
-            value={draft.nome}
-            onChange={(e) => setDraft({ ...draft, nome: e.target.value })}
-            placeholder="Nome alimento"
-            className="min-h-[44px] w-full rounded-2xl bg-white/[0.06] px-3 font-semibold outline-none"
-          />
-          <div className="grid grid-cols-3 gap-2">
-            <Field label="Prot/100">
-              <NumberInput value={draft.p100} onChange={(v) => setDraft({ ...draft, p100: v })} />
-            </Field>
-            <Field label="Carb/100">
-              <NumberInput value={draft.c100} onChange={(v) => setDraft({ ...draft, c100: v })} />
-            </Field>
-            <Field label="Gras/100">
-              <NumberInput value={draft.g100} onChange={(v) => setDraft({ ...draft, g100: v })} />
-            </Field>
-          </div>
-          <Field label="Kcal/100 (opzionale · auto dai macro se vuoto)">
-            <NumberInput
-              value={draft.k100 || ''}
-              onChange={(v) => setDraft({ ...draft, k100: v })}
-              suffix="kcal"
-              placeholder={`auto: ${Math.round(foodKcal100({ ...draft, k100: 0 } as Food))}`}
-            />
-          </Field>
-          <Field label="Categoria">
-            <div className="flex flex-wrap gap-1.5">
-              {FOOD_CATS.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setDraft({ ...draft, categoria: c })}
-                  className={`min-h-[36px] rounded-full px-3 text-xs font-medium tracking-wide transition ${
-                    bucketOf(draft.categoria) === c ? 'bg-teal text-[#1a1012]' : 'bg-white/[0.06] text-muted'
-                  }`}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
-          </Field>
-          <Field label="Unità">
-            <Segmented<FoodUnit>
-              options={[
-                { value: 'g', label: 'g' },
-                { value: 'ml', label: 'ml' },
-              ]}
-              value={draft.unita}
-              onChange={(v) => setDraft({ ...draft, unita: v })}
-            />
-          </Field>
-          <Field label={`Qualità: ${'★'.repeat(draft.qualita)}`}>
-            <Segmented
-              options={[
-                { value: '1', label: '★' },
-                { value: '2', label: '★★' },
-                { value: '3', label: '★★★' },
-              ]}
-              value={String(draft.qualita)}
-              onChange={(v) => setDraft({ ...draft, qualita: Number(v) })}
-            />
-          </Field>
-          <Button className="w-full" onClick={save}>
-            {editId ? 'Salva modifiche' : '+ Aggiungi al database'}
-          </Button>
-        </div>
-      </Card>
-
-      <div className="mb-2 flex items-center gap-2 rounded-2xl bg-surface px-4 ring-1 ring-white/[0.05] focus-within:ring-teal/30">
-        <span className="text-muted">
-          <Icon.search size={18} />
-        </span>
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Cerca / filtra…"
-          className="min-h-[44px] flex-1 bg-transparent outline-none"
-        />
-      </div>
-      </div>
-
-      {/* Solo questa lista scorre; il form sopra resta fisso */}
-      <div className="min-h-0 flex-1 space-y-1.5 overflow-y-auto">
-        {list.map((f) => (
-          <div key={f.id} className="flex items-center gap-1 rounded-2xl bg-surface px-2 py-2">
-            <button
-              onClick={() => toggleFav(f.id)}
-              className="flex h-9 w-9 items-center justify-center"
-              aria-label="Preferito"
-            >
-              {f.preferito ? (
-                <Icon.star size={18} className="text-teal" />
-              ) : (
-                <Icon.starOutline size={18} className="text-muted" />
-              )}
+      {formOpen ? (
+        // ---- Form aggiungi/modifica (a tutta altezza, scorrevole) ----
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="mb-3 flex items-center justify-between">
+            <span className="font-display text-base text-ink">
+              {editId ? 'Modifica alimento' : 'Nuovo alimento'}
+            </span>
+            <button onClick={closeForm} className="text-sm font-medium text-muted underline">
+              Annulla
             </button>
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-sm">{f.nome}</div>
-              <div className="font-mono text-[11px] text-muted tabular">
-                {bucketOf(f.categoria)} · {Math.round(foodKcal100(f))}kcal · P{f.p100} C{f.c100} G{f.g100}
+          </div>
+          <Card className="!bg-surface">
+            <div className="space-y-2">
+              <input
+                value={draft.nome}
+                onChange={(e) => setDraft({ ...draft, nome: e.target.value })}
+                placeholder="Nome alimento"
+                autoFocus
+                className="min-h-[44px] w-full rounded-2xl bg-white/[0.06] px-3 font-semibold outline-none"
+              />
+              <div className="grid grid-cols-3 gap-2">
+                <Field label="Prot/100">
+                  <NumberInput value={draft.p100} onChange={(v) => setDraft({ ...draft, p100: v })} />
+                </Field>
+                <Field label="Carb/100">
+                  <NumberInput value={draft.c100} onChange={(v) => setDraft({ ...draft, c100: v })} />
+                </Field>
+                <Field label="Gras/100">
+                  <NumberInput value={draft.g100} onChange={(v) => setDraft({ ...draft, g100: v })} />
+                </Field>
+              </div>
+              <Field label="Kcal/100 (opzionale · auto dai macro se vuoto)">
+                <NumberInput
+                  value={draft.k100 || ''}
+                  onChange={(v) => setDraft({ ...draft, k100: v })}
+                  suffix="kcal"
+                  placeholder={`auto: ${Math.round(foodKcal100({ ...draft, k100: 0 } as Food))}`}
+                />
+              </Field>
+              <Field label="Categoria">
+                <div className="flex flex-wrap gap-1.5">
+                  {FOOD_CATS.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setDraft({ ...draft, categoria: c })}
+                      className={`min-h-[36px] rounded-full px-3 text-xs font-medium tracking-wide transition ${
+                        bucketOf(draft.categoria) === c ? 'bg-teal text-[#1a1012]' : 'bg-white/[0.06] text-muted'
+                      }`}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </Field>
+              <Field label="Unità">
+                <Segmented<FoodUnit>
+                  options={[
+                    { value: 'g', label: 'g' },
+                    { value: 'ml', label: 'ml' },
+                  ]}
+                  value={draft.unita}
+                  onChange={(v) => setDraft({ ...draft, unita: v })}
+                />
+              </Field>
+              <Field label={`Qualità: ${'★'.repeat(draft.qualita)}`}>
+                <Segmented
+                  options={[
+                    { value: '1', label: '★' },
+                    { value: '2', label: '★★' },
+                    { value: '3', label: '★★★' },
+                  ]}
+                  value={String(draft.qualita)}
+                  onChange={(v) => setDraft({ ...draft, qualita: Number(v) })}
+                />
+              </Field>
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <Button variant="ghost" onClick={closeForm}>
+                  Annulla
+                </Button>
+                <Button onClick={save}>{editId ? 'Salva modifiche' : '+ Aggiungi'}</Button>
               </div>
             </div>
-            <button
-              onClick={() => {
-                const { id: _id, ...rest } = f
-                void _id
-                setDraft({ ...rest, categoria: bucketOf(rest.categoria) })
-                setEditId(f.id)
-              }}
-              className="flex h-9 w-9 items-center justify-center rounded-full text-muted"
-              aria-label="Modifica"
-            >
-              <Icon.edit size={17} />
-            </button>
-            <button
-              onClick={() => confirm(`Eliminare ${f.nome}?`) && deleteFood(f.id)}
-              className="flex h-9 w-9 items-center justify-center rounded-full text-red-300"
-              aria-label="Elimina"
-            >
-              <Icon.trash size={17} />
-            </button>
+          </Card>
+        </div>
+      ) : (
+        // ---- Lista alimenti (a tutta altezza) ----
+        <>
+          <div className="shrink-0">
+            <Button className="mb-3 w-full" onClick={openNew}>
+              <Icon.plus size={18} /> Nuovo alimento
+            </Button>
+            <div className="mb-2 flex items-center gap-2 rounded-2xl bg-surface px-4 ring-1 ring-white/[0.05] focus-within:ring-teal/30">
+              <span className="text-muted">
+                <Icon.search size={18} />
+              </span>
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Cerca / filtra…"
+                className="min-h-[44px] flex-1 bg-transparent outline-none"
+              />
+            </div>
           </div>
-        ))}
-      </div>
+
+          <div className="min-h-0 flex-1 space-y-1.5 overflow-y-auto">
+            {list.length === 0 && (
+              <p className="px-2 py-6 text-center text-sm text-muted">Nessun alimento trovato.</p>
+            )}
+            {list.map((f) => (
+              <div key={f.id} className="flex items-center gap-1 rounded-2xl bg-surface px-2 py-2">
+                <button
+                  onClick={() => toggleFav(f.id)}
+                  className="flex h-9 w-9 items-center justify-center"
+                  aria-label="Preferito"
+                >
+                  {f.preferito ? (
+                    <Icon.star size={18} className="text-teal" />
+                  ) : (
+                    <Icon.starOutline size={18} className="text-muted" />
+                  )}
+                </button>
+                <button onClick={() => openEdit(f)} className="min-w-0 flex-1 text-left">
+                  <div className="truncate text-sm">{f.nome}</div>
+                  <div className="font-mono text-[11px] text-muted tabular">
+                    {bucketOf(f.categoria)} · {Math.round(foodKcal100(f))}kcal · P{f.p100} C{f.c100} G{f.g100}
+                  </div>
+                </button>
+                <button
+                  onClick={() => openEdit(f)}
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-muted"
+                  aria-label="Modifica"
+                >
+                  <Icon.edit size={17} />
+                </button>
+                <button
+                  onClick={() => confirm(`Eliminare ${f.nome}?`) && deleteFood(f.id)}
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-red-300"
+                  aria-label="Elimina"
+                >
+                  <Icon.trash size={17} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </Sheet>
   )
 }
