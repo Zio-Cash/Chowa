@@ -1,15 +1,19 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import type { ReactNode } from 'react'
 import { StoreProvider, useStore } from './store/store'
 import { AuthProvider, useAuth } from './auth/AuthProvider'
 import LoginGate from './auth/LoginGate'
 import { Icon } from './components/brand'
 import type { ViewId } from './types'
-import Oggi from './sections/Oggi'
-import Dieta from './sections/Dieta'
-import Workout from './sections/Workout'
-import Cycle from './sections/Cycle'
-import Profilo from './sections/Profilo'
+import { useWakeLock } from './lib/useWakeLock'
+
+// Sezioni caricate on-demand: il primo avvio scarica solo la schermata attiva,
+// il resto (e le librerie pesanti come i grafici) arriva quando serve.
+const Oggi = lazy(() => import('./sections/Oggi'))
+const Dieta = lazy(() => import('./sections/Dieta'))
+const Workout = lazy(() => import('./sections/Workout'))
+const Cycle = lazy(() => import('./sections/Cycle'))
+const Profilo = lazy(() => import('./sections/Profilo'))
 
 type Tab = { id: ViewId; label: string; icon: (p: { size?: number; className?: string }) => ReactNode }
 
@@ -64,10 +68,19 @@ function TabBar({ view, setView }: { view: ViewId; setView: (v: ViewId) => void 
   )
 }
 
+function SectionFallback() {
+  return (
+    <div className="flex min-h-[50dvh] items-center justify-center">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/10 border-t-teal" />
+    </div>
+  )
+}
+
 function Shell() {
   const [view, setView] = useState<ViewId>('oggi')
   const { persistent, readOnly } = useStore()
   const { setViewingUid } = useAuth()
+  useWakeLock()
   return (
     <div className="min-h-dvh pb-24">
       <TopBar />
@@ -89,11 +102,13 @@ function Shell() {
         </div>
       )}
       <main className="mx-auto max-w-[480px] px-4 pt-4">
-        {view === 'oggi' && <Oggi goTo={setView} />}
-        {view === 'workout' && <Workout />}
-        {view === 'dieta' && <Dieta />}
-        {view === 'cycle' && <Cycle />}
-        {view === 'profilo' && <Profilo />}
+        <Suspense fallback={<SectionFallback />}>
+          {view === 'oggi' && <Oggi goTo={setView} />}
+          {view === 'workout' && <Workout />}
+          {view === 'dieta' && <Dieta />}
+          {view === 'cycle' && <Cycle />}
+          {view === 'profilo' && <Profilo />}
+        </Suspense>
       </main>
       <TabBar view={view} setView={setView} />
     </div>

@@ -1,6 +1,10 @@
 import { initializeApp } from 'firebase/app'
 import { getAuth, GoogleAuthProvider } from 'firebase/auth'
-import { getFirestore } from 'firebase/firestore'
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+} from 'firebase/firestore'
 
 // ⬇️⬇️⬇️  INCOLLA QUI LA CONFIGURAZIONE DEL TUO PROGETTO FIREBASE  ⬇️⬇️⬇️
 // La trovi in: console.firebase.google.com → ⚙️ Impostazioni progetto →
@@ -22,5 +26,12 @@ export const firebaseReady = !Object.values(firebaseConfig).includes('INCOLLA_QU
 
 const app = initializeApp(firebaseConfig)
 export const auth = getAuth(app)
-export const db = getFirestore(app)
+
+// Firestore con cache locale persistente (IndexedDB): l'app si apre e mostra
+// i dati anche senza connessione, e sincronizza quando la rete torna.
+// Se IndexedDB non è disponibile (es. finestra privata) si degrada da solo.
+export const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+})
+
 export const googleProvider = new GoogleAuthProvider()

@@ -5,6 +5,21 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
+  build: {
+    rollupOptions: {
+      output: {
+        // Librerie pesanti in chunk separati: primo avvio più leggero e
+        // aggiornamenti più veloci (queste cambiano di rado, restano in cache).
+        manualChunks(id: string) {
+          if (id.includes('node_modules')) {
+            if (id.includes('firebase') || id.includes('@firebase')) return 'firebase'
+            if (id.includes('recharts') || id.includes('d3-') || id.includes('victory'))
+              return 'charts'
+          }
+        },
+      },
+    },
+  },
   plugins: [
     react(),
     tailwindcss(),
