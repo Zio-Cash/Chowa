@@ -46,7 +46,7 @@ export function Button({
   const base =
     'inline-flex min-h-[46px] items-center justify-center gap-2 rounded-2xl px-5 text-sm font-medium tracking-wide transition active:scale-[0.98] disabled:opacity-40'
   const styles: Record<string, string> = {
-    primary: 'bg-teal text-[#fafafa] shadow-[0_10px_30px_-12px_rgba(24, 24, 27,0.35)]',
+    primary: 'bg-teal text-[#faf7f1] shadow-[0_10px_30px_-12px_rgba(33, 29, 25,0.35)]',
     soft: 'bg-teal/[0.12] text-teal',
     ghost: 'bg-black/[0.05] text-ink',
     danger: 'bg-red-500/10 text-red-300',

@@ -29,7 +29,7 @@ export default function Welcome({
           className="kanji-aura pointer-events-none absolute inset-x-0 top-[30%] mx-auto h-[60vh] max-h-[520px] w-[80%]"
           style={{
             background:
-              'radial-gradient(closest-side, rgba(24, 24, 27,0.08), rgba(24, 24, 27,0.03) 55%, transparent 72%)',
+              'radial-gradient(closest-side, rgba(33, 29, 25,0.08), rgba(33, 29, 25,0.03) 55%, transparent 72%)',
           }}
         />
 

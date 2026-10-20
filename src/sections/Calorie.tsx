@@ -212,7 +212,7 @@ function GoalRow({
   return (
     <div className="flex items-center justify-between rounded-2xl bg-black/[0.05] px-3 py-2">
       <div className="flex items-center gap-2">
-        <span className={`flex h-8 w-8 items-center justify-center rounded-full ${color} text-[#fafafa]`}>
+        <span className={`flex h-8 w-8 items-center justify-center rounded-full ${color} text-[#faf7f1]`}>
           {icon}
         </span>
         <span className="text-sm font-semibold">{label}</span>
@@ -224,7 +224,7 @@ function GoalRow({
 
 function Stat({ label, value, highlight }: { label: string; value: number; highlight?: boolean }) {
   return (
-    <div className={`rounded-2xl p-3 ${highlight ? 'bg-teal text-[#fafafa]' : 'bg-black/[0.06]'}`}>
+    <div className={`rounded-2xl p-3 ${highlight ? 'bg-teal text-[#faf7f1]' : 'bg-black/[0.06]'}`}>
       <div className="text-xs font-semibold uppercase opacity-70">{label}</div>
       <div className="font-mono text-xl font-bold tabular">{value}</div>
     </div>

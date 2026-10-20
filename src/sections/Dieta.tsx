@@ -99,14 +99,14 @@ export default function Dieta() {
                 key={k}
                 onClick={() => setToday(k)}
                 className={`flex flex-col items-center rounded-xl py-1.5 transition ${
-                  sel ? 'bg-teal text-[#fafafa]' : k > oggi ? 'text-muted/60' : 'text-ink'
+                  sel ? 'bg-teal text-[#faf7f1]' : k > oggi ? 'text-muted/60' : 'text-ink'
                 }`}
               >
                 <span className="text-[9px] uppercase tracking-wide opacity-70">{WD[i]}</span>
                 <span className="font-mono text-sm tabular">{d.getDate()}</span>
                 <span
                   className={`mt-0.5 h-1 w-1 rounded-full ${
-                    isOggi ? (sel ? 'bg-[#fafafa]' : 'bg-teal') : 'bg-transparent'
+                    isOggi ? (sel ? 'bg-[#faf7f1]' : 'bg-teal') : 'bg-transparent'
                   }`}
                 />
               </button>
@@ -329,7 +329,7 @@ function MealEditor({ date, mealId, onClose }: { date: string; mealId: string; o
             onClick={() => setCat(c)}
             className={`min-h-[34px] shrink-0 whitespace-nowrap rounded-full px-3 text-xs font-medium tracking-wide transition ${
               cat === c && !q.trim()
-                ? 'bg-teal text-[#fafafa]'
+                ? 'bg-teal text-[#faf7f1]'
                 : c === 'Mix'
                   ? 'bg-teal/12 text-teal'
                   : 'bg-surface2 text-muted'
@@ -667,7 +667,7 @@ function ShoppingListSheet({ open, onClose }: { open: boolean; onClose: () => vo
               key={o.v}
               onClick={() => setMode(o.v)}
               className={`min-h-[34px] flex-1 rounded-full px-2 text-xs font-medium tracking-wide transition ${
-                mode === o.v ? 'bg-teal text-[#fafafa]' : 'bg-surface2 text-muted'
+                mode === o.v ? 'bg-teal text-[#faf7f1]' : 'bg-surface2 text-muted'
               }`}
             >
               {o.label}
@@ -735,7 +735,7 @@ function ShoppingListSheet({ open, onClose }: { open: boolean; onClose: () => vo
                       >
                         <span
                           className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition ${
-                            on ? 'border-teal bg-teal text-[#fafafa]' : 'border-black/25 text-transparent'
+                            on ? 'border-teal bg-teal text-[#faf7f1]' : 'border-black/25 text-transparent'
                           }`}
                         >
                           <Icon.check size={13} />
@@ -855,7 +855,7 @@ function FoodDB({ open, onClose }: { open: boolean; onClose: () => void }) {
                       type="button"
                       onClick={() => setDraft({ ...draft, categoria: c })}
                       className={`min-h-[36px] rounded-full px-3 text-xs font-medium tracking-wide transition ${
-                        bucketOf(draft.categoria) === c ? 'bg-teal text-[#fafafa]' : 'bg-black/[0.06] text-muted'
+                        bucketOf(draft.categoria) === c ? 'bg-teal text-[#faf7f1]' : 'bg-black/[0.06] text-muted'
                       }`}
                     >
                       {c}

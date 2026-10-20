@@ -35,8 +35,8 @@ export default defineConfig({
         scope: '/',
         display: 'standalone',
         orientation: 'portrait',
-        background_color: '#f5f5f4',
-        theme_color: '#f5f5f4',
+        background_color: '#f6f3ed',
+        theme_color: '#f6f3ed',
         icons: [
           { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
           { src: 'icon-maskable.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'maskable' },

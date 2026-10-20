@@ -4,24 +4,24 @@
   /* ===== Palette — "Perla & Onice" (chiara) =====
      Onyx & Perla invertito: fondo perla chiaro e caldo + onice profondo.
      L'accento non è un colore ma l'onice stesso. */
-  --color-bg: #f5f5f4; /* perla chiara */
-  --color-surface: #fafafa; /* superficie */
-  --color-surface2: #ffffff; /* card in rilievo (bianca) */
-  --color-ink: #18181b; /* onice (testo) */
-  --color-muted: #78787d; /* grigio caldo */
+  --color-bg: #f6f3ed; /* perla chiara */
+  --color-surface: #faf7f1; /* superficie */
+  --color-surface2: #fdfbf6; /* card in rilievo (bianco caldo) */
+  --color-ink: #211d19; /* onice (testo) */
+  --color-muted: #837b6e; /* grigio caldo */
 
   /* Accenti (nomi storici mantenuti per non toccare la logica) */
-  --color-viola: #18181b; /* accento principale — onice */
+  --color-viola: #211d19; /* accento principale — onice */
   --color-arancio: #c98a2e; /* alert / surplus — bronzo caldo */
-  --color-teal: #18181b; /* accento — onice (anelli, pulsanti) */
-  --color-magenta: #8a8a90; /* grigio neutro */
+  --color-teal: #211d19; /* accento — onice (anelli, pulsanti) */
+  --color-magenta: #8a857c; /* grigio neutro */
   --color-verde: #4f8a52; /* ok / deficit — eucalipto */
-  --color-blunotte: #ececeb; /* superficie chiara in rilievo */
+  --color-blunotte: #efe9df; /* superficie chiara in rilievo (calda) */
 
   /* Macro (toni caldi distinti, coerenti col monocromatico) */
-  --color-prot: #26262a; /* onice */
-  --color-carb: #9a9aa0; /* bronzo */
-  --color-fat: #c8c8cc; /* grigio */
+  --color-prot: #2a2622; /* onice */
+  --color-carb: #a09a8f; /* bronzo */
+  --color-fat: #cbc4b8; /* grigio */
 
   /* Tipografia */
   --font-display: 'Manrope', ui-sans-serif, system-ui, sans-serif;
@@ -54,8 +54,8 @@ body {
 /* Sfondo perla con un tenue velo onice — chiaro ma non piatto */
 body {
   background:
-    radial-gradient(1200px 680px at 88% -12%, rgba(24, 24, 27, 0.05), transparent 62%),
-    radial-gradient(1000px 800px at 50% 128%, rgba(24, 24, 27, 0.035), transparent 60%),
+    radial-gradient(1200px 680px at 88% -12%, rgba(33, 29, 25, 0.05), transparent 62%),
+    radial-gradient(1000px 800px at 50% 128%, rgba(33, 29, 25, 0.035), transparent 60%),
     var(--color-bg);
   background-attachment: fixed;
   min-height: 100dvh;
@@ -87,7 +87,7 @@ body {
 
 /* ===== Utility ===== */
 .text-gradient {
-  background: linear-gradient(110deg, #18181b, #3f3f45);
+  background: linear-gradient(110deg, #211d19, #3e3a33);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -95,21 +95,21 @@ body {
 
 /* Glassmorphism leggerissimo (chiaro) */
 .glass {
-  background: rgba(250, 250, 250, 0.72);
+  background: rgba(250, 247, 241, 0.72);
   backdrop-filter: blur(20px) saturate(1.05);
   -webkit-backdrop-filter: blur(20px) saturate(1.05);
 }
 
-/* "Gradiente animato" reso quasi impercettibile: bianco che respira */
+/* "Gradiente animato" reso quasi impercettibile: carta che respira */
 .animated-gradient {
-  background: linear-gradient(135deg, #fafafa, #f5f5f4, #f2f2f1, #efefee, #fbfbfb);
+  background: linear-gradient(135deg, #faf7f1, #f6f3ed, #f3efe7, #efeae0, #fbf8f2);
   background-size: 260% 260%;
   animation: gradientShift 26s ease infinite;
 }
 
 /* Ombra molto tenue + hairline onice */
 .glow-soft {
-  box-shadow: 0 20px 60px rgba(24, 24, 27, 0.14), 0 0 0 1px rgba(24, 24, 27, 0.06);
+  box-shadow: 0 20px 60px rgba(33, 29, 25, 0.14), 0 0 0 1px rgba(33, 29, 25, 0.06);
 }
 
 /* ===== Animazioni — micro, eleganti ===== */
@@ -205,11 +205,11 @@ body {
   /* inchiostro sumi con una lama di luce più chiara che attraversa */
   background: linear-gradient(
     105deg,
-    #26262a 0%,
-    #3a3a3e 34%,
-    #6e6e73 50%,
-    #3a3a3e 66%,
-    #26262a 100%
+    #2a2622 0%,
+    #3e3a33 34%,
+    #6e685d 50%,
+    #3e3a33 66%,
+    #2a2622 100%
   );
   background-size: 260% 100%;
   background-position: 200% 0;
@@ -226,10 +226,10 @@ body {
 @keyframes kanjiGlow {
   0%,
   100% {
-    filter: drop-shadow(0 2px 10px rgba(24, 24, 27, 0.14));
+    filter: drop-shadow(0 2px 10px rgba(33, 29, 25, 0.14));
   }
   50% {
-    filter: drop-shadow(0 4px 22px rgba(24, 24, 27, 0.26));
+    filter: drop-shadow(0 4px 22px rgba(33, 29, 25, 0.26));
   }
 }
 .kanji-glow {

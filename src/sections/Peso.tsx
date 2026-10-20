@@ -91,17 +91,17 @@ export default function Peso() {
           {serie.length > 1 ? (
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={serie} margin={{ top: 6, right: 8, left: -14, bottom: 0 }}>
-                <CartesianGrid stroke="#18181b10" vertical={false} />
+                <CartesianGrid stroke="#211d1910" vertical={false} />
                 <XAxis
                   dataKey="label"
-                  tick={{ fill: '#8a8a8f', fontSize: 10 }}
+                  tick={{ fill: '#8a847a', fontSize: 10 }}
                   axisLine={false}
                   tickLine={false}
                   minTickGap={18}
                 />
                 <YAxis
                   domain={['dataMin - 0.5', 'dataMax + 0.5']}
-                  tick={{ fill: '#8a8a8f', fontSize: 10 }}
+                  tick={{ fill: '#8a847a', fontSize: 10 }}
                   axisLine={false}
                   tickLine={false}
                   width={44}
@@ -113,16 +113,16 @@ export default function Peso() {
                     border: 'none',
                     fontSize: 12,
                     background: '#ffffff',
-                    color: '#18181b',
+                    color: '#211d19',
                   }}
                   formatter={(v) => [`${v} kg`, 'peso']}
                 />
                 <Line
                   type="monotone"
                   dataKey="kg"
-                  stroke="#18181b"
+                  stroke="#211d19"
                   strokeWidth={2}
-                  dot={{ r: 2.5, fill: "#18181b", strokeWidth: 0 }}
+                  dot={{ r: 2.5, fill: "#211d19", strokeWidth: 0 }}
                   activeDot={{ r: 4 }}
                 />
               </LineChart>

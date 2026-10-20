@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react'
 
 const COLORS = {
-  prot: '#26262a',
-  carb: '#9a9aa0',
-  fat: '#c8c8cc',
+  prot: '#2a2622',
+  carb: '#a09a8f',
+  fat: '#cbc4b8',
 }
 
 /** Anello a valore singolo con contenuto centrale. */
@@ -12,7 +12,7 @@ export function Ring({
   max,
   size = 160,
   stroke = 16,
-  color = '#18181b',
+  color = '#211d19',
   children,
 }: {
   value: number
@@ -28,7 +28,7 @@ export function Ring({
   return (
     <div className="relative" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#18181b14" strokeWidth={stroke} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#211d1914" strokeWidth={stroke} />
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -77,7 +77,7 @@ export function MacroDonut({
   return (
     <div className="relative" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#18181b14" strokeWidth={stroke} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#211d1914" strokeWidth={stroke} />
         {total > 0 &&
           segs.map((s, i) => {
             const frac = s.v / total

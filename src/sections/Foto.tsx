@@ -55,7 +55,7 @@ export default function Foto() {
       <button
         onClick={() => input.current?.click()}
         disabled={busy}
-        className="flex w-full items-center justify-center gap-2 rounded-2xl bg-teal py-3.5 text-sm font-semibold uppercase tracking-[0.18em] text-[#fafafa] transition active:scale-[0.98] disabled:opacity-60"
+        className="flex w-full items-center justify-center gap-2 rounded-2xl bg-teal py-3.5 text-sm font-semibold uppercase tracking-[0.18em] text-[#faf7f1] transition active:scale-[0.98] disabled:opacity-60"
       >
         <Icon.plus size={18} /> {busy ? 'Salvo…' : 'Aggiungi foto di oggi'}
       </button>

@@ -334,7 +334,7 @@ function CatalogPicker({
                 key={c}
                 onClick={() => setCat(c)}
                 className={`min-h-[34px] shrink-0 whitespace-nowrap rounded-full px-3 text-xs font-medium tracking-wide transition ${
-                  c === cat ? 'bg-teal text-[#fafafa]' : 'bg-surface2 text-muted'
+                  c === cat ? 'bg-teal text-[#faf7f1]' : 'bg-surface2 text-muted'
                 }`}
               >
                 {c}

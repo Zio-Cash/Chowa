@@ -52,7 +52,7 @@ export default function RemindersCard() {
       {anyOn && perm !== 'granted' && (
         <button
           onClick={ensurePerm}
-          className="mt-3 w-full rounded-2xl bg-teal py-2.5 text-sm font-medium text-[#fafafa] active:scale-[0.98]"
+          className="mt-3 w-full rounded-2xl bg-teal py-2.5 text-sm font-medium text-[#faf7f1] active:scale-[0.98]"
         >
           Attiva le notifiche
         </button>

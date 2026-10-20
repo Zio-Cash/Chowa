@@ -90,7 +90,7 @@ export default function Storico() {
         </Card>
       )}
 
-      <Card gradient="bg-gradient-to-br from-[#ffffff] to-[#f0f0ef] text-ink">
+      <Card gradient="bg-gradient-to-br from-[#ffffff] to-[#f1ece2] text-ink">
         <div className="flex items-center justify-between">
           <CardTitle>
             <span className="text-ink">{MESI[month]} {year}</span>
@@ -192,7 +192,7 @@ function DayRow({ d, open, onToggle }: { d: DaySummary; open: boolean; onToggle:
               <span
                 key={a.key}
                 className={`flex h-7 w-7 items-center justify-center rounded-full font-mono text-[11px] font-medium transition ${
-                  on ? 'bg-teal text-[#fafafa] shadow-sm' : 'bg-black/[0.05] text-muted/40'
+                  on ? 'bg-teal text-[#faf7f1] shadow-sm' : 'bg-black/[0.05] text-muted/40'
                 }`}
               >
                 {a.emoji}
