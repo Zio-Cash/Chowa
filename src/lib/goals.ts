@@ -5,6 +5,7 @@ export const DEFAULT_GOALS: DailyGoals = {
   stepTarget: 8000,
   waterTarget: 2000,
   kcalMin: 1600,
+  pesoTarget: 0,
 }
 
 export const WATER_STEP_ML = 250 // un bicchiere

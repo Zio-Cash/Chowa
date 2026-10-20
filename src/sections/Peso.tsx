@@ -10,13 +10,19 @@ import {
   weekMonthOf,
   weeksOfMonth,
 } from '../lib/date'
-import { Card, CardTitle, NumberInput } from '../components/ui'
+import { Button, Card, CardTitle, NumberInput } from '../components/ui'
+import { projectToTarget, weightTrend } from '../lib/weight'
+import type { DailyGoals } from '../types'
 
 const fmt = (n?: number) => (n ? n.toFixed(1) : '—')
 const avg = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0)
+const fmtData = (k: string) => {
+  const d = parseKey(k)
+  return `${d.getDate()} ${MESI_BREVI[d.getMonth()].toLowerCase()} ${String(d.getFullYear()).slice(2)}`
+}
 
 export default function Peso() {
-  const { state, setWeight } = useStore()
+  const { state, setWeight, setGoals } = useStore()
   const oggi = dateKey()
   // Mese corrente = quello della settimana in corso (regola del giovedì).
   const cur = weekMonthOf()
@@ -53,6 +59,15 @@ export default function Peso() {
 
   return (
     <div className="space-y-4 pb-4">
+      <GoalCard
+        goals={state.settings.goals}
+        current={ultimo}
+        start={primo}
+        weightLog={state.weightLog}
+        oggi={oggi}
+        onSetTarget={(pesoTarget) => setGoals({ ...state.settings.goals, pesoTarget })}
+      />
+
       <Card>
         <CardTitle>Andamento peso</CardTitle>
         <div className="flex items-baseline gap-3">
@@ -222,5 +237,108 @@ function MonthBody({
         )
       })}
     </div>
+  )
+}
+
+function GoalCard({
+  goals,
+  current,
+  start,
+  weightLog,
+  oggi,
+  onSetTarget,
+}: {
+  goals: DailyGoals
+  current?: number
+  start?: number
+  weightLog: Record<string, number>
+  oggi: string
+  onSetTarget: (kg: number) => void
+}) {
+  const target = goals.pesoTarget ?? 0
+  const [editing, setEditing] = useState(target <= 0)
+  const [draft, setDraft] = useState<number>(target || (current ? Math.round(current) : 70))
+  const trend = weightTrend(weightLog, oggi, 28)
+  const proj =
+    target > 0 && current ? projectToTarget(current, target, trend?.slopePerWeek ?? 0, oggi) : null
+
+  if (editing || target <= 0) {
+    return (
+      <Card>
+        <CardTitle icon="🎯">Obiettivo peso</CardTitle>
+        <p className="-mt-2 mb-3 text-xs text-muted">
+          Imposta il peso che vuoi raggiungere: vedrai la proiezione al ritmo attuale.
+        </p>
+        <div className="flex items-center gap-2">
+          <div className="flex-1">
+            <NumberInput value={draft || ''} onChange={setDraft} suffix="kg" placeholder="es. 68" />
+          </div>
+          <Button
+            onClick={() => {
+              if (draft > 0) {
+                onSetTarget(draft)
+                setEditing(false)
+              }
+            }}
+          >
+            Salva
+          </Button>
+        </div>
+      </Card>
+    )
+  }
+
+  const base = start ?? current ?? target
+  const totale = base - target
+  const fatto = base - (current ?? base)
+  const pct = totale !== 0 ? Math.min(1, Math.max(0, fatto / totale)) : current === target ? 1 : 0
+  const resta = current != null ? Math.round(Math.abs(current - target) * 10) / 10 : null
+
+  return (
+    <Card>
+      <div className="flex items-center justify-between">
+        <CardTitle icon="🎯">Obiettivo peso</CardTitle>
+        <button
+          onClick={() => {
+            setDraft(target)
+            setEditing(true)
+          }}
+          className="text-xs text-muted underline"
+        >
+          modifica
+        </button>
+      </div>
+      <div className="flex items-baseline justify-between">
+        <span className="font-mono text-3xl tabular">
+          {fmt(current)} <span className="text-base text-muted">→ {target} kg</span>
+        </span>
+        {resta != null && resta > 0 && <span className="text-sm text-muted">−{resta} kg</span>}
+      </div>
+      <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-black/[0.06]">
+        <div
+          className="h-full rounded-full bg-teal transition-all"
+          style={{ width: `${Math.round(pct * 100)}%` }}
+        />
+      </div>
+      <div className="mt-3 text-sm">
+        {proj ? (
+          proj.weeksToGo <= 0 ? (
+            <span className="font-medium text-verde">Obiettivo raggiunto! 🎉</span>
+          ) : (
+            <span className="text-ink">
+              Al ritmo attuale ({proj.perWeek < 0 ? '−' : '+'}
+              {Math.abs(proj.perWeek).toFixed(2)} kg/sett) arrivi intorno al{' '}
+              <b>{fmtData(proj.etaDate)}</b>.
+            </span>
+          )
+        ) : (
+          <span className="text-muted">
+            {trend
+              ? 'Il ritmo attuale non ti avvicina all’obiettivo: aggiusta dieta o allenamento.'
+              : 'Registra qualche pesata per vedere la proiezione.'}
+          </span>
+        )}
+      </div>
+    </Card>
   )
 }

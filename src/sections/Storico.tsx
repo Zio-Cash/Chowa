@@ -3,6 +3,7 @@ import { useStore } from '../store/store'
 import { dateKey, MONITOR_START, parseKey, rangeLabel, weekMonthOf } from '../lib/date'
 import { fmtSteps, fmtWater } from '../lib/goals'
 import { dayRating, periodStats, weeksForMonth, type DaySummary } from '../lib/history'
+import { weeklyCoach } from '../lib/coach'
 import { Card, CardTitle } from '../components/ui'
 
 const MESI = [
@@ -67,8 +68,28 @@ export default function Storico() {
     if (month === 11) { setMonth(0); setYear((y) => y + 1) } else setMonth((m) => m + 1)
   }
 
+  const coach = useMemo(() => weeklyCoach(state, todayKey), [state, todayKey])
+
   return (
     <div className="space-y-4 pb-4">
+      {coach.messages.length > 0 && (
+        <Card>
+          <CardTitle icon="🧭">Coach della settimana</CardTitle>
+          <div className="space-y-2.5">
+            {coach.messages.map((m, i) => (
+              <div key={i} className="flex items-start gap-2.5 text-sm leading-snug">
+                <span
+                  className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
+                    m.tone === 'good' ? 'bg-verde' : m.tone === 'warn' ? 'bg-arancio' : 'bg-muted/50'
+                  }`}
+                />
+                <span className="text-ink">{m.text}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
       <Card gradient="bg-gradient-to-br from-[#ffffff] to-[#f0f0ef] text-ink">
         <div className="flex items-center justify-between">
           <CardTitle>

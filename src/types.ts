@@ -25,6 +25,7 @@ export interface DailyGoals {
   stepTarget: number
   waterTarget: number // ml
   kcalMin: number
+  pesoTarget?: number // obiettivo di peso (kg); 0/undefined = non impostato
 }
 
 export interface Settings {

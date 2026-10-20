@@ -173,6 +173,14 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
               <span className="text-base text-muted">· Giorno {cycle.day} di {cycle.length}</span>
             </div>
             <p className="mt-1 text-sm leading-relaxed text-muted">{cycle.phase.descrizione}</p>
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              <PhaseTile label="Energia" value={cycle.phase.energia} />
+              <PhaseTile label="Forza" value={cycle.phase.forza} />
+              <PhaseTile label="Recupero" value={cycle.phase.recupero} />
+            </div>
+            <p className="mt-3 border-l-2 border-teal/50 pl-3 text-sm leading-relaxed text-ink/85">
+              <span className="font-medium">Oggi:</span> {cycle.phase.consiglio}
+            </p>
           </>
         ) : (
           <p className="mt-1.5 text-sm leading-relaxed text-muted">
@@ -330,6 +338,15 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
           })}
         </div>
       </Card>
+    </div>
+  )
+}
+
+function PhaseTile({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl bg-black/[0.04] p-2.5 text-center">
+      <div className="text-[10px] uppercase tracking-[0.1em] text-muted">{label}</div>
+      <div className="mt-0.5 font-display text-sm tracking-tight text-teal">{value}</div>
     </div>
   )
 }
