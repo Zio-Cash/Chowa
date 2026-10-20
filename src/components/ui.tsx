@@ -14,7 +14,7 @@ export function Card({
   return (
     <div
       className={`rounded-[var(--radius-card)] p-5 shadow-[0_16px_50px_-20px_rgba(0,0,0,0.7)] ${
-        gradient ?? 'bg-surface2 ring-1 ring-white/[0.04]'
+        gradient ?? 'bg-surface2 ring-1 ring-black/[0.04]'
       } ${className}`}
     >
       {children}
@@ -26,7 +26,7 @@ export function CardTitle({ children, icon }: { children: ReactNode; icon?: stri
   return (
     <h2 className="mb-4 flex items-center gap-2.5 font-display text-[15px] font-medium tracking-wide text-ink">
       {icon && (
-        <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/[0.04] text-base">
+        <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-black/[0.04] text-base">
           {icon}
         </span>
       )}
@@ -46,9 +46,9 @@ export function Button({
   const base =
     'inline-flex min-h-[46px] items-center justify-center gap-2 rounded-2xl px-5 text-sm font-medium tracking-wide transition active:scale-[0.98] disabled:opacity-40'
   const styles: Record<string, string> = {
-    primary: 'bg-teal text-[#1a1012] shadow-[0_10px_30px_-12px_rgba(244,240,231,0.35)]',
+    primary: 'bg-teal text-[#f6f1e7] shadow-[0_10px_30px_-12px_rgba(26, 22, 19,0.35)]',
     soft: 'bg-teal/[0.12] text-teal',
-    ghost: 'bg-white/[0.05] text-ink',
+    ghost: 'bg-black/[0.05] text-ink',
     danger: 'bg-red-500/10 text-red-300',
   }
   return (
@@ -104,12 +104,12 @@ export function Stepper({
       <button
         type="button"
         onClick={() => onChange(clamp(value - step))}
-        className="h-9 w-9 shrink-0 rounded-full bg-white/[0.07] text-lg font-bold text-ink active:scale-90"
+        className="h-9 w-9 shrink-0 rounded-full bg-black/[0.07] text-lg font-bold text-ink active:scale-90"
       >
         −
       </button>
       {editable ? (
-        <div className="flex min-w-[4rem] items-center justify-center rounded-xl bg-white/[0.06] px-1">
+        <div className="flex min-w-[4rem] items-center justify-center rounded-xl bg-black/[0.06] px-1">
           <input
             type="text"
             inputMode="decimal"
@@ -138,7 +138,7 @@ export function Stepper({
       <button
         type="button"
         onClick={() => onChange(clamp(value + step))}
-        className="h-9 w-9 shrink-0 rounded-full bg-white/[0.07] text-lg font-bold text-ink active:scale-90"
+        className="h-9 w-9 shrink-0 rounded-full bg-black/[0.07] text-lg font-bold text-ink active:scale-90"
       >
         +
       </button>
@@ -206,7 +206,7 @@ export function NumberInput({
   }
 
   return (
-    <div className={`flex items-center rounded-2xl bg-white/[0.05] px-4 ring-1 ring-white/[0.04] focus-within:ring-teal/30 ${className}`}>
+    <div className={`flex items-center rounded-2xl bg-black/[0.05] px-4 ring-1 ring-black/[0.04] focus-within:ring-teal/30 ${className}`}>
       <input
         type="text"
         inputMode="decimal"
@@ -243,7 +243,7 @@ export function Segmented<T extends string>({
   onChange: (v: T) => void
 }) {
   return (
-    <div className="flex gap-1 overflow-x-auto rounded-2xl bg-white/[0.05] p-1 ring-1 ring-white/[0.04]">
+    <div className="flex gap-1 overflow-x-auto rounded-2xl bg-black/[0.05] p-1 ring-1 ring-black/[0.04]">
       {options.map((o) => (
         <button
           key={o.value}
@@ -279,7 +279,7 @@ export function Sheet({
     <div className="fixed inset-0 z-50 flex items-end justify-center" role="dialog">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div
-        className={`animate-fade-up relative flex max-h-[88dvh] w-full max-w-[480px] flex-col rounded-t-[28px] bg-surface p-5 pb-8 ring-1 ring-white/[0.05] ${
+        className={`animate-fade-up relative flex max-h-[88dvh] w-full max-w-[480px] flex-col rounded-t-[28px] bg-surface p-5 pb-8 ring-1 ring-black/[0.05] ${
           flush ? 'overflow-hidden' : 'overflow-y-auto'
         }`}
       >
@@ -287,7 +287,7 @@ export function Sheet({
           <h3 className="font-display text-xl font-medium tracking-wide">{title}</h3>
           <button
             onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.08] active:scale-90"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-black/[0.08] active:scale-90"
           >
             <Icon.close size={16} />
           </button>

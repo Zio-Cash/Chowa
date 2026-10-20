@@ -24,7 +24,7 @@ export default function Esercizi() {
             key={c}
             onClick={() => setCat(c)}
             className={`min-h-[36px] shrink-0 whitespace-nowrap rounded-full px-3.5 text-sm font-medium tracking-wide transition ${
-              c === cat ? 'bg-teal text-[#1a1012]' : 'bg-surface2 text-muted'
+              c === cat ? 'bg-teal text-[#f6f1e7]' : 'bg-surface2 text-muted'
             }`}
           >
             {c}
@@ -37,7 +37,7 @@ export default function Esercizi() {
       </Button>
 
       {list.length === 0 && (
-        <p className="rounded-2xl bg-white/[0.04] p-4 text-center text-sm text-muted">
+        <p className="rounded-2xl bg-black/[0.04] p-4 text-center text-sm text-muted">
           Nessun esercizio in questa categoria. Aggiungine uno.
         </p>
       )}
@@ -52,7 +52,7 @@ export default function Esercizi() {
             </div>
             <div className="space-y-2">
               {items.map((e) => (
-                <div key={e.id} className="rounded-2xl bg-surface2 ring-1 ring-white/[0.03]">
+                <div key={e.id} className="rounded-2xl bg-surface2 ring-1 ring-black/[0.03]">
                   <button
                     onClick={() => setOpen(open === e.id ? null : e.id)}
                     className="flex w-full items-center gap-2 px-3 py-3 text-left"
@@ -63,14 +63,14 @@ export default function Esercizi() {
                     )}
                   </button>
                   {open === e.id && (
-                    <div className="border-t border-white/[0.05] px-3 py-3">
+                    <div className="border-t border-black/[0.05] px-3 py-3">
                       {e.descrizione && (
                         <p className="text-sm leading-relaxed text-muted">{e.descrizione}</p>
                       )}
                       <div className="mt-3 flex gap-2">
                         <button
                           onClick={() => setEditing(e)}
-                          className="flex items-center gap-1.5 rounded-xl bg-white/[0.05] px-3 py-1.5 text-xs font-medium text-muted"
+                          className="flex items-center gap-1.5 rounded-xl bg-black/[0.05] px-3 py-1.5 text-xs font-medium text-muted"
                         >
                           <Icon.edit size={14} /> Modifica
                         </button>
@@ -133,7 +133,7 @@ function ExerciseCatalogEditor({
             value={nome}
             onChange={(e) => setNome(e.target.value)}
             placeholder="Es. Squat"
-            className="min-h-[46px] w-full rounded-2xl bg-surface2 px-4 outline-none ring-1 ring-white/[0.05] focus:ring-teal/30"
+            className="min-h-[46px] w-full rounded-2xl bg-surface2 px-4 outline-none ring-1 ring-black/[0.05] focus:ring-teal/30"
           />
         </Field>
         <Field label="Categoria">
@@ -144,7 +144,7 @@ function ExerciseCatalogEditor({
                 type="button"
                 onClick={() => setCategoria(c)}
                 className={`min-h-[36px] rounded-full px-3 text-xs font-medium tracking-wide transition ${
-                  categoria === c ? 'bg-teal text-[#1a1012]' : 'bg-white/[0.06] text-muted'
+                  categoria === c ? 'bg-teal text-[#f6f1e7]' : 'bg-black/[0.06] text-muted'
                 }`}
               >
                 {c}
@@ -165,7 +165,7 @@ function ExerciseCatalogEditor({
             onChange={(e) => setDescrizione(e.target.value)}
             rows={4}
             placeholder="Come si esegue l'esercizio…"
-            className="w-full resize-none rounded-2xl bg-surface2 px-4 py-3 text-sm leading-relaxed outline-none ring-1 ring-white/[0.05] focus:ring-teal/30"
+            className="w-full resize-none rounded-2xl bg-surface2 px-4 py-3 text-sm leading-relaxed outline-none ring-1 ring-black/[0.05] focus:ring-teal/30"
           />
         </Field>
         <Button className="w-full" onClick={save}>

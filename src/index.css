@@ -1,27 +1,27 @@
 @import 'tailwindcss';
 
 @theme {
-  /* ===== Palette — "Onyx & Perla" =====
-     Monocromatica elegante: nero profondo + bianco perla caldo, luminoso.
-     L'accento non è un colore ma la perla stessa. */
-  --color-bg: #070707; /* onice */
-  --color-surface: #131313; /* superficie */
-  --color-surface2: #1a1a1a; /* card in rilievo */
-  --color-ink: #e9e4da; /* perla calda (testo) */
-  --color-muted: #8f8a81; /* grigio caldo */
+  /* ===== Palette — "Perla & Onice" (chiara) =====
+     Onyx & Perla invertito: fondo perla chiaro e caldo + onice profondo.
+     L'accento non è un colore ma l'onice stesso. */
+  --color-bg: #efe8da; /* perla chiara */
+  --color-surface: #f6f1e7; /* superficie */
+  --color-surface2: #ffffff; /* card in rilievo (bianca) */
+  --color-ink: #1a1613; /* onice (testo) */
+  --color-muted: #867d70; /* grigio caldo */
 
   /* Accenti (nomi storici mantenuti per non toccare la logica) */
-  --color-viola: #f4f0e7; /* accento principale — perla brillante */
-  --color-arancio: #cbb48f; /* alert / surplus — champagne caldo */
-  --color-teal: #f4f0e7; /* accento — perla (anelli, pulsanti) */
+  --color-viola: #1a1613; /* accento principale — onice */
+  --color-arancio: #ad7a2e; /* alert / surplus — bronzo caldo */
+  --color-teal: #1a1613; /* accento — onice (anelli, pulsanti) */
   --color-magenta: #8a857c; /* grigio neutro */
-  --color-verde: #b6c6ba; /* ok / deficit — eucalipto tenue */
-  --color-blunotte: #1a1a1a; /* superficie scura in rilievo */
+  --color-verde: #5c8a5d; /* ok / deficit — eucalipto */
+  --color-blunotte: #e7dfce; /* superficie chiara in rilievo */
 
-  /* Macro (toni metallici distinti, coerenti col monocromatico) */
-  --color-prot: #ece6d9; /* perla */
-  --color-carb: #cbb48f; /* champagne */
-  --color-fat: #8f8a81; /* grigio */
+  /* Macro (toni caldi distinti, coerenti col monocromatico) */
+  --color-prot: #2a2420; /* onice */
+  --color-carb: #a9792f; /* bronzo */
+  --color-fat: #9a9185; /* grigio */
 
   /* Tipografia */
   --font-display: 'Manrope', ui-sans-serif, system-ui, sans-serif;
@@ -35,7 +35,7 @@
 }
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 html,
@@ -51,11 +51,11 @@ body {
   overscroll-behavior-y: none;
 }
 
-/* Sfondo onice con un tenue bagliore perla — luminoso ma silenzioso */
+/* Sfondo perla con un tenue velo onice — chiaro ma non piatto */
 body {
   background:
-    radial-gradient(1200px 680px at 88% -12%, rgba(244, 240, 231, 0.05), transparent 62%),
-    radial-gradient(1000px 800px at 50% 128%, rgba(244, 240, 231, 0.03), transparent 60%),
+    radial-gradient(1200px 680px at 88% -12%, rgba(26, 22, 19, 0.05), transparent 62%),
+    radial-gradient(1000px 800px at 50% 128%, rgba(26, 22, 19, 0.035), transparent 60%),
     var(--color-bg);
   background-attachment: fixed;
   min-height: 100dvh;
@@ -87,29 +87,29 @@ body {
 
 /* ===== Utility ===== */
 .text-gradient {
-  background: linear-gradient(110deg, #ffffff, #d8d3c8);
+  background: linear-gradient(110deg, #1a1613, #4a443c);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
-/* Glassmorphism leggerissimo */
+/* Glassmorphism leggerissimo (chiaro) */
 .glass {
-  background: rgba(12, 12, 12, 0.66);
+  background: rgba(246, 241, 231, 0.72);
   backdrop-filter: blur(20px) saturate(1.05);
   -webkit-backdrop-filter: blur(20px) saturate(1.05);
 }
 
-/* "Gradiente animato" reso quasi impercettibile: onice che respira */
+/* "Gradiente animato" reso quasi impercettibile: perla che respira */
 .animated-gradient {
-  background: linear-gradient(135deg, #141414, #1a1a1a, #201f1d, #191818, #121212);
+  background: linear-gradient(135deg, #f7f2e8, #efe8da, #f2ece0, #ece5d6, #f6f1e7);
   background-size: 260% 260%;
   animation: gradientShift 26s ease infinite;
 }
 
-/* Ombra molto tenue + alone perla */
+/* Ombra molto tenue + hairline onice */
 .glow-soft {
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(244, 240, 231, 0.08);
+  box-shadow: 0 20px 60px rgba(26, 22, 19, 0.14), 0 0 0 1px rgba(26, 22, 19, 0.06);
 }
 
 /* ===== Animazioni — micro, eleganti ===== */
@@ -202,14 +202,14 @@ body {
   }
 }
 .kanji-hero {
-  /* argento pieno con una lama di luce bianca che attraversa */
+  /* inchiostro sumi con una lama di luce più chiara che attraversa */
   background: linear-gradient(
     105deg,
-    #918c83 0%,
-    #b4afa5 34%,
-    #ffffff 50%,
-    #b4afa5 66%,
-    #918c83 100%
+    #2a2420 0%,
+    #443e37 34%,
+    #7a7064 50%,
+    #443e37 66%,
+    #2a2420 100%
   );
   background-size: 260% 100%;
   background-position: 200% 0;
@@ -222,14 +222,14 @@ body {
     kanjiShine 3.6s ease-in-out 1.2s infinite;
 }
 
-/* Bagliore perla che "respira" attorno ai tratti. */
+/* Alone onice che "respira" attorno ai tratti (depth su fondo chiaro). */
 @keyframes kanjiGlow {
   0%,
   100% {
-    filter: drop-shadow(0 0 14px rgba(244, 240, 231, 0.16));
+    filter: drop-shadow(0 2px 10px rgba(26, 22, 19, 0.14));
   }
   50% {
-    filter: drop-shadow(0 0 30px rgba(244, 240, 231, 0.4));
+    filter: drop-shadow(0 4px 22px rgba(26, 22, 19, 0.26));
   }
 }
 .kanji-glow {

@@ -55,16 +55,16 @@ export default function Passi() {
 
   return (
     <div className="space-y-4 pb-4">
-      <Card gradient="bg-gradient-to-br from-[#1c1c1c] to-[#121212] text-ink">
+      <Card gradient="bg-gradient-to-br from-[#ffffff] to-[#f3ede1] text-ink">
         <div className="flex items-center justify-between">
           <CardTitle>
-            <span className="text-white">Passi {year}</span>
+            <span className="text-ink">Passi {year}</span>
           </CardTitle>
           <div className="flex gap-1">
-            <button onClick={() => setYear((y) => y - 1)} className="h-8 w-8 rounded-full bg-white/15">
+            <button onClick={() => setYear((y) => y - 1)} className="h-8 w-8 rounded-full bg-black/15">
               ‹
             </button>
-            <button onClick={() => setYear((y) => y + 1)} className="h-8 w-8 rounded-full bg-white/15">
+            <button onClick={() => setYear((y) => y + 1)} className="h-8 w-8 rounded-full bg-black/15">
               ›
             </button>
           </div>
@@ -74,17 +74,17 @@ export default function Passi() {
         <div className="mt-3 h-40">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chart} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
-              <XAxis dataKey="m" tick={{ fill: '#ffffffcc', fontSize: 10 }} axisLine={false} tickLine={false} />
+              <XAxis dataKey="m" tick={{ fill: '#1a1613cc', fontSize: 10 }} axisLine={false} tickLine={false} />
               <Tooltip
-                cursor={{ fill: '#ffffff20' }}
-                contentStyle={{ borderRadius: 12, border: 'none', fontSize: 12, background: '#1e2128', color: '#eef1f3' }}
+                cursor={{ fill: '#1a161314' }}
+                contentStyle={{ borderRadius: 12, border: 'none', fontSize: 12, background: '#ffffff', color: '#1a1613' }}
                 formatter={(v) => [fmtSteps(Number(v)), 'media']}
               />
               <Bar dataKey="avg" radius={[6, 6, 0, 0]}>
                 {chart.map((r) => (
                   <Cell
                     key={r.i}
-                    fill={r.i === now.getMonth() && year === now.getFullYear() ? '#f4f0e7' : '#6f6a62'}
+                    fill={r.i === now.getMonth() && year === now.getFullYear() ? '#1a1613' : '#cbc2b3'}
                   />
                 ))}
               </Bar>
@@ -138,7 +138,7 @@ function MonthBody({
   const weeks = weeksOfMonth(year, month)
 
   return (
-    <div className="border-t border-white/[0.07] p-2">
+    <div className="border-t border-black/[0.07] p-2">
       {weeks.map((w, wi) => {
         // settimana sempre lun→dom; mostro solo i giorni entro il monitoraggio
         const keys = w.days.map(dateKey).filter((k) => k >= MONITOR_START && k <= oggi)
@@ -150,7 +150,7 @@ function MonthBody({
           <div key={wi} className="mb-1">
             <button
               onClick={() => setOpenWeek(open ? null : wi)}
-              className="flex w-full items-center justify-between rounded-xl bg-white/[0.05] px-3 py-2"
+              className="flex w-full items-center justify-between rounded-xl bg-black/[0.05] px-3 py-2"
             >
               <span className="text-sm">{rangeLabel(w.start, w.end)}</span>
               <span className="flex items-center gap-2 font-mono text-xs tabular">

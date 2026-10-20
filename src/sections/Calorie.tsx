@@ -176,7 +176,7 @@ export default function Calorie() {
             onChange={(kcalMin) => setGoals({ ...goals, kcalMin })}
           />
         </div>
-        <p className="mt-3 rounded-2xl bg-white/[0.05] px-3 py-2 text-xs text-muted">
+        <p className="mt-3 rounded-2xl bg-black/[0.05] px-3 py-2 text-xs text-muted">
           Traguardo calorie: tra <b>{goals.kcalMin}</b> e <b>{state.settings.targets.kcal}</b> kcal
           (massimo dal fabbisogno).
         </p>
@@ -205,9 +205,9 @@ function GoalRow({
   min?: number
 }) {
   return (
-    <div className="flex items-center justify-between rounded-2xl bg-white/[0.05] px-3 py-2">
+    <div className="flex items-center justify-between rounded-2xl bg-black/[0.05] px-3 py-2">
       <div className="flex items-center gap-2">
-        <span className={`flex h-8 w-8 items-center justify-center rounded-full ${color} text-[#141210]`}>
+        <span className={`flex h-8 w-8 items-center justify-center rounded-full ${color} text-[#f6f1e7]`}>
           {icon}
         </span>
         <span className="text-sm font-semibold">{label}</span>
@@ -219,7 +219,7 @@ function GoalRow({
 
 function Stat({ label, value, highlight }: { label: string; value: number; highlight?: boolean }) {
   return (
-    <div className={`rounded-2xl p-3 ${highlight ? 'bg-teal text-[#141210]' : 'bg-white/[0.06]'}`}>
+    <div className={`rounded-2xl p-3 ${highlight ? 'bg-teal text-[#f6f1e7]' : 'bg-black/[0.06]'}`}>
       <div className="text-xs font-semibold uppercase opacity-70">{label}</div>
       <div className="font-mono text-xl font-bold tabular">{value}</div>
     </div>
@@ -242,7 +242,7 @@ function MacroRow({
   onChange: (v: number) => void
 }) {
   return (
-    <div className="flex items-center justify-between rounded-2xl bg-white/[0.04] px-3 py-2">
+    <div className="flex items-center justify-between rounded-2xl bg-black/[0.04] px-3 py-2">
       <div className="flex items-center gap-2">
         <span className={`h-3 w-3 rounded-full ${color}`} />
         <div>

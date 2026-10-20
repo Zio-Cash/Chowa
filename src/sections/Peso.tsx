@@ -76,7 +76,7 @@ export default function Peso() {
           {serie.length > 1 ? (
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={serie} margin={{ top: 6, right: 8, left: -14, bottom: 0 }}>
-                <CartesianGrid stroke="#ffffff10" vertical={false} />
+                <CartesianGrid stroke="#1a161310" vertical={false} />
                 <XAxis
                   dataKey="label"
                   tick={{ fill: '#8b857d', fontSize: 10 }}
@@ -97,17 +97,17 @@ export default function Peso() {
                     borderRadius: 12,
                     border: 'none',
                     fontSize: 12,
-                    background: '#1b1b1b',
-                    color: '#f2efe9',
+                    background: '#ffffff',
+                    color: '#1a1613',
                   }}
                   formatter={(v) => [`${v} kg`, 'peso']}
                 />
                 <Line
                   type="monotone"
                   dataKey="kg"
-                  stroke="#f4f0e7"
+                  stroke="#1a1613"
                   strokeWidth={2}
-                  dot={{ r: 2.5, fill: "#f4f0e7", strokeWidth: 0 }}
+                  dot={{ r: 2.5, fill: "#1a1613", strokeWidth: 0 }}
                   activeDot={{ r: 4 }}
                 />
               </LineChart>
@@ -176,7 +176,7 @@ function MonthBody({
   const weeks = weeksOfMonth(year, month)
 
   return (
-    <div className="border-t border-white/[0.06] p-2">
+    <div className="border-t border-black/[0.06] p-2">
       {weeks.map((w, wi) => {
         // settimana sempre lun→dom; mostro solo i giorni entro il monitoraggio
         const keys = w.days.map(dateKey).filter((k) => k >= MONITOR_START && k <= oggi)
@@ -188,7 +188,7 @@ function MonthBody({
           <div key={wi} className="mb-1">
             <button
               onClick={() => setOpenWeek(open ? null : wi)}
-              className="flex w-full items-center justify-between rounded-xl bg-white/[0.05] px-3 py-2"
+              className="flex w-full items-center justify-between rounded-xl bg-black/[0.05] px-3 py-2"
             >
               <span className="text-sm">{rangeLabel(w.start, w.end)}</span>
               <span className="flex items-center gap-2 font-mono text-xs tabular">

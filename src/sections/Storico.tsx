@@ -69,14 +69,14 @@ export default function Storico() {
 
   return (
     <div className="space-y-4 pb-4">
-      <Card gradient="bg-gradient-to-br from-[#1c1c1c] to-[#121212] text-ink">
+      <Card gradient="bg-gradient-to-br from-[#ffffff] to-[#f3ede1] text-ink">
         <div className="flex items-center justify-between">
           <CardTitle>
             <span className="text-ink">{MESI[month]} {year}</span>
           </CardTitle>
           <div className="flex gap-1">
-            <button onClick={prev} disabled={atStart} className="h-8 w-8 rounded-full bg-white/15 disabled:opacity-25">‹</button>
-            <button onClick={next} disabled={atEnd} className="h-8 w-8 rounded-full bg-white/15 disabled:opacity-25">›</button>
+            <button onClick={prev} disabled={atStart} className="h-8 w-8 rounded-full bg-black/15 disabled:opacity-25">‹</button>
+            <button onClick={next} disabled={atEnd} className="h-8 w-8 rounded-full bg-black/15 disabled:opacity-25">›</button>
           </div>
         </div>
         <div className="mt-1 grid grid-cols-3 gap-2">
@@ -111,7 +111,7 @@ export default function Storico() {
             </div>
             <div className="mb-2 flex gap-2 font-mono text-xs tabular">
               {wStats.mediaKcal > 0 && (
-                <span className="rounded-full bg-white/[0.05] px-2 py-0.5 text-muted">
+                <span className="rounded-full bg-black/[0.05] px-2 py-0.5 text-muted">
                   media {wStats.mediaKcal} kcal
                 </span>
               )}
@@ -144,7 +144,7 @@ export default function Storico() {
 
 function Stat({ n, label }: { n: number | string; label: string }) {
   return (
-    <div className="rounded-2xl bg-white/15 px-2 py-2 text-center">
+    <div className="rounded-2xl bg-black/15 px-2 py-2 text-center">
       <div className="font-mono text-xl font-bold tabular">{n}</div>
       <div className="text-[10px] opacity-80">{label}</div>
     </div>
@@ -156,7 +156,7 @@ function DayRow({ d, open, onToggle }: { d: DaySummary; open: boolean; onToggle:
   const isToday = d.date === dateKey()
   const rating = dayRating(d.score)
   return (
-    <div className={`rounded-2xl ${d.perfetta ? 'bg-viola/10' : 'bg-white/[0.05]'}`}>
+    <div className={`rounded-2xl ${d.perfetta ? 'bg-viola/10' : 'bg-black/[0.05]'}`}>
       <button onClick={onToggle} className="flex w-full items-center gap-2 px-3 py-2">
         <span className="flex w-14 flex-col items-start leading-tight">
           <span className="font-mono text-sm font-bold tabular">
@@ -171,7 +171,7 @@ function DayRow({ d, open, onToggle }: { d: DaySummary; open: boolean; onToggle:
               <span
                 key={a.key}
                 className={`flex h-7 w-7 items-center justify-center rounded-full font-mono text-[11px] font-medium transition ${
-                  on ? 'bg-teal text-[#141210] shadow-sm' : 'bg-white/[0.05] text-muted/40'
+                  on ? 'bg-teal text-[#f6f1e7] shadow-sm' : 'bg-black/[0.05] text-muted/40'
                 }`}
               >
                 {a.emoji}
@@ -226,7 +226,7 @@ function DayDetail({ d }: { d: DaySummary }) {
     },
   ]
   return (
-    <div className="border-t border-white/[0.07] px-3 py-2">
+    <div className="border-t border-black/[0.07] px-3 py-2">
       {rows.map((r) => (
         <div key={r.label} className="flex items-center gap-2 py-1">
           <span className="w-5 text-center">{r.icon}</span>

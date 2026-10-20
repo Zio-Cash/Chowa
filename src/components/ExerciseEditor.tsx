@@ -22,7 +22,7 @@ export default function ExerciseEditor({
           <input
             value={d.nome}
             onChange={(e) => setD({ ...d, nome: e.target.value })}
-            className="min-h-[46px] w-full rounded-2xl bg-surface2 px-4 outline-none ring-1 ring-white/[0.05] focus:ring-teal/30"
+            className="min-h-[46px] w-full rounded-2xl bg-surface2 px-4 outline-none ring-1 ring-black/[0.05] focus:ring-teal/30"
           />
         </Field>
         <Field label="Tipo">
@@ -62,7 +62,7 @@ export default function ExerciseEditor({
             value={d.note ?? ''}
             onChange={(e) => setD({ ...d, note: e.target.value })}
             placeholder="es. per gamba, corpo libero…"
-            className="min-h-[46px] w-full rounded-2xl bg-surface2 px-4 outline-none ring-1 ring-white/[0.05] focus:ring-teal/30"
+            className="min-h-[46px] w-full rounded-2xl bg-surface2 px-4 outline-none ring-1 ring-black/[0.05] focus:ring-teal/30"
           />
         </Field>
         <Button className="w-full" onClick={() => onSave(d)}>

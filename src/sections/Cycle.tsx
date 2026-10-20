@@ -57,14 +57,14 @@ function CycleOrbit({ day, length, size = 132 }: { day: number; length: number; 
         </radialGradient>
       </defs>
       <circle cx={R} cy={R} r={orbit * 0.52} fill="url(#cycle-moon)" />
-      <circle cx={R} cy={R} r={orbit * 0.52} fill="none" stroke="#f4f0e7" strokeOpacity="0.18" />
+      <circle cx={R} cy={R} r={orbit * 0.52} fill="none" stroke="#1a1613" strokeOpacity="0.18" />
       {dots.map((d, i) => (
         <circle
           key={i}
           cx={d.cx}
           cy={d.cy}
           r={d.current ? 4 : 2}
-          fill={d.current ? '#ffffff' : d.passed ? '#d8d3c8' : '#3a3a37'}
+          fill={d.current ? '#1a1613' : d.passed ? '#6a6256' : '#d8d0c0'}
           opacity={d.passed ? 0.95 : 0.5}
         />
       ))}
@@ -134,7 +134,7 @@ function FaseView({ cur, onGoCalendar }: { cur: CurrentCycle | null; onGoCalenda
         <CardTitle>Impatto sull'allenamento</CardTitle>
         <div className="grid grid-cols-2 gap-2.5">
           {impatto.map((r) => (
-            <div key={r.label} className="rounded-2xl bg-white/[0.04] p-3">
+            <div key={r.label} className="rounded-2xl bg-black/[0.04] p-3">
               <div className="text-[11px] uppercase tracking-[0.12em] text-muted">{r.label}</div>
               <div className="mt-1 font-display text-lg tracking-tight text-teal">{r.value}</div>
             </div>
@@ -206,7 +206,7 @@ function CalendarView() {
           </div>
         </Card>
       ) : (
-        <p className="rounded-2xl bg-white/[0.04] p-4 text-center text-sm text-muted">
+        <p className="rounded-2xl bg-black/[0.04] p-4 text-center text-sm text-muted">
           Tocca un giorno del calendario (fino a oggi) per segnare l'inizio del ciclo.
         </p>
       )}
@@ -234,7 +234,7 @@ function CalendarView() {
             const n = parseKey(key).getDate()
             const cls =
               kind === 'period'
-                ? 'bg-teal text-[#1a1012]'
+                ? 'bg-teal text-[#f6f1e7]'
                 : kind === 'predicted'
                   ? 'text-teal ring-1 ring-teal/40'
                   : kind === 'ovulation'
@@ -246,7 +246,7 @@ function CalendarView() {
                 onClick={() => toggleStart(key)}
                 disabled={future}
                 className={`flex h-9 items-center justify-center rounded-xl font-mono text-sm tabular transition ${cls} ${
-                  isToday ? 'outline outline-1 outline-white/40' : ''
+                  isToday ? 'outline outline-1 outline-black/40' : ''
                 } ${future ? 'opacity-40' : 'active:scale-90'}`}
               >
                 {n}

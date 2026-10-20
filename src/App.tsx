@@ -28,7 +28,7 @@ const TABS: Tab[] = [
 function TopBar() {
   return (
     <header
-      className="glass sticky top-0 z-40 border-b border-white/[0.06]"
+      className="glass sticky top-0 z-40 border-b border-black/[0.06]"
       style={{ paddingTop: 'env(safe-area-inset-top)' }}
     >
       <div className="mx-auto flex max-w-[480px] items-center justify-between px-5 py-3">
@@ -44,7 +44,7 @@ function TopBar() {
 function TabBar({ view, setView }: { view: ViewId; setView: (v: ViewId) => void }) {
   return (
     <nav
-      className="glass fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.06]"
+      className="glass fixed inset-x-0 bottom-0 z-40 border-t border-black/[0.06]"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <div className="mx-auto flex max-w-[480px] items-stretch justify-around px-2">
@@ -71,7 +71,7 @@ function TabBar({ view, setView }: { view: ViewId; setView: (v: ViewId) => void 
 function SectionFallback() {
   return (
     <div className="flex min-h-[50dvh] items-center justify-center">
-      <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/10 border-t-teal" />
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-black/10 border-t-teal" />
     </div>
   )
 }

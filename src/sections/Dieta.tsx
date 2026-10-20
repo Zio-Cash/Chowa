@@ -81,7 +81,7 @@ export default function Dieta() {
       </div>
 
       {/* Striscia settimana (pianifica anche nel futuro) */}
-      <div className="flex items-center gap-1 rounded-2xl bg-surface px-1.5 py-1.5 ring-1 ring-white/[0.05]">
+      <div className="flex items-center gap-1 rounded-2xl bg-surface px-1.5 py-1.5 ring-1 ring-black/[0.05]">
         <button
           onClick={() => shiftWeek(-1)}
           className="h-9 w-7 shrink-0 rounded-full text-muted active:scale-90"
@@ -99,14 +99,14 @@ export default function Dieta() {
                 key={k}
                 onClick={() => setToday(k)}
                 className={`flex flex-col items-center rounded-xl py-1.5 transition ${
-                  sel ? 'bg-teal text-[#1a1012]' : k > oggi ? 'text-muted/60' : 'text-ink'
+                  sel ? 'bg-teal text-[#f6f1e7]' : k > oggi ? 'text-muted/60' : 'text-ink'
                 }`}
               >
                 <span className="text-[9px] uppercase tracking-wide opacity-70">{WD[i]}</span>
                 <span className="font-mono text-sm tabular">{d.getDate()}</span>
                 <span
                   className={`mt-0.5 h-1 w-1 rounded-full ${
-                    isOggi ? (sel ? 'bg-[#1a1012]' : 'bg-teal') : 'bg-transparent'
+                    isOggi ? (sel ? 'bg-[#f6f1e7]' : 'bg-teal') : 'bg-transparent'
                   }`}
                 />
               </button>
@@ -135,7 +135,7 @@ export default function Dieta() {
           <MacroTile color="bg-carb" label="Carbo" c={totals.carboidrati} t={targets.carboidrati} cp={consumedPct.c} tp={targetPct.c} />
           <MacroTile color="bg-fat" label="Grassi" c={totals.grassi} t={targets.grassi} cp={consumedPct.g} tp={targetPct.g} />
         </div>
-        <div className="mt-2 rounded-2xl bg-white/[0.04] px-3 py-2 text-center font-mono text-xs text-muted tabular">
+        <div className="mt-2 rounded-2xl bg-black/[0.04] px-3 py-2 text-center font-mono text-xs text-muted tabular">
           rapporto {consumedPct.p}/{consumedPct.c}/{consumedPct.g}% · obiettivo {targetPct.p}/{targetPct.c}/{targetPct.g}%
         </div>
       </Card>
@@ -150,7 +150,7 @@ export default function Dieta() {
                   onClick={() => !isFuture && toggleMeal(today, m.id)}
                   disabled={isFuture}
                   className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 transition disabled:opacity-30 ${
-                    m.spuntato ? 'border-verde bg-verde text-[#06231d]' : 'border-white/20 text-transparent'
+                    m.spuntato ? 'border-verde bg-verde text-[#06231d]' : 'border-black/20 text-transparent'
                   }`}
                 >
                   ✓
@@ -178,7 +178,7 @@ export default function Dieta() {
       <div className="flex justify-center pt-1">
         <button
           onClick={() => setShowActions(true)}
-          className="flex items-center gap-2 rounded-full bg-white/[0.04] px-4 py-2 text-sm text-muted transition active:scale-[0.98]"
+          className="flex items-center gap-2 rounded-full bg-black/[0.04] px-4 py-2 text-sm text-muted transition active:scale-[0.98]"
         >
           <Icon.dots size={16} /> Azioni
         </button>
@@ -237,7 +237,7 @@ function MealEditor({ date, mealId, onClose }: { date: string; mealId: string; o
         <input
           value={meal.nome}
           onChange={(e) => updateMeal(date, mealId, { nome: e.target.value })}
-          className="min-h-[44px] flex-1 rounded-2xl bg-surface2 px-4 outline-none ring-1 ring-white/[0.05]"
+          className="min-h-[44px] flex-1 rounded-2xl bg-surface2 px-4 outline-none ring-1 ring-black/[0.05]"
         />
         <button
           onClick={() => {
@@ -262,7 +262,7 @@ function MealEditor({ date, mealId, onClose }: { date: string; mealId: string; o
       </div>
       <div className="max-h-[184px] space-y-2 overflow-y-auto">
         {meal.items.length === 0 && (
-          <p className="rounded-2xl bg-white/[0.04] p-3 text-center text-sm text-muted">
+          <p className="rounded-2xl bg-black/[0.04] p-3 text-center text-sm text-muted">
             Nessun alimento. Tocca un cibo qui sotto per aggiungerlo.
           </p>
         )}
@@ -284,7 +284,7 @@ function MealEditor({ date, mealId, onClose }: { date: string; mealId: string; o
               />
               <button
                 onClick={() => removeItem(date, mealId, i)}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/[0.06] text-muted"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-black/[0.06] text-muted"
                 aria-label="Rimuovi"
               >
                 <Icon.close size={16} />
@@ -295,7 +295,7 @@ function MealEditor({ date, mealId, onClose }: { date: string; mealId: string; o
       </div>
 
       {/* Ricerca (fissa) */}
-      <div className="mt-4 flex items-center gap-2 rounded-2xl bg-surface2 px-4 ring-1 ring-white/[0.05] focus-within:ring-teal/30">
+      <div className="mt-4 flex items-center gap-2 rounded-2xl bg-surface2 px-4 ring-1 ring-black/[0.05] focus-within:ring-teal/30">
         <span className="text-muted">
           <Icon.search size={18} />
         </span>
@@ -320,7 +320,7 @@ function MealEditor({ date, mealId, onClose }: { date: string; mealId: string; o
             onClick={() => setCat(c)}
             className={`min-h-[34px] shrink-0 whitespace-nowrap rounded-full px-3 text-xs font-medium tracking-wide transition ${
               cat === c && !q.trim()
-                ? 'bg-teal text-[#1a1012]'
+                ? 'bg-teal text-[#f6f1e7]'
                 : c === 'Mix'
                   ? 'bg-teal/12 text-teal'
                   : 'bg-surface2 text-muted'
@@ -338,12 +338,12 @@ function MealEditor({ date, mealId, onClose }: { date: string; mealId: string; o
             <button
               onClick={saveAsMix}
               disabled={meal.items.length === 0}
-              className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-white/10 py-2 text-sm text-muted disabled:opacity-40"
+              className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-black/10 py-2 text-sm text-muted disabled:opacity-40"
             >
               <Icon.plus size={16} /> Salva questo pasto come mix
             </button>
             {state.mealPresets.length === 0 && (
-              <p className="rounded-2xl bg-white/[0.04] p-3 text-center text-sm text-muted">
+              <p className="rounded-2xl bg-black/[0.04] p-3 text-center text-sm text-muted">
                 Nessun mix salvato. Assembla un pasto e salvalo qui.
               </p>
             )}
@@ -376,7 +376,7 @@ function MealEditor({ date, mealId, onClose }: { date: string; mealId: string; o
         ) : (
           <>
         {quick.length === 0 && (
-          <p className="rounded-2xl bg-white/[0.04] p-3 text-center text-sm text-muted">
+          <p className="rounded-2xl bg-black/[0.04] p-3 text-center text-sm text-muted">
             Nessun alimento qui.
           </p>
         )}
@@ -494,7 +494,7 @@ function MacroTile({
 }) {
   const pct = t > 0 ? Math.min(100, Math.round((c / t) * 100)) : 0
   return (
-    <div className="rounded-2xl bg-white/[0.04] p-3">
+    <div className="rounded-2xl bg-black/[0.04] p-3">
       <div className="flex items-center gap-1.5">
         <span className={`h-2 w-2 rounded-full ${color}`} />
         <span className="text-xs font-medium tracking-wide">{label}</span>
@@ -506,7 +506,7 @@ function MacroTile({
       <div className="font-mono text-[10px] text-muted tabular">
         {cp}% <span className="opacity-60">/ {tp}%</span>
       </div>
-      <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white/[0.06]">
+      <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-black/[0.06]">
         <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
       </div>
     </div>
@@ -562,7 +562,7 @@ function MealStructureSheet({ open, onClose }: { open: boolean; onClose: () => v
             <input
               value={s.nome}
               onChange={(e) => rename(s.id, e.target.value)}
-              className="min-h-[42px] flex-1 rounded-xl bg-transparent px-2 text-sm outline-none focus:bg-white/[0.04]"
+              className="min-h-[42px] flex-1 rounded-xl bg-transparent px-2 text-sm outline-none focus:bg-black/[0.04]"
             />
             <button
               onClick={() => list.length > 1 && remove(s.id)}
@@ -658,7 +658,7 @@ function ShoppingListSheet({ open, onClose }: { open: boolean; onClose: () => vo
               key={o.v}
               onClick={() => setMode(o.v)}
               className={`min-h-[34px] flex-1 rounded-full px-2 text-xs font-medium tracking-wide transition ${
-                mode === o.v ? 'bg-teal text-[#1a1012]' : 'bg-surface2 text-muted'
+                mode === o.v ? 'bg-teal text-[#f6f1e7]' : 'bg-surface2 text-muted'
               }`}
             >
               {o.label}
@@ -674,7 +674,7 @@ function ShoppingListSheet({ open, onClose }: { open: boolean; onClose: () => vo
                 value={customStart}
                 max={customEnd}
                 onChange={(e) => setCustomStart(e.target.value)}
-                className="min-h-[42px] rounded-2xl bg-surface2 px-3 text-sm outline-none ring-1 ring-white/[0.05]"
+                className="min-h-[42px] rounded-2xl bg-surface2 px-3 text-sm outline-none ring-1 ring-black/[0.05]"
               />
             </label>
             <label className="flex flex-col gap-1">
@@ -684,7 +684,7 @@ function ShoppingListSheet({ open, onClose }: { open: boolean; onClose: () => vo
                 value={customEnd}
                 min={customStart}
                 onChange={(e) => setCustomEnd(e.target.value)}
-                className="min-h-[42px] rounded-2xl bg-surface2 px-3 text-sm outline-none ring-1 ring-white/[0.05]"
+                className="min-h-[42px] rounded-2xl bg-surface2 px-3 text-sm outline-none ring-1 ring-black/[0.05]"
               />
             </label>
           </div>
@@ -703,7 +703,7 @@ function ShoppingListSheet({ open, onClose }: { open: boolean; onClose: () => vo
 
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto">
         {total === 0 ? (
-          <p className="rounded-2xl bg-white/[0.04] p-4 text-center text-sm text-muted">
+          <p className="rounded-2xl bg-black/[0.04] p-4 text-center text-sm text-muted">
             Nessun pasto pianificato in questo periodo.
           </p>
         ) : (
@@ -726,7 +726,7 @@ function ShoppingListSheet({ open, onClose }: { open: boolean; onClose: () => vo
                       >
                         <span
                           className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition ${
-                            on ? 'border-teal bg-teal text-[#1a1012]' : 'border-white/25 text-transparent'
+                            on ? 'border-teal bg-teal text-[#f6f1e7]' : 'border-black/25 text-transparent'
                           }`}
                         >
                           <Icon.check size={13} />
@@ -817,7 +817,7 @@ function FoodDB({ open, onClose }: { open: boolean; onClose: () => void }) {
                 onChange={(e) => setDraft({ ...draft, nome: e.target.value })}
                 placeholder="Nome alimento"
                 autoFocus
-                className="min-h-[44px] w-full rounded-2xl bg-white/[0.06] px-3 font-semibold outline-none"
+                className="min-h-[44px] w-full rounded-2xl bg-black/[0.06] px-3 font-semibold outline-none"
               />
               <div className="grid grid-cols-3 gap-2">
                 <Field label="Prot/100">
@@ -846,7 +846,7 @@ function FoodDB({ open, onClose }: { open: boolean; onClose: () => void }) {
                       type="button"
                       onClick={() => setDraft({ ...draft, categoria: c })}
                       className={`min-h-[36px] rounded-full px-3 text-xs font-medium tracking-wide transition ${
-                        bucketOf(draft.categoria) === c ? 'bg-teal text-[#1a1012]' : 'bg-white/[0.06] text-muted'
+                        bucketOf(draft.categoria) === c ? 'bg-teal text-[#f6f1e7]' : 'bg-black/[0.06] text-muted'
                       }`}
                     >
                       {c}
@@ -891,7 +891,7 @@ function FoodDB({ open, onClose }: { open: boolean; onClose: () => void }) {
             <Button className="mb-3 w-full" onClick={openNew}>
               <Icon.plus size={18} /> Nuovo alimento
             </Button>
-            <div className="mb-2 flex items-center gap-2 rounded-2xl bg-surface px-4 ring-1 ring-white/[0.05] focus-within:ring-teal/30">
+            <div className="mb-2 flex items-center gap-2 rounded-2xl bg-surface px-4 ring-1 ring-black/[0.05] focus-within:ring-teal/30">
               <span className="text-muted">
                 <Icon.search size={18} />
               </span>

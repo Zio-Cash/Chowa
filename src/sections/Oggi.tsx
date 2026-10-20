@@ -103,7 +103,7 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
   return (
     <div className="space-y-5 pb-6">
       {/* Selettore giorno */}
-      <div className="flex items-center justify-between rounded-2xl bg-surface px-2 py-1.5 ring-1 ring-white/[0.05]">
+      <div className="flex items-center justify-between rounded-2xl bg-surface px-2 py-1.5 ring-1 ring-black/[0.05]">
         <button
           onClick={() => shiftDay(-1)}
           className="h-9 w-9 rounded-full text-lg text-muted transition active:scale-90"
@@ -148,7 +148,7 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
             <div className="mt-1 font-display text-4xl tabular">{state.gamification.streak}</div>
             <div className="mt-0.5 text-xs text-muted">giorni consecutivi</div>
           </div>
-          <Ring value={praticheDone} max={base.length} size={78} stroke={6} color="#f4f0e7">
+          <Ring value={praticheDone} max={base.length} size={78} stroke={6} color="#1a1613">
             <span className="font-display text-2xl tabular text-teal">
               {praticheDone}
               <span className="text-sm text-muted">/{base.length}</span>
@@ -200,7 +200,7 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
           <MacroTile color="bg-carb" label="Carbo" c={consumed.carboidrati} t={targets.carboidrati} cp={consumedPct.c} tp={targetPct.c} />
           <MacroTile color="bg-fat" label="Grassi" c={consumed.grassi} t={targets.grassi} cp={consumedPct.g} tp={targetPct.g} />
         </div>
-        <div className={`mt-3 rounded-2xl px-3 py-2 text-center font-mono text-xs tabular ${badges.macro ? 'bg-verde/10 text-verde' : 'bg-white/[0.04] text-muted'}`}>
+        <div className={`mt-3 rounded-2xl px-3 py-2 text-center font-mono text-xs tabular ${badges.macro ? 'bg-verde/10 text-verde' : 'bg-black/[0.04] text-muted'}`}>
           rapporto {consumedPct.p}/{consumedPct.c}/{consumedPct.g}% · obiettivo {targetPct.p}/{targetPct.c}/{targetPct.g}%
           {badges.macro && ' ·'}
         </div>
@@ -264,7 +264,7 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
       <Card>
         <CardTitle>Idratazione</CardTitle>
         <div className="flex items-center gap-5">
-          <Ring value={acqua} max={goals.waterTarget} size={110} stroke={11} color="#f4f0e7">
+          <Ring value={acqua} max={goals.waterTarget} size={110} stroke={11} color="#1a1613">
             <span className="font-mono text-base font-medium tabular">{fmtWater(acqua)}</span>
             <span className="text-[10px] text-muted">/ {fmtWater(goals.waterTarget)}</span>
           </Ring>
@@ -293,7 +293,7 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
           <NumberInput value={passi || ''} onChange={setPassi} suffix="passi" className="flex-1" placeholder="0" />
           <Button onClick={() => setSteps(today, passi)}>Registra</Button>
         </div>
-        <div className="mt-3 h-1 overflow-hidden rounded-full bg-white/[0.06]">
+        <div className="mt-3 h-1 overflow-hidden rounded-full bg-black/[0.06]">
           <div
             className="h-full rounded-full bg-teal/80 transition-all duration-500"
             style={{
@@ -320,7 +320,7 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
                 </span>
                 <span
                   className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] transition ${
-                    on ? 'bg-teal/15 text-teal ring-1 ring-teal/30' : 'bg-white/[0.04] text-transparent'
+                    on ? 'bg-teal/15 text-teal ring-1 ring-teal/30' : 'bg-black/[0.04] text-transparent'
                   }`}
                 >
                   ✓
@@ -351,7 +351,7 @@ function MacroTile({
 }) {
   const pct = t > 0 ? Math.min(100, Math.round((c / t) * 100)) : 0
   return (
-    <div className="rounded-2xl bg-white/[0.04] p-3">
+    <div className="rounded-2xl bg-black/[0.04] p-3">
       <div className="flex items-center gap-1.5">
         <span className={`h-2 w-2 rounded-full ${color}`} />
         <span className="text-xs font-medium tracking-wide">{label}</span>
@@ -363,7 +363,7 @@ function MacroTile({
       <div className="font-mono text-[10px] text-muted tabular">
         {cp}% <span className="opacity-60">/ {tp}%</span>
       </div>
-      <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white/[0.06]">
+      <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-black/[0.06]">
         <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
       </div>
     </div>

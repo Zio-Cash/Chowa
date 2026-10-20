@@ -16,7 +16,7 @@ function CodeBox({ code }: { code: string }) {
   }
   return (
     <div className="flex items-center gap-2">
-      <code className="min-w-0 flex-1 truncate rounded-2xl bg-white/[0.06] px-3 py-2.5 font-mono text-xs text-ink">
+      <code className="min-w-0 flex-1 truncate rounded-2xl bg-black/[0.06] px-3 py-2.5 font-mono text-xs text-ink">
         {code}
       </code>
       <Button variant="soft" onClick={copy} className="shrink-0 px-3">
@@ -90,7 +90,7 @@ export default function SyncSheet({ open, onClose }: { open: boolean; onClose: (
                   value={viewerCode}
                   onChange={(e) => setViewerCode(e.target.value)}
                   placeholder="Codice spettatore"
-                  className="min-h-[44px] min-w-0 flex-1 rounded-2xl bg-white/[0.06] px-3 font-mono text-xs outline-none"
+                  className="min-h-[44px] min-w-0 flex-1 rounded-2xl bg-black/[0.06] px-3 font-mono text-xs outline-none"
                 />
                 <Button onClick={onAddViewer} className="shrink-0 px-4">
                   Aggiungi
@@ -123,7 +123,7 @@ export default function SyncSheet({ open, onClose }: { open: boolean; onClose: (
                   value={ownerCode}
                   onChange={(e) => setOwnerCode(e.target.value)}
                   placeholder="Codice dell'altra persona"
-                  className="min-h-[44px] min-w-0 flex-1 rounded-2xl bg-white/[0.06] px-3 font-mono text-xs outline-none"
+                  className="min-h-[44px] min-w-0 flex-1 rounded-2xl bg-black/[0.06] px-3 font-mono text-xs outline-none"
                 />
                 <Button onClick={startViewing} className="shrink-0 px-4">
                   Guarda

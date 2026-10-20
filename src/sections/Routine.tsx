@@ -128,7 +128,7 @@ export default function Routine() {
   return (
     <div className="space-y-3 pb-4">
       {plan.length === 0 && (
-        <p className="rounded-2xl bg-white/[0.04] p-4 text-center text-sm text-muted">
+        <p className="rounded-2xl bg-black/[0.04] p-4 text-center text-sm text-muted">
           Nessun giorno. Crea il primo con “Aggiungi giorno”.
         </p>
       )}
@@ -141,7 +141,7 @@ export default function Routine() {
               <input
                 value={day.nome}
                 onChange={(e) => renameDay(day.id, e.target.value)}
-                className="min-w-0 flex-1 rounded-xl bg-transparent px-1 py-1 font-display text-base outline-none focus:bg-white/[0.04]"
+                className="min-w-0 flex-1 rounded-xl bg-transparent px-1 py-1 font-display text-base outline-none focus:bg-black/[0.04]"
               />
               <button
                 onClick={() => confirm(`Eliminare ${day.nome}?`) && deleteDay(day.id)}
@@ -167,7 +167,7 @@ export default function Routine() {
                       <input
                         value={b.nome}
                         onChange={(e) => renameBlock(day.id, b.id, e.target.value)}
-                        className="min-w-0 flex-1 rounded-lg bg-transparent px-1 text-[11px] font-medium uppercase tracking-[0.14em] text-muted outline-none focus:bg-white/[0.04]"
+                        className="min-w-0 flex-1 rounded-lg bg-transparent px-1 text-[11px] font-medium uppercase tracking-[0.14em] text-muted outline-none focus:bg-black/[0.04]"
                       />
                       <button
                         onClick={() => deleteBlock(day.id, b.id)}
@@ -190,7 +190,7 @@ export default function Routine() {
                           </div>
                           <button
                             onClick={() => setEditEx({ dayId: day.id, blockId: b.id, ex })}
-                            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/[0.06] text-muted"
+                            className="flex h-8 w-8 items-center justify-center rounded-full bg-black/[0.06] text-muted"
                             aria-label="Modifica"
                           >
                             <Icon.edit size={15} />
@@ -206,7 +206,7 @@ export default function Routine() {
                       ))}
                       <button
                         onClick={() => setPicker({ dayId: day.id, blockId: b.id })}
-                        className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-white/10 py-2 text-sm text-muted"
+                        className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-black/10 py-2 text-sm text-muted"
                       >
                         <Icon.plus size={16} /> Esercizio dal catalogo
                       </button>
@@ -283,7 +283,7 @@ function ImportDaySheet({
         onChange={(e) => setText(e.target.value)}
         rows={10}
         placeholder='{"nome":"Day 3","blocchi":[…]}'
-        className="w-full resize-none rounded-2xl bg-surface2 px-4 py-3 font-mono text-xs leading-relaxed outline-none ring-1 ring-white/[0.05] focus:ring-teal/30"
+        className="w-full resize-none rounded-2xl bg-surface2 px-4 py-3 font-mono text-xs leading-relaxed outline-none ring-1 ring-black/[0.05] focus:ring-teal/30"
       />
       <Button className="mt-3 w-full" onClick={doImport}>
         Importa
@@ -316,7 +316,7 @@ function CatalogPicker({
   return (
     <Sheet open onClose={onClose} title="Aggiungi dal catalogo">
       <div>
-        <div className="mb-2 flex items-center gap-2 rounded-2xl bg-surface2 px-4 ring-1 ring-white/[0.05] focus-within:ring-teal/30">
+        <div className="mb-2 flex items-center gap-2 rounded-2xl bg-surface2 px-4 ring-1 ring-black/[0.05] focus-within:ring-teal/30">
           <span className="text-muted">
             <Icon.search size={18} />
           </span>
@@ -334,7 +334,7 @@ function CatalogPicker({
                 key={c}
                 onClick={() => setCat(c)}
                 className={`min-h-[34px] shrink-0 whitespace-nowrap rounded-full px-3 text-xs font-medium tracking-wide transition ${
-                  c === cat ? 'bg-teal text-[#1a1012]' : 'bg-surface2 text-muted'
+                  c === cat ? 'bg-teal text-[#f6f1e7]' : 'bg-surface2 text-muted'
                 }`}
               >
                 {c}
@@ -346,7 +346,7 @@ function CatalogPicker({
 
       <div className="mt-2 h-72 space-y-1.5 overflow-y-auto">
         {list.length === 0 && (
-          <p className="rounded-2xl bg-white/[0.04] p-3 text-center text-sm text-muted">
+          <p className="rounded-2xl bg-black/[0.04] p-3 text-center text-sm text-muted">
             Nessun esercizio qui.
           </p>
         )}

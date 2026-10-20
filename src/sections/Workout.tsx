@@ -123,7 +123,7 @@ function Execution() {
   return (
     <>
       {/* Selettore data */}
-      <div className="flex items-center justify-between rounded-2xl bg-surface px-2 py-1.5 ring-1 ring-white/[0.05]">
+      <div className="flex items-center justify-between rounded-2xl bg-surface px-2 py-1.5 ring-1 ring-black/[0.05]">
         <button
           onClick={() => shiftDay(-1)}
           className="h-9 w-9 rounded-full text-lg text-muted transition active:scale-90"
@@ -150,7 +150,7 @@ function Execution() {
               key={d.id}
               onClick={() => setDayId(d.id)}
               className={`shrink-0 rounded-2xl px-3.5 py-2 text-sm font-medium tracking-wide transition ${
-                d.id === day.id ? 'bg-teal text-[#1a1012]' : 'bg-surface2 text-muted'
+                d.id === day.id ? 'bg-teal text-[#f6f1e7]' : 'bg-surface2 text-muted'
               }`}
             >
               {d.nome}
@@ -186,7 +186,7 @@ function Execution() {
                   />
                 ))}
                 {b.esercizi.length === 0 && (
-                  <p className="rounded-2xl bg-white/[0.04] px-3 py-2 text-xs text-muted">Blocco vuoto.</p>
+                  <p className="rounded-2xl bg-black/[0.04] px-3 py-2 text-xs text-muted">Blocco vuoto.</p>
                 )}
               </div>
             </div>
@@ -209,7 +209,7 @@ function Execution() {
           className="fixed inset-x-0 z-50 mx-auto max-w-[480px] px-3"
           style={{ bottom: 'calc(env(safe-area-inset-bottom) + 74px)' }}
         >
-          <div className="glass rounded-3xl bg-surface2/90 p-4 shadow-2xl ring-1 ring-white/[0.06]">
+          <div className="glass rounded-3xl bg-surface2/90 p-4 shadow-2xl ring-1 ring-black/[0.06]">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-[11px] uppercase tracking-[0.14em] text-muted">{timer.label}</div>
@@ -226,7 +226,7 @@ function Execution() {
                 </TBtn>
               </div>
             </div>
-            <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/[0.08]">
+            <div className="mt-2 h-1 overflow-hidden rounded-full bg-black/[0.08]">
               <div
                 className="h-full rounded-full bg-teal transition-all"
                 style={{ width: `${timer.total ? (timer.sec / timer.total) * 100 : 0}%` }}
@@ -243,7 +243,7 @@ function TBtn({ children, onClick }: { children: React.ReactNode; onClick: () =>
   return (
     <button
       onClick={onClick}
-      className="flex h-11 min-w-11 items-center justify-center rounded-2xl bg-white/[0.08] px-3 font-mono text-sm active:scale-90"
+      className="flex h-11 min-w-11 items-center justify-center rounded-2xl bg-black/[0.08] px-3 font-mono text-sm active:scale-90"
     >
       {children}
     </button>
@@ -270,7 +270,7 @@ function ExerciseRow({
   const schemeTxt = ex.tipo === 'reps' ? `${ex.serie}×${ex.reps}` : mmss(ex.durataSec ?? 0)
   const showLast = ex.tipo === 'reps' && last && (last.carico || last.done)
   return (
-    <div className="rounded-2xl bg-surface2 p-2.5 ring-1 ring-white/[0.03]">
+    <div className="rounded-2xl bg-surface2 p-2.5 ring-1 ring-black/[0.03]">
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="truncate text-sm">{ex.nome}</div>
@@ -302,7 +302,7 @@ function ExerciseRow({
                 key={i}
                 onClick={() => onToggleSet(i, !!done)}
                 className={`h-9 w-9 rounded-xl font-mono text-sm transition active:scale-90 ${
-                  done ? 'bg-verde text-[#14231c]' : 'bg-white/[0.06] text-ink'
+                  done ? 'bg-verde text-[#14231c]' : 'bg-black/[0.06] text-ink'
                 }`}
               >
                 {i + 1}

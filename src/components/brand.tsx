@@ -28,9 +28,9 @@ export function Enso({
     >
       <defs>
         <linearGradient id={grad} x1="15%" y1="0%" x2="85%" y2="100%">
-          <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="50%" stopColor="#e9e4da" />
-          <stop offset="100%" stopColor="#9a958c" />
+          <stop offset="0%" stopColor="#2a2420" />
+          <stop offset="50%" stopColor="#4a443c" />
+          <stop offset="100%" stopColor="#726a5e" />
         </linearGradient>
         {/* Bordo irregolare, effetto pennello */}
         <filter id={brush} x="-20%" y="-20%" width="140%" height="140%">

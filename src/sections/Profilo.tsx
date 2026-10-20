@@ -85,7 +85,7 @@ export default function Profilo() {
         </Card>
         <button
           onClick={signOut}
-          className="mt-4 w-full rounded-2xl bg-white/[0.05] py-3.5 text-sm font-medium tracking-wide text-muted transition active:scale-[0.99]"
+          className="mt-4 w-full rounded-2xl bg-black/[0.05] py-3.5 text-sm font-medium tracking-wide text-muted transition active:scale-[0.99]"
         >
           Esci
         </button>
@@ -123,15 +123,15 @@ export default function Profilo() {
             <img
               src={avatar}
               alt=""
-              className="h-16 w-16 rounded-full object-cover ring-1 ring-white/10"
+              className="h-16 w-16 rounded-full object-cover ring-1 ring-black/10"
               referrerPolicy="no-referrer"
             />
           ) : (
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-surface2 font-display text-2xl text-teal ring-1 ring-white/10">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-surface2 font-display text-2xl text-teal ring-1 ring-black/10">
               {nome.charAt(0).toUpperCase()}
             </div>
           )}
-          <span className="absolute -bottom-0.5 -right-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-teal text-[#1a1012] ring-2 ring-bg">
+          <span className="absolute -bottom-0.5 -right-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-teal text-[#f6f1e7] ring-2 ring-bg">
             <Icon.edit size={12} />
           </span>
         </button>
@@ -184,7 +184,7 @@ export default function Profilo() {
             key={s.id}
             onClick={() => setSub(s.id)}
             className={`flex w-full items-center justify-between rounded-2xl px-3 py-3.5 text-left transition active:scale-[0.99] ${
-              i > 0 ? 'border-t border-white/[0.05]' : ''
+              i > 0 ? 'border-t border-black/[0.05]' : ''
             }`}
           >
             <span>
@@ -247,7 +247,7 @@ function StatTile({
 }) {
   const tone = subTone === 'verde' ? 'text-verde' : subTone === 'arancio' ? 'text-arancio' : 'text-muted'
   return (
-    <div className="rounded-2xl bg-white/[0.04] p-3">
+    <div className="rounded-2xl bg-black/[0.04] p-3">
       <div className="text-[11px] uppercase tracking-[0.12em] text-muted">{label}</div>
       <div className="mt-1 truncate font-display text-lg tracking-tight">{value}</div>
       {sub && <div className={`font-mono text-[11px] tabular ${tone}`}>{sub}</div>}
@@ -318,9 +318,9 @@ function EditProfileSheet({
     <Sheet open={open} onClose={onClose} title="Modifica profilo">
       <div className="mb-4 flex items-center gap-4">
         {preview ? (
-          <img src={preview} alt="" className="h-20 w-20 rounded-full object-cover ring-1 ring-white/10" />
+          <img src={preview} alt="" className="h-20 w-20 rounded-full object-cover ring-1 ring-black/10" />
         ) : (
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-surface2 font-display text-3xl text-teal ring-1 ring-white/10">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-surface2 font-display text-3xl text-teal ring-1 ring-black/10">
             {(nome || googleName || 'P').charAt(0).toUpperCase()}
           </div>
         )}
@@ -341,7 +341,7 @@ function EditProfileSheet({
           value={nome}
           onChange={(e) => setNome(e.target.value)}
           placeholder={googleName || 'Il tuo nome'}
-          className="min-h-[46px] w-full rounded-2xl bg-surface2 px-4 outline-none ring-1 ring-white/[0.05] focus:ring-teal/30"
+          className="min-h-[46px] w-full rounded-2xl bg-surface2 px-4 outline-none ring-1 ring-black/[0.05] focus:ring-teal/30"
         />
       </Field>
       {googleName && (
@@ -406,7 +406,7 @@ function BackupSheet({
         Copie automatiche
       </div>
       {snaps.length === 0 ? (
-        <p className="rounded-2xl bg-white/[0.04] p-4 text-center text-sm text-muted">
+        <p className="rounded-2xl bg-black/[0.04] p-4 text-center text-sm text-muted">
           Nessuna copia ancora. Verrà creata automaticamente durante l'uso.
         </p>
       ) : (
@@ -449,7 +449,7 @@ function Row({
     <button
       onClick={onClick}
       className={`flex w-full items-center justify-between rounded-2xl px-3 py-3.5 text-left transition active:scale-[0.99] ${
-        border ? 'border-t border-white/[0.05]' : ''
+        border ? 'border-t border-black/[0.05]' : ''
       }`}
     >
       <span className={`text-sm font-medium tracking-wide ${color}`}>{label}</span>
