@@ -23,7 +23,7 @@ import type {
   SessionProgress,
   Targets,
 } from '../types'
-import { isYesterday } from '../lib/date'
+import { dateKey, isYesterday } from '../lib/date'
 import { XP } from '../lib/gamification'
 import { loadJSON, saveJSON, storageIsPersistent } from './storage'
 import { saveDailySnapshot } from './backup'
@@ -81,6 +81,7 @@ function mergeState(loaded: Partial<AppState> | null): AppState {
     mealPresets: asArr(l.mealPresets, base.mealPresets),
     mealDefault: asArr(l.mealDefault, base.mealDefault),
     reminders: asArr(l.reminders, base.reminders),
+    medals: asMap(l.medals, base.medals),
     // oggetti strutturati
     executionPlan: asMap(l.executionPlan, base.executionPlan),
     settings: {
@@ -159,6 +160,7 @@ interface StoreCtx {
   setGoals: (g: DailyGoals) => void
   setAccount: (patch: Partial<Account>) => void
   setReminders: (items: ReminderItem[]) => void
+  awardMedals: (ids: string[], date: string, initKey?: string) => void
   // foods
   addFood: (f: Omit<Food, 'id'>) => string
   updateFood: (id: string, patch: Partial<Food>) => void
@@ -379,6 +381,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const setReminders = useCallback((items: ReminderItem[]) => {
     setState((s) => ({ ...s, reminders: items }))
+  }, [])
+
+  // Registra medaglie conquistate. `date` vuota = conquistate prima che esistessero
+  // le medaglie (primo avvio: le assegna in silenzio, senza festeggiamenti).
+  const awardMedals = useCallback((ids: string[], date: string, initKey?: string) => {
+    setState((s) => {
+      const medals = { ...(s.medals ?? {}) }
+      for (const id of ids) if (!(id in medals)) medals[id] = date
+      if (initKey) medals[initKey] = dateKey()
+      return { ...s, medals }
+    })
   }, [])
 
   const addFood = useCallback((f: Omit<Food, 'id'>) => {
@@ -766,6 +779,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setGoals,
       setAccount,
       setReminders,
+      awardMedals,
       setSteps,
       setWater,
       addWater,
@@ -820,6 +834,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setGoals,
       setAccount,
       setReminders,
+      awardMedals,
       setSteps,
       setWater,
       addWater,

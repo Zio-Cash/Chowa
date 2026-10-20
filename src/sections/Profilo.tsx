@@ -2,32 +2,35 @@ import { useRef, useState } from 'react'
 import { useStore } from '../store/store'
 import { useAuth } from '../auth/AuthProvider'
 import { levelInfo } from '../lib/gamification'
-import { achievements } from '../lib/achievements'
 import RemindersCard from '../components/RemindersCard'
+import { MedalTeaser, MedalWall } from '../components/Medals'
 import { masteryLabel } from '../lib/dojo'
 import { dateKey, formatLong, parseKey } from '../lib/date'
 import { currentCycle } from '../lib/cycle'
 import { fmtSteps, fmtWater } from '../lib/goals'
 import { getSnapshot, listSnapshots } from '../store/backup'
-import { Button, Card, Field, Sheet } from '../components/ui'
+import { Button, Card, Field, Segmented, Sheet } from '../components/ui'
 import { Icon } from '../components/brand'
 import SyncSheet from '../auth/SyncSheet'
 import Progressi from './Progressi'
 import Storico from './Storico'
 import Calorie from './Calorie'
 
-type Sub = 'progressi' | 'storico' | 'obiettivi' | 'settings'
+type Tab = 'io' | 'progressi' | 'percorso' | 'medaglie'
+type Inner = 'equilibrio' | 'settings' | null
 
-const SUBS: { id: Sub; label: string; hint: string }[] = [
-  { id: 'progressi', label: 'Progressi', hint: 'Peso e movimento nel tempo' },
-  { id: 'storico', label: 'Percorso', hint: 'Il tuo diario, giorno per giorno' },
-  { id: 'obiettivi', label: 'Equilibrio', hint: 'Calorie e obiettivi giornalieri' },
+const TABS: { value: Tab; label: string }[] = [
+  { value: 'io', label: 'Io' },
+  { value: 'progressi', label: 'Progressi' },
+  { value: 'percorso', label: 'Percorso' },
+  { value: 'medaglie', label: 'Medaglie' },
 ]
 
 export default function Profilo() {
   const { state, exportData, importData, resetAll, setAccount } = useStore()
   const { user, signOut } = useAuth()
-  const [sub, setSub] = useState<Sub | null>(null)
+  const [tab, setTab] = useState<Tab>('io')
+  const [inner, setInner] = useState<Inner>(null)
   const [sync, setSync] = useState(false)
   const [backup, setBackup] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
@@ -66,11 +69,11 @@ export default function Profilo() {
     reader.readAsText(file)
   }
 
-  // ── Sotto-schermate ──
-  if (sub === 'settings') {
+  // ── Sotto-schermate (dalla scheda "Io") ──
+  if (inner === 'settings') {
     return (
       <div className="pb-6">
-        <BackHeader onBack={() => setSub(null)} title="Dati e impostazioni" />
+        <BackHeader onBack={() => setInner(null)} title="Dati e impostazioni" />
         <Card className="!p-2">
           <Row label="Sincronizzazione" tone="teal" onClick={() => setSync(true)} />
           <Row label="Backup e ripristino" onClick={() => setBackup(true)} border />
@@ -103,19 +106,15 @@ export default function Profilo() {
       </div>
     )
   }
-  if (sub) {
-    const titles: Record<string, string> = { progressi: 'Progressi', storico: 'Percorso', obiettivi: 'Equilibrio' }
+  if (inner === 'equilibrio') {
     return (
       <div className="pb-6">
-        <BackHeader onBack={() => setSub(null)} title={titles[sub]} />
-        {sub === 'progressi' && <Progressi />}
-        {sub === 'storico' && <Storico />}
-        {sub === 'obiettivi' && <Calorie />}
+        <BackHeader onBack={() => setInner(null)} title="Equilibrio" />
+        <Calorie />
       </div>
     )
   }
 
-  // ── Overview ──
   return (
     <div className="space-y-4 pb-6">
       {/* Identità */}
@@ -137,111 +136,80 @@ export default function Profilo() {
             <Icon.edit size={12} />
           </span>
         </button>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h1 className="truncate font-display text-2xl font-medium tracking-tight">{nome}</h1>
           <div className="mt-0.5 text-sm text-muted">
             {masteryLabel(lvl.livello)} · Livello {lvl.livello}
           </div>
+          <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-black/[0.07]">
+            <div className="h-full rounded-full bg-teal" style={{ width: `${Math.round(lvl.pct * 100)}%` }} />
+          </div>
         </div>
       </div>
 
-      {/* In sintesi */}
-      <Card>
-        <div className="mb-3 text-[11px] font-medium uppercase tracking-[0.14em] text-muted">In sintesi</div>
-        <div className="grid grid-cols-2 gap-2.5">
-          <StatTile
-            label="Peso"
-            value={pesoAttuale != null ? `${pesoAttuale} kg` : '—'}
-            sub={deltaPeso != null ? `${deltaPeso > 0 ? '+' : deltaPeso < 0 ? '−' : ''}${Math.abs(deltaPeso).toFixed(1)} kg` : undefined}
-            subTone={deltaPeso == null ? 'muted' : deltaPeso < 0 ? 'verde' : deltaPeso > 0 ? 'arancio' : 'muted'}
-          />
-          <StatTile label="Streak" value={`${state.gamification.streak}`} sub="giorni" />
-          <StatTile label="Livello" value={`${lvl.livello}`} sub={masteryLabel(lvl.livello)} />
-          {cur ? (
-            <StatTile label="Ciclo" value={cur.phase.nome} sub={`Giorno ${cur.day}`} />
-          ) : (
-            <StatTile label="XP" value={`${lvl.inLevel}`} sub={`/ ${lvl.soglia}`} />
-          )}
-        </div>
-      </Card>
+      <Segmented<Tab> options={TABS} value={tab} onChange={setTab} />
 
-      {/* Traguardi */}
-      <Card>
-        <div className="mb-2 flex items-center justify-between">
-          <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Traguardi</span>
-          <span className="text-xs text-muted">Livello {lvl.livello} · {masteryLabel(lvl.livello)}</span>
-        </div>
-        <div className="h-2 overflow-hidden rounded-full bg-black/[0.06]">
-          <div className="h-full rounded-full bg-teal" style={{ width: `${Math.round(lvl.pct * 100)}%` }} />
-        </div>
-        <div className="mt-1 text-[11px] text-muted">{lvl.inLevel} / {lvl.soglia} XP al livello {lvl.livello + 1}</div>
-        <div className="mt-3 grid grid-cols-5 gap-2">
-          {achievements(state).map((a) => {
-            const Ico = Icon[a.icon as keyof typeof Icon] ?? Icon.star
-            return (
-              <div
-                key={a.label}
-                title={`${a.label} · ${a.progress}`}
-                className={`flex flex-col items-center rounded-2xl py-2.5 ${a.done ? 'bg-teal/[0.08] text-teal' : 'bg-black/[0.03] text-muted/40'}`}
-              >
-                <Ico size={20} />
-                <span className={`mt-1 text-[8px] leading-tight text-center ${a.done ? 'text-ink' : 'text-muted'}`}>
-                  {a.label}
-                </span>
+      {tab === 'io' && (
+        <>
+          {/* In sintesi */}
+          <Card>
+            <div className="mb-3 text-[11px] font-medium uppercase tracking-[0.14em] text-muted">In sintesi</div>
+            <div className="grid grid-cols-2 gap-2.5">
+              <StatTile
+                label="Peso"
+                value={pesoAttuale != null ? `${pesoAttuale} kg` : '—'}
+                sub={deltaPeso != null ? `${deltaPeso > 0 ? '+' : deltaPeso < 0 ? '−' : ''}${Math.abs(deltaPeso).toFixed(1)} kg` : undefined}
+                subTone={deltaPeso == null ? 'muted' : deltaPeso < 0 ? 'verde' : deltaPeso > 0 ? 'arancio' : 'muted'}
+              />
+              <StatTile label="Streak" value={`${state.gamification.streak}`} sub="giorni" />
+              <StatTile label="Livello" value={`${lvl.livello}`} sub={`${lvl.inLevel} / ${lvl.soglia} XP`} />
+              {cur ? (
+                <StatTile label="Ciclo" value={cur.phase.nome} sub={`Giorno ${cur.day}`} />
+              ) : (
+                <StatTile label="Obiettivo" value={goals.pesoTarget ? `${goals.pesoTarget} kg` : '—'} sub="peso" />
+              )}
+            </div>
+          </Card>
+
+          {/* Equilibrio */}
+          <Card>
+            <button onClick={() => setInner('equilibrio')} className="w-full text-left">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Equilibrio</span>
+                <span className="text-xs text-teal">Apri →</span>
               </div>
-            )
-          })}
-        </div>
-      </Card>
+              <div className="space-y-1.5 text-sm">
+                <ObjRow label="Calorie" value={`${targets.kcal} kcal`} />
+                <ObjRow label="Macro" value={`P ${targets.proteine} · C ${targets.carboidrati} · G ${targets.grassi} g`} />
+                <ObjRow label="Passi" value={fmtSteps(goals.stepTarget)} />
+                <ObjRow label="Acqua" value={fmtWater(goals.waterTarget)} />
+              </div>
+              <p className="mt-2.5 text-xs text-muted">Calcolatore, calorie adattive e obiettivi giornalieri</p>
+            </button>
+          </Card>
 
-      <RemindersCard />
+          <MedalTeaser onOpen={() => setTab('medaglie')} />
 
-      {/* Obiettivi */}
-      <Card>
-        <div className="mb-2 flex items-center justify-between">
-          <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Obiettivi</span>
-          <button onClick={() => setSub('obiettivi')} className="text-xs text-teal">Modifica →</button>
-        </div>
-        <div className="space-y-1.5 text-sm">
-          <ObjRow label="Calorie" value={`${targets.kcal} kcal`} />
-          <ObjRow label="Macro" value={`P ${targets.proteine} · C ${targets.carboidrati} · G ${targets.grassi} g`} />
-          <ObjRow label="Passi" value={fmtSteps(goals.stepTarget)} />
-          <ObjRow label="Acqua" value={fmtWater(goals.waterTarget)} />
-        </div>
-      </Card>
+          <RemindersCard />
 
-      {/* Navigazione */}
-      <Card className="!p-2">
-        {SUBS.map((s, i) => (
-          <button
-            key={s.id}
-            onClick={() => setSub(s.id)}
-            className={`flex w-full items-center justify-between rounded-2xl px-3 py-3.5 text-left transition active:scale-[0.99] ${
-              i > 0 ? 'border-t border-black/[0.05]' : ''
-            }`}
-          >
-            <span>
-              <span className="block text-sm font-medium tracking-wide text-ink">{s.label}</span>
-              <span className="block text-xs text-muted">{s.hint}</span>
-            </span>
-            <span className="text-muted">›</span>
-          </button>
-        ))}
-      </Card>
-
-      {/* Dati e impostazioni */}
-      <Card className="!p-2">
-        <button
-          onClick={() => setSub('settings')}
-          className="flex w-full items-center justify-between rounded-2xl px-3 py-3.5 text-left transition active:scale-[0.99]"
-        >
-          <span>
-            <span className="block text-sm font-medium tracking-wide text-ink">Dati e impostazioni</span>
-            <span className="block text-xs text-muted">Sincronizzazione, backup, export e reset</span>
-          </span>
-          <span className="text-muted">›</span>
-        </button>
-      </Card>
+          {/* Dati e impostazioni */}
+          <Card className="!p-2">
+            <button
+              onClick={() => setInner('settings')}
+              className="flex w-full items-center justify-between rounded-2xl px-3 py-3.5 text-left transition active:scale-[0.99]"
+            >
+              <span>
+                <span className="block text-sm font-medium tracking-wide text-ink">Dati e impostazioni</span>
+                <span className="block text-xs text-muted">Sincronizzazione, backup, export e reset</span>
+              </span>
+              <span className="text-muted">›</span>
+            </button>
+          </Card>
+        </>
+      )}
+      {tab === 'progressi' && <Progressi />}
+      {tab === 'percorso' && <Storico />}
+      {tab === 'medaglie' && <MedalWall />}
 
       <EditProfileSheet
         open={editOpen}

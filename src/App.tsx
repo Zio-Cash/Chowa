@@ -7,6 +7,7 @@ import { Icon } from './components/brand'
 import type { ViewId } from './types'
 import { useWakeLock } from './lib/useWakeLock'
 import { useReminders } from './lib/useReminders'
+import { MedalWatcher } from './components/Medals'
 
 // Sezioni caricate on-demand: il primo avvio scarica solo la schermata attiva,
 // il resto (e le librerie pesanti come i grafici) arriva quando serve.
@@ -113,6 +114,7 @@ function Shell() {
         </Suspense>
       </main>
       <TabBar view={view} setView={setView} />
+      <MedalWatcher />
     </div>
   )
 }
