@@ -30,15 +30,23 @@ function isInAppBrowser(): boolean {
   return false
 }
 
+// Durata dell'intro della Welcome prima dell'apertura automatica.
+const ANIM_MS = 2600
+
 export default function LoginGate({ children }: { children: ReactNode }) {
   const { user, loading, signIn, authError } = useAuth()
-  // La schermata di benvenuto compare a ogni apertura: si entra solo al tocco.
   const [entered, setEntered] = useState(false)
-  // "busy" = ho toccato Entra e sto aspettando (auth o login). Mostra lo spinner.
   const [busy, setBusy] = useState(false)
   const intent = useRef(false)
 
-  // Login riuscito → entra automaticamente.
+  // Se sei già autenticata, dopo l'animazione l'app si apre DA SOLA (niente pulsante).
+  useEffect(() => {
+    if (entered || !user) return
+    const t = setTimeout(() => setEntered(true), ANIM_MS)
+    return () => clearTimeout(t)
+  }, [user, entered])
+
+  // Login riuscito (dopo un tocco quando non eri loggata) → entra.
   useEffect(() => {
     if (user && busy) {
       setBusy(false)
@@ -46,16 +54,16 @@ export default function LoginGate({ children }: { children: ReactNode }) {
     }
   }, [user, busy])
 
-  // Se ho toccato Entra mentre l'auth non era ancora risolta, completo appena si risolve.
+  // Tocco mentre l'auth non è ancora risolta → completa appena si risolve.
   useEffect(() => {
     if (!loading && intent.current) {
       intent.current = false
       if (user) setEntered(true)
-      else signIn() // resto "busy": al login riuscito entra l'effetto sopra
+      else signIn()
     }
   }, [loading, user, signIn])
 
-  // Login fallito o annullato → sblocco il pulsante.
+  // Login fallito o annullato → sblocco.
   useEffect(() => {
     if (authError) setBusy(false)
   }, [authError])
@@ -76,21 +84,28 @@ export default function LoginGate({ children }: { children: ReactNode }) {
   }
 
   if (!entered || !user) {
+    // Serve un tocco solo quando NON sei autenticata (Google richiede un gesto).
+    const needsSignIn = !loading && !user
     const handleEnter = () => {
-      setBusy(true)
-      if (loading) {
-        intent.current = true // aspetta che l'auth si risolva
+      if (user) {
+        setEntered(true)
         return
       }
-      if (user) {
-        setBusy(false)
-        setEntered(true)
-      } else {
-        signIn()
+      setBusy(true)
+      if (loading) {
+        intent.current = true
+        return
       }
+      signIn()
     }
     return (
-      <Welcome onEnter={handleEnter} busy={busy} inApp={isInAppBrowser()} authError={authError} />
+      <Welcome
+        onEnter={handleEnter}
+        busy={busy}
+        needsSignIn={needsSignIn}
+        inApp={isInAppBrowser()}
+        authError={authError}
+      />
     )
   }
 
