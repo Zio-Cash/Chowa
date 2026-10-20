@@ -176,18 +176,21 @@ export default function Profilo() {
         </div>
         <div className="mt-1 text-[11px] text-muted">{lvl.inLevel} / {lvl.soglia} XP al livello {lvl.livello + 1}</div>
         <div className="mt-3 grid grid-cols-5 gap-2">
-          {achievements(state).map((a) => (
-            <div
-              key={a.label}
-              title={`${a.label} · ${a.progress}`}
-              className={`flex flex-col items-center rounded-2xl py-2 ${a.done ? 'bg-teal/[0.1]' : 'bg-black/[0.03]'}`}
-            >
-              <span className={`text-xl ${a.done ? '' : 'opacity-30 grayscale'}`}>{a.emoji}</span>
-              <span className={`mt-0.5 text-[8px] leading-tight text-center ${a.done ? 'text-ink' : 'text-muted'}`}>
-                {a.label}
-              </span>
-            </div>
-          ))}
+          {achievements(state).map((a) => {
+            const Ico = Icon[a.icon as keyof typeof Icon] ?? Icon.star
+            return (
+              <div
+                key={a.label}
+                title={`${a.label} · ${a.progress}`}
+                className={`flex flex-col items-center rounded-2xl py-2.5 ${a.done ? 'bg-teal/[0.08] text-teal' : 'bg-black/[0.03] text-muted/40'}`}
+              >
+                <Ico size={20} />
+                <span className={`mt-1 text-[8px] leading-tight text-center ${a.done ? 'text-ink' : 'text-muted'}`}>
+                  {a.label}
+                </span>
+              </div>
+            )
+          })}
         </div>
       </Card>
 

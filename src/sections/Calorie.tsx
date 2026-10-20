@@ -10,6 +10,7 @@ import {
 import type { Activity, CalorieProfile, Goal, Sex } from '../types'
 import { Button, Card, CardTitle, Field, NumberInput, Segmented, Stepper } from '../components/ui'
 import { MacroDonut } from '../components/charts'
+import { Icon } from '../components/brand'
 import { macroPct } from '../lib/nutrition'
 import { weightTrend } from '../lib/weight'
 import { dateKey } from '../lib/date'
@@ -153,7 +154,7 @@ export default function Calorie() {
         <div className="space-y-2">
           <GoalRow
             color="bg-magenta"
-            icon="👟"
+            icon="steps"
             label="Passi"
             value={goals.stepTarget}
             step={500}
@@ -163,7 +164,7 @@ export default function Calorie() {
           />
           <GoalRow
             color="bg-teal"
-            icon="💧"
+            icon="drop"
             label="Acqua"
             value={goals.waterTarget}
             step={250}
@@ -173,7 +174,7 @@ export default function Calorie() {
           />
           <GoalRow
             color="bg-arancio"
-            icon="🔥"
+            icon="flame"
             label="Kcal minime"
             value={goals.kcalMin}
             step={50}
@@ -201,7 +202,7 @@ function GoalRow({
   min,
 }: {
   color: string
-  icon: string
+  icon: keyof typeof Icon
   label: string
   value: number
   step: number
@@ -209,11 +210,12 @@ function GoalRow({
   onChange: (v: number) => void
   min?: number
 }) {
+  const Ico = Icon[icon]
   return (
     <div className="flex items-center justify-between rounded-2xl bg-black/[0.05] px-3 py-2">
       <div className="flex items-center gap-2">
         <span className={`flex h-8 w-8 items-center justify-center rounded-full ${color} text-[#faf7f1]`}>
-          {icon}
+          <Ico size={16} />
         </span>
         <span className="text-sm font-semibold">{label}</span>
       </div>
@@ -294,7 +296,7 @@ function AdaptiveCard({ state, onApply }: { state: AppState; onApply: (t: Target
 
   return (
     <Card>
-      <CardTitle icon="🤖">Calorie adattive</CardTitle>
+      <CardTitle>Calorie adattive</CardTitle>
       <p className="-mt-2 text-sm leading-relaxed text-ink/85">{msg}</p>
       {delta !== 0 && (
         <div className="mt-3 flex items-center justify-between rounded-2xl bg-black/[0.04] px-3 py-2 text-sm">

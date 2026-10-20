@@ -13,7 +13,7 @@ export function Card({
 }) {
   return (
     <div
-      className={`rounded-[var(--radius-card)] p-5 shadow-[0_16px_50px_-20px_rgba(0,0,0,0.7)] ${
+      className={`rounded-[var(--radius-card)] p-5 shadow-[0_4px_16px_-12px_rgba(33,29,25,0.12)] ${
         gradient ?? 'bg-surface2 ring-1 ring-black/[0.04]'
       } ${className}`}
     >

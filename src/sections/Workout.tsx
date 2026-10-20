@@ -343,7 +343,7 @@ function PRCard() {
   if (list.length === 0) return null
   return (
     <Card>
-      <CardTitle icon="🏅">Record personali</CardTitle>
+      <CardTitle>Record personali</CardTitle>
       <div className="space-y-1.5">
         {list.map(([nome, carico]) => (
           <div key={nome} className="flex items-center justify-between rounded-2xl bg-black/[0.04] px-3 py-2">

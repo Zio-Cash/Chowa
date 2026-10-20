@@ -265,7 +265,7 @@ function GoalCard({
   if (editing || target <= 0) {
     return (
       <Card>
-        <CardTitle icon="🎯">Obiettivo peso</CardTitle>
+        <CardTitle>Obiettivo peso</CardTitle>
         <p className="-mt-2 mb-3 text-xs text-muted">
           Imposta il peso che vuoi raggiungere: vedrai la proiezione al ritmo attuale.
         </p>
@@ -297,7 +297,7 @@ function GoalCard({
   return (
     <Card>
       <div className="flex items-center justify-between">
-        <CardTitle icon="🎯">Obiettivo peso</CardTitle>
+        <CardTitle>Obiettivo peso</CardTitle>
         <button
           onClick={() => {
             setDraft(target)
@@ -323,7 +323,7 @@ function GoalCard({
       <div className="mt-3 text-sm">
         {proj ? (
           proj.weeksToGo <= 0 ? (
-            <span className="font-medium text-verde">Obiettivo raggiunto! 🎉</span>
+            <span className="font-medium text-verde">Obiettivo raggiunto</span>
           ) : (
             <span className="text-ink">
               Al ritmo attuale ({proj.perWeek < 0 ? '−' : '+'}

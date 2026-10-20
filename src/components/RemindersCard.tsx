@@ -1,6 +1,15 @@
 import { useState } from 'react'
 import { useStore } from '../store/store'
 import { Card, CardTitle } from './ui'
+import { Icon } from './brand'
+
+const REMINDER_ICON: Record<string, keyof typeof Icon> = {
+  pesata: 'weight',
+  acqua: 'drop',
+  pranzo: 'bowl',
+  cena: 'bowl',
+  workout: 'practice',
+}
 
 export default function RemindersCard() {
   const { state, setReminders } = useStore()
@@ -32,11 +41,16 @@ export default function RemindersCard() {
 
   return (
     <Card>
-      <CardTitle icon="🔔">Promemoria</CardTitle>
+      <CardTitle>Promemoria</CardTitle>
       <div className="space-y-2">
         {reminders.map((r) => (
           <div key={r.id} className="flex items-center gap-3 rounded-2xl bg-black/[0.04] px-3 py-2">
-            <span className="text-lg">{r.emoji}</span>
+            <span className="text-muted">
+              {(() => {
+                const Ico = Icon[REMINDER_ICON[r.id] ?? 'check']
+                return <Ico size={18} />
+              })()}
+            </span>
             <span className="flex-1 text-sm">{r.label}</span>
             <input
               type="time"

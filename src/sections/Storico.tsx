@@ -4,6 +4,7 @@ import { dateKey, MONITOR_START, parseKey, rangeLabel, weekMonthOf } from '../li
 import { fmtSteps, fmtWater } from '../lib/goals'
 import { dayRating, periodStats, weeksForMonth, type DaySummary } from '../lib/history'
 import { weeklyCoach } from '../lib/coach'
+import { Icon } from '../components/brand'
 import { Card, CardTitle } from '../components/ui'
 
 const MESI = [
@@ -74,7 +75,7 @@ export default function Storico() {
     <div className="space-y-4 pb-4">
       {coach.messages.length > 0 && (
         <Card>
-          <CardTitle icon="🧭">Coach della settimana</CardTitle>
+          <CardTitle>Coach della settimana</CardTitle>
           <div className="space-y-2.5">
             {coach.messages.map((m, i) => (
               <div key={i} className="flex items-start gap-2.5 text-sm leading-snug">
@@ -215,32 +216,32 @@ function DayRow({ d, open, onToggle }: { d: DaySummary; open: boolean; onToggle:
 function DayDetail({ d }: { d: DaySummary }) {
   const { state } = useStore()
   const g = state.settings.goals
-  const rows: { icon: string; label: string; value: string; ok?: boolean }[] = [
-    { icon: '⚖️', label: 'Peso', value: d.weight != null ? `${d.weight} kg` : 'non registrato', ok: d.weight != null },
+  const rows: { icon: keyof typeof Icon; label: string; value: string; ok?: boolean }[] = [
+    { icon: 'weight', label: 'Peso', value: d.weight != null ? `${d.weight} kg` : 'non registrato', ok: d.weight != null },
     {
-      icon: '🔥',
+      icon: 'bowl',
       label: 'Calorie',
       value: d.mealsTotal ? `${Math.round(d.dietKcal)} kcal` : 'nessun pasto',
       ok: d.kcalOk,
     },
     {
-      icon: '🏋️',
+      icon: 'practice',
       label: 'Allenamento',
       value: d.workoutDone
-        ? `${d.workoutEmoji ?? ''} ${d.workoutNome ?? 'Sessione'}${d.workoutSetsTotal ? ` · ${d.workoutSetsDone}/${d.workoutSetsTotal} serie` : ''}`
+        ? `${d.workoutNome ?? 'Sessione'}${d.workoutSetsTotal ? ` · ${d.workoutSetsDone}/${d.workoutSetsTotal} serie` : ''}`
         : 'riposo',
       ok: d.workoutDone,
     },
-    { icon: '💧', label: 'Acqua', value: `${fmtWater(d.water)} / ${fmtWater(g.waterTarget)}`, ok: d.waterOk },
-    { icon: '👟', label: 'Passi', value: `${fmtSteps(d.steps)} / ${fmtSteps(g.stepTarget)}`, ok: d.stepsOk },
+    { icon: 'drop', label: 'Acqua', value: `${fmtWater(d.water)} / ${fmtWater(g.waterTarget)}`, ok: d.waterOk },
+    { icon: 'steps', label: 'Passi', value: `${fmtSteps(d.steps)} / ${fmtSteps(g.stepTarget)}`, ok: d.stepsOk },
     {
-      icon: '⚡',
+      icon: 'flame',
       label: 'Attive bruciate',
       value: d.activeKcal > 0 ? `${d.activeKcal} kcal` : 'non registrate',
       ok: d.activeKcal > 0,
     },
     {
-      icon: '∆',
+      icon: 'progress',
       label: 'Deficit',
       value: d.dietKcal > 0 ? `${fmtDeficit(d.deficit)} kcal` : 'nessun pasto',
       ok: d.dietKcal > 0 && d.deficit < 0,
@@ -250,7 +251,7 @@ function DayDetail({ d }: { d: DaySummary }) {
     <div className="border-t border-black/[0.07] px-3 py-2">
       {rows.map((r) => (
         <div key={r.label} className="flex items-center gap-2 py-1">
-          <span className="w-5 text-center">{r.icon}</span>
+          <span className="flex w-5 justify-center text-muted">{(() => { const Ico = Icon[r.icon]; return <Ico size={15} /> })()}</span>
           <span className="w-24 text-xs font-semibold text-muted">{r.label}</span>
           <span className={`flex-1 text-right font-mono text-xs tabular ${r.ok ? 'text-verde' : 'text-ink'}`}>
             {r.value}

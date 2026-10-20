@@ -99,7 +99,7 @@ function Shell() {
       {!persistent && (
         <div className="mx-auto max-w-[480px] px-4 pt-3">
           <div className="rounded-2xl bg-amber-100 px-4 py-2 text-sm text-amber-800">
-            ⚠️ Memoria del browser non disponibile: i dati non verranno salvati tra le sessioni.
+            Memoria del browser non disponibile: i dati non verranno salvati tra le sessioni.
           </div>
         </div>
       )}

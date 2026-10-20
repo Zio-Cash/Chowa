@@ -2,7 +2,7 @@ import type { AppState } from '../types'
 import { levelInfo } from './gamification'
 
 export interface Achievement {
-  emoji: string
+  icon: string // chiave in Icon (brand.tsx)
   label: string
   done: boolean
   progress: string // es. "7/30"
@@ -25,23 +25,23 @@ export function achievements(state: AppState): Achievement[] {
     .map(([, v]) => v)
   const persi = pesi.length >= 2 ? Math.max(0, pesi[0] - pesi[pesi.length - 1]) : 0
 
-  const milestone = (emoji: string, label: string, val: number, goal: number): Achievement => ({
-    emoji,
+  const m = (icon: string, label: string, val: number, goal: number): Achievement => ({
+    icon,
     label,
     done: val >= goal,
     progress: `${Math.min(val, goal)}/${goal}`,
   })
 
   return [
-    milestone('🔥', 'Costanza', streak, 7),
-    milestone('⚡', 'Inarrestabile', streak, 30),
-    milestone('🏋️', 'Guerriera', allenamenti, 10),
-    milestone('💪', 'Veterana', allenamenti, 50),
-    milestone('🏆', 'Giornata perfetta', perfette, 1),
-    milestone('👑', 'Dieci volte perfetta', perfette, 10),
-    milestone('⚖️', 'Monitoraggio', pesate, 10),
-    { emoji: '📉', label: '−2 kg', done: persi >= 2, progress: `${persi.toFixed(1)}/2` },
-    { emoji: '🎯', label: '−5 kg', done: persi >= 5, progress: `${persi.toFixed(1)}/5` },
-    milestone('🌟', 'Livello 5', lvl, 5),
+    m('flame', 'Costanza', streak, 7),
+    m('flame', 'Inarrestabile', streak, 30),
+    m('practice', 'Guerriera', allenamenti, 10),
+    m('practice', 'Veterana', allenamenti, 50),
+    m('star', 'Perfetta', perfette, 1),
+    m('star', 'Dieci volte', perfette, 10),
+    m('weight', 'Monitoraggio', pesate, 10),
+    { icon: 'progress', label: '−2 kg', done: persi >= 2, progress: `${persi.toFixed(1)}/2` },
+    { icon: 'progress', label: '−5 kg', done: persi >= 5, progress: `${persi.toFixed(1)}/5` },
+    m('star', 'Livello 5', lvl, 5),
   ]
 }
