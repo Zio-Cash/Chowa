@@ -57,14 +57,14 @@ function CycleOrbit({ day, length, size = 132 }: { day: number; length: number; 
         </radialGradient>
       </defs>
       <circle cx={R} cy={R} r={orbit * 0.52} fill="url(#cycle-moon)" />
-      <circle cx={R} cy={R} r={orbit * 0.52} fill="none" stroke="#1a1613" strokeOpacity="0.18" />
+      <circle cx={R} cy={R} r={orbit * 0.52} fill="none" stroke="#18181b" strokeOpacity="0.18" />
       {dots.map((d, i) => (
         <circle
           key={i}
           cx={d.cx}
           cy={d.cy}
           r={d.current ? 4 : 2}
-          fill={d.current ? '#1a1613' : d.passed ? '#6a6256' : '#d8d0c0'}
+          fill={d.current ? '#18181b' : d.passed ? '#5a5a5e' : '#d4d4d6'}
           opacity={d.passed ? 0.95 : 0.5}
         />
       ))}
@@ -234,7 +234,7 @@ function CalendarView() {
             const n = parseKey(key).getDate()
             const cls =
               kind === 'period'
-                ? 'bg-teal text-[#f6f1e7]'
+                ? 'bg-teal text-[#fafafa]'
                 : kind === 'predicted'
                   ? 'text-teal ring-1 ring-teal/40'
                   : kind === 'ovulation'

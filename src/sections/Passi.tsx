@@ -55,7 +55,7 @@ export default function Passi() {
 
   return (
     <div className="space-y-4 pb-4">
-      <Card gradient="bg-gradient-to-br from-[#ffffff] to-[#f3ede1] text-ink">
+      <Card gradient="bg-gradient-to-br from-[#ffffff] to-[#f0f0ef] text-ink">
         <div className="flex items-center justify-between">
           <CardTitle>
             <span className="text-ink">Passi {year}</span>
@@ -74,17 +74,17 @@ export default function Passi() {
         <div className="mt-3 h-40">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chart} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
-              <XAxis dataKey="m" tick={{ fill: '#1a1613cc', fontSize: 10 }} axisLine={false} tickLine={false} />
+              <XAxis dataKey="m" tick={{ fill: '#18181bcc', fontSize: 10 }} axisLine={false} tickLine={false} />
               <Tooltip
-                cursor={{ fill: '#1a161314' }}
-                contentStyle={{ borderRadius: 12, border: 'none', fontSize: 12, background: '#ffffff', color: '#1a1613' }}
+                cursor={{ fill: '#18181b14' }}
+                contentStyle={{ borderRadius: 12, border: 'none', fontSize: 12, background: '#ffffff', color: '#18181b' }}
                 formatter={(v) => [fmtSteps(Number(v)), 'media']}
               />
               <Bar dataKey="avg" radius={[6, 6, 0, 0]}>
                 {chart.map((r) => (
                   <Cell
                     key={r.i}
-                    fill={r.i === now.getMonth() && year === now.getFullYear() ? '#1a1613' : '#cbc2b3'}
+                    fill={r.i === now.getMonth() && year === now.getFullYear() ? '#18181b' : '#cfcfd2'}
                   />
                 ))}
               </Bar>

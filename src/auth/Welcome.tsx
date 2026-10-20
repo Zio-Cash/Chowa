@@ -25,7 +25,7 @@ export default function Welcome({
           className="kanji-aura pointer-events-none absolute inset-x-0 top-[30%] mx-auto h-[60vh] max-h-[520px] w-[80%]"
           style={{
             background:
-              'radial-gradient(closest-side, rgba(26, 22, 19,0.10), rgba(26, 22, 19,0.03) 55%, transparent 72%)',
+              'radial-gradient(closest-side, rgba(24, 24, 27,0.10), rgba(24, 24, 27,0.03) 55%, transparent 72%)',
           }}
         />
 
@@ -91,11 +91,11 @@ export default function Welcome({
           <button
             onClick={onEnter}
             disabled={busy}
-            className="animate-fade-up flex w-full items-center justify-center gap-2.5 rounded-2xl bg-teal/90 py-3.5 text-[13px] font-medium uppercase tracking-[0.24em] text-[#f6f1e7] shadow-[0_10px_26px_-18px_rgba(26, 22, 19,0.45)] transition active:scale-[0.98] disabled:opacity-80"
+            className="animate-fade-up flex w-full items-center justify-center gap-2.5 rounded-2xl bg-teal/90 py-3.5 text-[13px] font-medium uppercase tracking-[0.24em] text-[#fafafa] shadow-[0_10px_26px_-18px_rgba(24, 24, 27,0.45)] transition active:scale-[0.98] disabled:opacity-80"
             style={rise(1.3)}
           >
             {busy && (
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#f6f1e7]/30 border-t-[#f6f1e7]" />
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#fafafa]/30 border-t-[#fafafa]" />
             )}
             {busy ? 'Attendi…' : 'Enter your dojo'}
           </button>

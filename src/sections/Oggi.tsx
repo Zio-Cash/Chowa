@@ -148,7 +148,7 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
             <div className="mt-1 font-display text-4xl tabular">{state.gamification.streak}</div>
             <div className="mt-0.5 text-xs text-muted">giorni consecutivi</div>
           </div>
-          <Ring value={praticheDone} max={base.length} size={78} stroke={6} color="#1a1613">
+          <Ring value={praticheDone} max={base.length} size={78} stroke={6} color="#18181b">
             <span className="font-display text-2xl tabular text-teal">
               {praticheDone}
               <span className="text-sm text-muted">/{base.length}</span>
@@ -264,7 +264,7 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
       <Card>
         <CardTitle>Idratazione</CardTitle>
         <div className="flex items-center gap-5">
-          <Ring value={acqua} max={goals.waterTarget} size={110} stroke={11} color="#1a1613">
+          <Ring value={acqua} max={goals.waterTarget} size={110} stroke={11} color="#18181b">
             <span className="font-mono text-base font-medium tabular">{fmtWater(acqua)}</span>
             <span className="text-[10px] text-muted">/ {fmtWater(goals.waterTarget)}</span>
           </Ring>

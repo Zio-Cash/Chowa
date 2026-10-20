@@ -150,7 +150,7 @@ function Execution() {
               key={d.id}
               onClick={() => setDayId(d.id)}
               className={`shrink-0 rounded-2xl px-3.5 py-2 text-sm font-medium tracking-wide transition ${
-                d.id === day.id ? 'bg-teal text-[#f6f1e7]' : 'bg-surface2 text-muted'
+                d.id === day.id ? 'bg-teal text-[#fafafa]' : 'bg-surface2 text-muted'
               }`}
             >
               {d.nome}

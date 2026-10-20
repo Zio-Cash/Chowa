@@ -83,21 +83,21 @@ export default function InstallButton({ className = '' }: { className?: string }
             </p>
             <ol className="mt-4 space-y-3 text-sm text-ink">
               <li className="flex gap-3">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal text-[11px] font-bold text-[#f6f1e7]">1</span>
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal text-[11px] font-bold text-[#fafafa]">1</span>
                 Tocca il pulsante <b>Condividi</b> ⬆️ nella barra di Safari
               </li>
               <li className="flex gap-3">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal text-[11px] font-bold text-[#f6f1e7]">2</span>
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal text-[11px] font-bold text-[#fafafa]">2</span>
                 Scorri e scegli <b>Aggiungi a Home</b>
               </li>
               <li className="flex gap-3">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal text-[11px] font-bold text-[#f6f1e7]">3</span>
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal text-[11px] font-bold text-[#fafafa]">3</span>
                 Conferma con <b>Aggiungi</b>: l'icona comparirà come un'app
               </li>
             </ol>
             <button
               onClick={() => setShowIOS(false)}
-              className="mt-6 w-full rounded-2xl bg-teal py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#f6f1e7] active:scale-[0.98]"
+              className="mt-6 w-full rounded-2xl bg-teal py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#fafafa] active:scale-[0.98]"
             >
               Ho capito
             </button>

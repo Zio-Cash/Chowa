@@ -24,7 +24,7 @@ export default function Esercizi() {
             key={c}
             onClick={() => setCat(c)}
             className={`min-h-[36px] shrink-0 whitespace-nowrap rounded-full px-3.5 text-sm font-medium tracking-wide transition ${
-              c === cat ? 'bg-teal text-[#f6f1e7]' : 'bg-surface2 text-muted'
+              c === cat ? 'bg-teal text-[#fafafa]' : 'bg-surface2 text-muted'
             }`}
           >
             {c}
@@ -144,7 +144,7 @@ function ExerciseCatalogEditor({
                 type="button"
                 onClick={() => setCategoria(c)}
                 className={`min-h-[36px] rounded-full px-3 text-xs font-medium tracking-wide transition ${
-                  categoria === c ? 'bg-teal text-[#f6f1e7]' : 'bg-black/[0.06] text-muted'
+                  categoria === c ? 'bg-teal text-[#fafafa]' : 'bg-black/[0.06] text-muted'
                 }`}
               >
                 {c}

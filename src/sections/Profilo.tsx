@@ -131,7 +131,7 @@ export default function Profilo() {
               {nome.charAt(0).toUpperCase()}
             </div>
           )}
-          <span className="absolute -bottom-0.5 -right-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-teal text-[#f6f1e7] ring-2 ring-bg">
+          <span className="absolute -bottom-0.5 -right-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-teal text-[#fafafa] ring-2 ring-bg">
             <Icon.edit size={12} />
           </span>
         </button>
