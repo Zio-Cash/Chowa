@@ -1,3 +1,5 @@
+import InstallButton from '../components/InstallButton'
+
 const rise = (delay: number) => ({ animationDelay: `${delay}s`, animationFillMode: 'both' as const })
 
 // Kanji resi con un serif giapponese (stile pennello) per l'eleganza.
@@ -98,6 +100,9 @@ export default function Welcome({
             {busy ? 'Attendi…' : 'Enter your dojo'}
           </button>
           {authError && <p className="mt-3 text-center text-xs text-red-400">{authError}</p>}
+          <div className="animate-fade-up mt-4 flex justify-center" style={rise(2.1)}>
+            <InstallButton />
+          </div>
         </div>
       </div>
     </div>
