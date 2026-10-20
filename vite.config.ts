@@ -45,6 +45,24 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         navigateFallback: '/index.html',
+        runtimeCaching: [
+          {
+            // libreria esercizi (JSON): veloce dalla cache, aggiornata in background
+            urlPattern: ({ url }) => url.pathname === '/exercises-lib.json',
+            handler: 'StaleWhileRevalidate',
+            options: { cacheName: 'exercise-lib' },
+          },
+          {
+            // foto degli esercizi: una volta viste restano disponibili offline
+            urlPattern: ({ url }) => url.hostname === 'raw.githubusercontent.com',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'exercise-images',
+              expiration: { maxEntries: 600, maxAgeSeconds: 60 * 60 * 24 * 180 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
       },
       devOptions: { enabled: true },
     }),

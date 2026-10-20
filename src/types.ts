@@ -100,6 +100,7 @@ export interface CatalogExercise {
   categoria: ExCategoria
   sub: ExSub
   descrizione?: string // spiegazione dell'esercizio
+  libId?: string // collegamento alla libreria (immagini online, sincronizzate)
 }
 export type ExerciseCatalog = CatalogExercise[]
 
