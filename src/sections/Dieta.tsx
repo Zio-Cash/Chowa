@@ -40,7 +40,7 @@ const CAT_MAP: Record<string, string> = {
 const bucketOf = (c: string) => CAT_MAP[c] ?? 'Other'
 
 export default function Dieta() {
-  const { state, getMeals, toggleMeal, addMeal } = useStore()
+  const { state, getMeals, toggleMeal, addMeal, copyDay } = useStore()
   const oggi = dateKey()
   const [today, setToday] = useState(oggi)
   const isToday = today === oggi
@@ -173,6 +173,15 @@ export default function Dieta() {
           )
         })}
       </div>
+
+      {meals.every((m) => m.items.length === 0) && (
+        <button
+          onClick={() => copyDay(dateKey(addDays(parseKey(today), -1)), today)}
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-teal/[0.08] py-3 text-sm font-medium text-teal transition active:scale-[0.98]"
+        >
+          <Icon.reset size={16} /> Copia i pasti di ieri
+        </button>
+      )}
 
       {/* Azioni — unico controllo discreto */}
       <div className="flex justify-center pt-1">

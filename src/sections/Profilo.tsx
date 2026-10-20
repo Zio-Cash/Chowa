@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { useStore } from '../store/store'
 import { useAuth } from '../auth/AuthProvider'
 import { levelInfo } from '../lib/gamification'
+import { achievements } from '../lib/achievements'
 import { masteryLabel } from '../lib/dojo'
 import { dateKey, formatLong, parseKey } from '../lib/date'
 import { currentCycle } from '../lib/cycle'
@@ -160,6 +161,32 @@ export default function Profilo() {
           ) : (
             <StatTile label="XP" value={`${lvl.inLevel}`} sub={`/ ${lvl.soglia}`} />
           )}
+        </div>
+      </Card>
+
+      {/* Traguardi */}
+      <Card>
+        <div className="mb-2 flex items-center justify-between">
+          <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Traguardi</span>
+          <span className="text-xs text-muted">Livello {lvl.livello} · {masteryLabel(lvl.livello)}</span>
+        </div>
+        <div className="h-2 overflow-hidden rounded-full bg-black/[0.06]">
+          <div className="h-full rounded-full bg-teal" style={{ width: `${Math.round(lvl.pct * 100)}%` }} />
+        </div>
+        <div className="mt-1 text-[11px] text-muted">{lvl.inLevel} / {lvl.soglia} XP al livello {lvl.livello + 1}</div>
+        <div className="mt-3 grid grid-cols-5 gap-2">
+          {achievements(state).map((a) => (
+            <div
+              key={a.label}
+              title={`${a.label} · ${a.progress}`}
+              className={`flex flex-col items-center rounded-2xl py-2 ${a.done ? 'bg-teal/[0.1]' : 'bg-black/[0.03]'}`}
+            >
+              <span className={`text-xl ${a.done ? '' : 'opacity-30 grayscale'}`}>{a.emoji}</span>
+              <span className={`mt-0.5 text-[8px] leading-tight text-center ${a.done ? 'text-ink' : 'text-muted'}`}>
+                {a.label}
+              </span>
+            </div>
+          ))}
         </div>
       </Card>
 

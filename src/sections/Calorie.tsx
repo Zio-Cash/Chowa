@@ -11,6 +11,9 @@ import type { Activity, CalorieProfile, Goal, Sex } from '../types'
 import { Button, Card, CardTitle, Field, NumberInput, Segmented, Stepper } from '../components/ui'
 import { MacroDonut } from '../components/charts'
 import { macroPct } from '../lib/nutrition'
+import { weightTrend } from '../lib/weight'
+import { dateKey } from '../lib/date'
+import type { AppState, Targets } from '../types'
 
 const sexOpts = (Object.keys(SEX_LABEL) as Sex[]).map((v) => ({ value: v, label: SEX_LABEL[v] }))
 const actOpts = (Object.keys(ACTIVITY_LABEL) as Activity[]).map((v) => ({
@@ -58,6 +61,8 @@ export default function Calorie() {
 
   return (
     <div className="space-y-4 pb-4">
+      <AdaptiveCard state={state} onApply={setTargets} />
+
       <Card>
         <CardTitle>Calcolatore fabbisogno</CardTitle>
         <p className="-mt-2 mb-3 text-xs text-muted">Harris-Benedict riveduta (Roza–Shizgal)</p>
@@ -254,5 +259,54 @@ function MacroRow({
       </div>
       <Stepper value={grams} onChange={onChange} step={5} suffix="g" />
     </div>
+  )
+}
+
+function AdaptiveCard({ state, onApply }: { state: AppState; onApply: (t: Targets) => void }) {
+  const targets = state.settings.targets
+  const goals = state.settings.goals
+  const pesi = Object.entries(state.weightLog)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([, v]) => v)
+  const current = pesi[pesi.length - 1]
+  const trend = weightTrend(state.weightLog, dateKey(), 21)
+  if (!trend || !current) return null
+
+  const vuoleDimagrire = (goals.pesoTarget ?? 0) > 0 ? goals.pesoTarget! < current : true
+  const s = trend.slopePerWeek
+  let delta = 0
+  let msg = ''
+  if (vuoleDimagrire && s >= -0.05) {
+    delta = -150
+    msg = `Il peso è quasi fermo (${s > 0 ? '+' : ''}${s.toFixed(2)} kg/sett) nelle ultime settimane. Per ripartire puoi togliere circa 150 kcal al giorno.`
+  } else if (s <= -0.9) {
+    delta = 150
+    msg = `Stai calando in fretta (${s.toFixed(2)} kg/sett): meglio aggiungere circa 150 kcal per preservare massa muscolare e metabolismo.`
+  } else {
+    msg = `Il tuo ritmo è buono (${s < 0 ? '' : '+'}${s.toFixed(2)} kg/sett): mantieni le calorie attuali.`
+  }
+
+  const nuove: Targets = {
+    ...targets,
+    kcal: Math.max(1000, targets.kcal + delta),
+    carboidrati: Math.max(0, targets.carboidrati + Math.round(delta / 4)),
+  }
+
+  return (
+    <Card>
+      <CardTitle icon="🤖">Calorie adattive</CardTitle>
+      <p className="-mt-2 text-sm leading-relaxed text-ink/85">{msg}</p>
+      {delta !== 0 && (
+        <div className="mt-3 flex items-center justify-between rounded-2xl bg-black/[0.04] px-3 py-2 text-sm">
+          <span className="text-muted">
+            {targets.kcal} → <b className="text-ink">{nuove.kcal}</b> kcal
+          </span>
+          <Button onClick={() => onApply(nuove)}>
+            Applica {delta > 0 ? '+' : ''}
+            {delta}
+          </Button>
+        </div>
+      )}
+    </Card>
   )
 }

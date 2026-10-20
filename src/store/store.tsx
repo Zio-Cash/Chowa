@@ -182,6 +182,7 @@ interface StoreCtx {
   deleteMealPreset: (id: string) => void
   applyPreset: (date: string, mealId: string, presetId: string) => void
   updateMealDefault: (fn: (list: AppState['mealDefault']) => AppState['mealDefault']) => void
+  copyDay: (fromDate: string, toDate: string) => void
   // peso
   setWeight: (date: string, kg: number) => void
   // passi
@@ -442,6 +443,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const updateMealDefault = useCallback((fn: (list: AppState['mealDefault']) => AppState['mealDefault']) => {
     setState((s) => ({ ...s, mealDefault: fn(s.mealDefault) }))
+  }, [])
+
+  // Copia i pasti (struttura + alimenti) da un giorno all'altro, azzerando le spunte.
+  const copyDay = useCallback((fromDate: string, toDate: string) => {
+    setState((s) => {
+      const src = s.diario[fromDate] ?? mealsFromDefault(s.mealDefault)
+      const copia = src.map((m) => ({
+        ...m,
+        spuntato: false,
+        items: m.items.map((it) => ({ ...it })),
+      }))
+      return { ...s, diario: { ...s.diario, [toDate]: copia } }
+    })
   }, [])
 
   const toggleMeal = useCallback((date: string, mealId: string) => {
@@ -773,6 +787,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       deleteMealPreset,
       applyPreset,
       updateMealDefault,
+      copyDay,
       setWeight,
       updateExecutionPlan,
       getSession,
@@ -825,6 +840,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       deleteMealPreset,
       applyPreset,
       updateMealDefault,
+      copyDay,
       setWeight,
       updateExecutionPlan,
       getSession,
