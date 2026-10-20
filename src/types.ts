@@ -28,6 +28,15 @@ export interface DailyGoals {
   pesoTarget?: number // obiettivo di peso (kg); 0/undefined = non impostato
 }
 
+// ===== Promemoria =====
+export interface ReminderItem {
+  id: string
+  emoji: string
+  label: string
+  time: string // "HH:MM"
+  on: boolean
+}
+
 export interface Settings {
   profilo: CalorieProfile
   targets: Targets
@@ -189,6 +198,7 @@ export interface AppState {
   cycle: CycleData
   account: Account
   gamification: Gamification
+  reminders: ReminderItem[]
 }
 
 export type ViewId =

@@ -30,7 +30,12 @@ export default function Workout() {
         value={tab}
         onChange={(v) => setTab(v as TrainingTab)}
       />
-      {tab === 'train' && <Execution />}
+      {tab === 'train' && (
+        <>
+          <Execution />
+          <PRCard />
+        </>
+      )}
       {tab === 'routine' && <Routine />}
       {tab === 'catalog' && <Esercizi />}
     </div>
@@ -315,5 +320,38 @@ function ExerciseRow({
         </div>
       )}
     </div>
+  )
+}
+
+// ===== Record personali =====
+function PRCard() {
+  const { state } = useStore()
+  const nameById: Record<string, string> = {}
+  for (const d of state.executionPlan)
+    for (const b of d.blocchi) for (const e of b.esercizi) nameById[e.id] = e.nome
+  const best: Record<string, number> = {}
+  for (const s of Object.values(state.workoutProgress))
+    for (const [exId, e] of Object.entries(s.esercizi)) {
+      if (e.carico && e.carico > 0) {
+        const nm = nameById[exId]
+        if (nm) best[nm] = Math.max(best[nm] ?? 0, e.carico)
+      }
+    }
+  const list = Object.entries(best)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+  if (list.length === 0) return null
+  return (
+    <Card>
+      <CardTitle icon="🏅">Record personali</CardTitle>
+      <div className="space-y-1.5">
+        {list.map(([nome, carico]) => (
+          <div key={nome} className="flex items-center justify-between rounded-2xl bg-black/[0.04] px-3 py-2">
+            <span className="text-sm">{nome}</span>
+            <span className="font-mono text-sm font-bold tabular">{carico} kg</span>
+          </div>
+        ))}
+      </div>
+    </Card>
   )
 }

@@ -6,6 +6,7 @@ import LoginGate from './auth/LoginGate'
 import { Icon } from './components/brand'
 import type { ViewId } from './types'
 import { useWakeLock } from './lib/useWakeLock'
+import { useReminders } from './lib/useReminders'
 
 // Sezioni caricate on-demand: il primo avvio scarica solo la schermata attiva,
 // il resto (e le librerie pesanti come i grafici) arriva quando serve.
@@ -78,9 +79,10 @@ function SectionFallback() {
 
 function Shell() {
   const [view, setView] = useState<ViewId>('oggi')
-  const { persistent, readOnly } = useStore()
+  const { state, persistent, readOnly } = useStore()
   const { setViewingUid } = useAuth()
   useWakeLock()
+  useReminders(state.reminders ?? [])
   return (
     <div className="min-h-dvh pb-24">
       <TopBar />

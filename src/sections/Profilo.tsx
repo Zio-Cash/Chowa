@@ -3,6 +3,7 @@ import { useStore } from '../store/store'
 import { useAuth } from '../auth/AuthProvider'
 import { levelInfo } from '../lib/gamification'
 import { achievements } from '../lib/achievements'
+import RemindersCard from '../components/RemindersCard'
 import { masteryLabel } from '../lib/dojo'
 import { dateKey, formatLong, parseKey } from '../lib/date'
 import { currentCycle } from '../lib/cycle'
@@ -189,6 +190,8 @@ export default function Profilo() {
           ))}
         </div>
       </Card>
+
+      <RemindersCard />
 
       {/* Obiettivi */}
       <Card>

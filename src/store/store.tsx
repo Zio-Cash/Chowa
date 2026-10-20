@@ -19,6 +19,7 @@ import type {
   Food,
   Meal,
   MealItem,
+  ReminderItem,
   SessionProgress,
   Targets,
 } from '../types'
@@ -79,6 +80,7 @@ function mergeState(loaded: Partial<AppState> | null): AppState {
     foods: asArr(l.foods, base.foods),
     mealPresets: asArr(l.mealPresets, base.mealPresets),
     mealDefault: asArr(l.mealDefault, base.mealDefault),
+    reminders: asArr(l.reminders, base.reminders),
     // oggetti strutturati
     executionPlan: asMap(l.executionPlan, base.executionPlan),
     settings: {
@@ -156,6 +158,7 @@ interface StoreCtx {
   setTargets: (t: Targets) => void
   setGoals: (g: DailyGoals) => void
   setAccount: (patch: Partial<Account>) => void
+  setReminders: (items: ReminderItem[]) => void
   // foods
   addFood: (f: Omit<Food, 'id'>) => string
   updateFood: (id: string, patch: Partial<Food>) => void
@@ -372,6 +375,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const setAccount = useCallback((patch: Partial<Account>) => {
     setState((s) => ({ ...s, account: { ...s.account, ...patch } }))
+  }, [])
+
+  const setReminders = useCallback((items: ReminderItem[]) => {
+    setState((s) => ({ ...s, reminders: items }))
   }, [])
 
   const addFood = useCallback((f: Omit<Food, 'id'>) => {
@@ -758,6 +765,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setTargets,
       setGoals,
       setAccount,
+      setReminders,
       setSteps,
       setWater,
       addWater,
@@ -811,6 +819,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setTargets,
       setGoals,
       setAccount,
+      setReminders,
       setSteps,
       setWater,
       addWater,

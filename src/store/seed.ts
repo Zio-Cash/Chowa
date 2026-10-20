@@ -176,5 +176,12 @@ export function seedState(): AppState {
     cycle: { starts: [], cycleLength: 28, periodLength: 5 },
     account: {},
     gamification: { xp: 0, streak: 0, ultimaData: null, eventi: {} },
+    reminders: [
+      { id: 'pesata', emoji: '⚖️', label: 'Pesati', time: '08:00', on: false },
+      { id: 'acqua', emoji: '💧', label: 'Bevi acqua', time: '11:00', on: false },
+      { id: 'pranzo', emoji: '🍽️', label: 'Registra il pranzo', time: '13:30', on: false },
+      { id: 'workout', emoji: '🏋️', label: 'Allenamento', time: '18:00', on: false },
+      { id: 'cena', emoji: '🌙', label: 'Registra la cena', time: '21:00', on: false },
+    ],
   }
 }
