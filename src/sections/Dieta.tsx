@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useStore } from '../store/store'
 import { addDays, dateKey, formatLong, mondayOf, parseKey } from '../lib/date'
 import { dayMacros, foodKcal100, itemMacros, macroPct, mealMacros } from '../lib/nutrition'
@@ -9,6 +9,7 @@ import { Button, Card, CardTitle, Field, NumberInput, Segmented, Sheet, Stepper 
 import { MacroDonut } from '../components/charts'
 import { Icon } from '../components/brand'
 import { uid } from '../store/seed'
+import { analyzeFoodPhoto, decodeBarcode, lookupBarcode, type FoodDraftScan } from '../lib/foodScan'
 
 // Categorie alimenti (le 6 assegnabili + "Favorites" come filtro speciale).
 const FOOD_CATS = ['Carbo', 'Protein', 'Vegetables', 'Fruit', 'Sweet', 'Other'] as const
@@ -779,13 +780,35 @@ function FoodDB({ open, onClose }: { open: boolean; onClose: () => void }) {
   // Il form (aggiungi/modifica) è a comparsa: chiuso, la lista occupa tutta
   // l'altezza; si apre col pulsante "Nuovo" o toccando la matita di un alimento.
   const [formOpen, setFormOpen] = useState(false)
+  // Scansione: foto con IA o codice a barre → form precompilato da rivedere.
+  const [scanBusy, setScanBusy] = useState<null | 'ia' | 'barcode'>(null)
+  const [scanInfo, setScanInfo] = useState<FoodDraftScan | null>(null)
+  const photoInput = useRef<HTMLInputElement>(null)
+  const barcodeInput = useRef<HTMLInputElement>(null)
 
   const list = state.foods.filter((f) => f.nome.toLowerCase().includes(q.toLowerCase()))
 
   function openNew() {
     setDraft(emptyFood)
     setEditId(null)
+    setScanInfo(null)
     setFormOpen(true)
+  }
+  async function onScan(kind: 'ia' | 'barcode', e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    setScanBusy(kind)
+    try {
+      const d = kind === 'ia' ? await analyzeFoodPhoto(file) : await lookupBarcode(await decodeBarcode(file))
+      setDraft({ ...emptyFood, nome: d.nome, p100: d.p100, c100: d.c100, g100: d.g100, k100: d.k100, categoria: d.categoria })
+      setEditId(null)
+      setScanInfo(d)
+      setFormOpen(true)
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Analisi non riuscita.')
+    }
+    setScanBusy(null)
   }
   function openEdit(f: Food) {
     const { id: _id, ...rest } = f
@@ -797,6 +820,7 @@ function FoodDB({ open, onClose }: { open: boolean; onClose: () => void }) {
   function closeForm() {
     setDraft(emptyFood)
     setEditId(null)
+    setScanInfo(null)
     setFormOpen(false)
   }
   function save() {
@@ -819,6 +843,20 @@ function FoodDB({ open, onClose }: { open: boolean; onClose: () => void }) {
               Annulla
             </button>
           </div>
+          {scanInfo && !editId && (
+            <div className="mb-3 rounded-2xl bg-teal/[0.06] px-3 py-2.5 text-xs leading-relaxed text-ink">
+              <div className="mb-0.5 flex items-center gap-1.5 font-medium">
+                {scanInfo.fonte === 'ia' ? <Icon.camera size={14} /> : <Icon.barcode size={14} />}
+                {scanInfo.fonte === 'ia' ? 'Valori stimati dalla foto' : 'Valori dal codice a barre'}
+                {scanInfo.confidenza && <span className="text-muted">· affidabilità {scanInfo.confidenza}</span>}
+              </div>
+              {scanInfo.porzione_g ? (
+                <div className="text-muted">Porzione nella foto: circa {scanInfo.porzione_g} g</div>
+              ) : null}
+              {scanInfo.note && <div className="text-muted">{scanInfo.note}</div>}
+              <div className="mt-1 text-muted">Controlla i numeri e correggi se serve, poi salva.</div>
+            </div>
+          )}
           <Card className="!bg-surface">
             <div className="space-y-2">
               <input
@@ -897,9 +935,19 @@ function FoodDB({ open, onClose }: { open: boolean; onClose: () => void }) {
         // ---- Lista alimenti (a tutta altezza) ----
         <>
           <div className="shrink-0">
-            <Button className="mb-3 w-full" onClick={openNew}>
+            <input ref={photoInput} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => onScan('ia', e)} />
+            <input ref={barcodeInput} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => onScan('barcode', e)} />
+            <Button className="mb-2 w-full" onClick={openNew}>
               <Icon.plus size={18} /> Nuovo alimento
             </Button>
+            <div className="mb-3 grid grid-cols-2 gap-2">
+              <Button variant="soft" disabled={!!scanBusy} onClick={() => photoInput.current?.click()}>
+                {scanBusy === 'ia' ? <Spinner /> : <Icon.camera size={17} />} {scanBusy === 'ia' ? 'Analizzo…' : 'Foto con IA'}
+              </Button>
+              <Button variant="soft" disabled={!!scanBusy} onClick={() => barcodeInput.current?.click()}>
+                {scanBusy === 'barcode' ? <Spinner /> : <Icon.barcode size={17} />} {scanBusy === 'barcode' ? 'Cerco…' : 'Codice a barre'}
+              </Button>
+            </div>
             <div className="mb-2 flex items-center gap-2 rounded-2xl bg-surface px-4 ring-1 ring-black/[0.05] focus-within:ring-teal/30">
               <span className="text-muted">
                 <Icon.search size={18} />
@@ -957,4 +1005,8 @@ function FoodDB({ open, onClose }: { open: boolean; onClose: () => void }) {
       )}
     </Sheet>
   )
+}
+
+function Spinner() {
+  return <span className="h-4 w-4 animate-spin rounded-full border-2 border-teal/25 border-t-teal" />
 }
