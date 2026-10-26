@@ -27,6 +27,7 @@ import { dateKey, isYesterday } from '../lib/date'
 import { XP } from '../lib/gamification'
 import { loadJSON, saveJSON, storageIsPersistent } from './storage'
 import { saveDailySnapshot } from './backup'
+import { cleanMlw } from '../lib/mlw'
 import { mealTemplate, seedState, uid } from './seed'
 import { useAuth } from '../auth/AuthProvider'
 import { db } from '../lib/firebase'
@@ -82,6 +83,7 @@ function mergeState(loaded: Partial<AppState> | null): AppState {
     mealDefault: asArr(l.mealDefault, base.mealDefault),
     reminders: asArr(l.reminders, base.reminders),
     medals: asMap(l.medals, base.medals),
+    mlw: cleanMlw(l.mlw),
     // oggetti strutturati
     executionPlan: asMap(l.executionPlan, base.executionPlan),
     settings: {
@@ -161,6 +163,7 @@ interface StoreCtx {
   setAccount: (patch: Partial<Account>) => void
   setReminders: (items: ReminderItem[]) => void
   awardMedals: (ids: string[], date: string, initKey?: string) => void
+  toggleMlw: (date: string, i: number) => void
   // foods
   addFood: (f: Omit<Food, 'id'>) => string
   updateFood: (id: string, patch: Partial<Food>) => void
@@ -381,6 +384,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const setReminders = useCallback((items: ReminderItem[]) => {
     setState((s) => ({ ...s, reminders: items }))
+  }, [])
+
+  // Move · Learn · Work: segna/toglie l'obiettivo i (0 move, 1 learn, 2 work) in quel giorno.
+  const toggleMlw = useCallback((date: string, i: number) => {
+    setState((s) => {
+      const bits = (s.mlw?.[date] ?? '000').split('')
+      bits[i] = bits[i] === '1' ? '0' : '1'
+      const v = bits.join('')
+      const mlw = { ...(s.mlw ?? {}) }
+      if (v === '000') delete mlw[date]
+      else mlw[date] = v
+      return { ...s, mlw }
+    })
   }, [])
 
   // Registra medaglie conquistate. `date` vuota = conquistate prima che esistessero
@@ -780,6 +796,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setAccount,
       setReminders,
       awardMedals,
+      toggleMlw,
       setSteps,
       setWater,
       addWater,
@@ -835,6 +852,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setAccount,
       setReminders,
       awardMedals,
+      toggleMlw,
       setSteps,
       setWater,
       addWater,

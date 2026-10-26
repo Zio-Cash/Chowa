@@ -201,6 +201,7 @@ export interface AppState {
   gamification: Gamification
   reminders: ReminderItem[]
   medals: Record<string, string> // id medaglia → data conquista (YYYY-MM-DD)
+  mlw: Record<string, string> // Move · Learn · Work: data → "101"
 }
 
 export type ViewId =

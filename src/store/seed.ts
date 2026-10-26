@@ -177,6 +177,7 @@ export function seedState(): AppState {
     account: {},
     gamification: { xp: 0, streak: 0, ultimaData: null, eventi: {} },
     medals: {},
+    mlw: {},
     reminders: [
       { id: 'pesata', emoji: '⚖️', label: 'Pesati', time: '08:00', on: false },
       { id: 'acqua', emoji: '💧', label: 'Bevi acqua', time: '11:00', on: false },

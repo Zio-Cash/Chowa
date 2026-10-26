@@ -9,6 +9,7 @@ import { currentCycle } from '../lib/cycle'
 import type { ViewId } from '../types'
 import { Button, Card, CardTitle, NumberInput } from '../components/ui'
 import { Enso } from '../components/brand'
+import { MlwCard } from '../components/MoveLearnWork'
 import { MacroDonut, Ring } from '../components/charts'
 import { fmtSteps, fmtWater, WATER_STEP_ML } from '../lib/goals'
 import { bmr } from '../lib/calories'
@@ -157,6 +158,8 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
           </Ring>
         </div>
       </Card>
+
+      <MlwCard />
 
       {/* Ciclo */}
       <Card>
