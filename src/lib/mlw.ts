@@ -3,9 +3,9 @@
 import { addDays, dateKey, mondayOf, parseKey } from './date'
 
 export const GOALS = [
-  { k: 'move', n: 'Move', color: '#c4683f' }, // terracotta
-  { k: 'learn', n: 'Learn', color: '#5d5aa8' }, // indaco tenue
-  { k: 'work', n: 'Work', color: '#4f8a52' }, // eucalipto
+  { k: 'move', n: 'Move', color: '#211d19' }, // inchiostro
+  { k: 'learn', n: 'Learn', color: '#8a847a' }, // grigio caldo
+  { k: 'work', n: 'Work', color: '#c3bcae' }, // grigio chiaro
 ] as const
 
 export type MlwLog = Record<string, string>

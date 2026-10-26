@@ -1,33 +1,35 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useStore } from '../store/store'
 import { useAuth } from '../auth/AuthProvider'
-import { dateKey, formatLong, parseKey } from '../lib/date'
+import { dateKey, formatLong, MESI_BREVI, parseKey } from '../lib/date'
 import { dayMacros, macroPct, macroRatioOk } from '../lib/nutrition'
 import { BADGES, type BadgeState } from '../lib/gamification'
 import { quoteOfDay } from '../lib/dojo'
-import { currentCycle } from '../lib/cycle'
+import { currentCycle, prediction } from '../lib/cycle'
 import type { ViewId } from '../types'
 import { Button, Card, CardTitle, NumberInput } from '../components/ui'
-import { Enso } from '../components/brand'
+import { Icon } from '../components/brand'
 import { MlwCard } from '../components/MoveLearnWork'
-import { MacroDonut, Ring } from '../components/charts'
+import { MacroDonut } from '../components/charts'
 import { fmtSteps, fmtWater, WATER_STEP_ML } from '../lib/goals'
 import { bmr } from '../lib/calories'
 
-// Voci mostrate in "Rituali di oggi" (niente macro né perfetta).
-const RITUALI: { id: string; label: string }[] = [
-  { id: 'pesata', label: 'Weight check' },
-  { id: 'calorie', label: 'Calorie deficit' },
-  { id: 'workout', label: 'Training' },
-  { id: 'acqua', label: 'Hydration' },
-  { id: 'passi', label: 'Steps' },
+const MINCHO = '"Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", "Songti SC", serif'
+
+// "Risultati di oggi": quattro obiettivi, in orizzontale.
+const RISULTATI: { id: string; label: string; icon: keyof typeof Icon }[] = [
+  { id: 'pesata', label: 'Weight check', icon: 'weight' },
+  { id: 'calorie', label: 'Deficit', icon: 'flame' },
+  { id: 'acqua', label: 'Hydration', icon: 'drop' },
+  { id: 'passi', label: 'Steps', icon: 'steps' },
 ]
 
 export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
   const { state, getMeals, setWeight, setSteps, addWater, setActiveKcal, maybeAwardPerfect } =
     useStore()
   const { user } = useAuth()
-  const firstName = (user?.displayName || '').trim().split(/\s+/)[0] || 'Praticante'
+  const firstName =
+    state.account.nome?.trim().split(/\s+/)[0] || (user?.displayName || '').trim().split(/\s+/)[0] || 'Praticante'
   const greeting = (() => {
     const h = new Date().getHours()
     if (h < 12) return 'Buongiorno'
@@ -53,11 +55,23 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
   const targetPct = macroPct(targets.proteine, targets.carboidrati, targets.grassi)
   const consumedPct = macroPct(consumed.proteine, consumed.carboidrati, consumed.grassi)
 
+  // ── Bilancio / deficit calorico ──
+  // assunte (dai pasti) − attive bruciate (smartwatch) − metabolismo basale. < 0 = deficit.
+  const profilo = state.settings.profilo
+  const metabolismo = Math.round(bmr(profilo.sesso, profilo.peso, profilo.altezza, profilo.eta))
+  const bilancioDi = (date: string) => {
+    const assunte = Math.round(dayMacros(getMeals(date), state.foods, true).kcal)
+    return { assunte, bilancio: assunte - (state.activeKcalLog[date] ?? 0) - metabolismo }
+  }
+  const { bilancio } = bilancioDi(today)
+
   const computeBadges = (date: string): BadgeState => {
     const dConsumed = dayMacros(getMeals(date), state.foods, true)
+    const b = bilancioDi(date)
     return {
       pesata: date in state.weightLog,
-      calorie: dConsumed.kcal >= goals.kcalMin && dConsumed.kcal <= targets.kcal,
+      // deficit raggiunto = pasti registrati e bilancio sotto zero (in surplus non vale)
+      calorie: b.assunte > 0 && b.bilancio < 0,
       macro: macroRatioOk(dConsumed, targets),
       workout: (state.gamification.eventi[date] ?? []).some((e) => e.startsWith('workout:')),
       acqua: (state.waterLog[date] ?? 0) >= goals.waterTarget,
@@ -84,79 +98,60 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [today])
 
-  // ── Contenuto "dojo" derivato da dati esistenti ──
-  // L'energia e la citazione riguardano sempre OGGI, non il giorno sfogliato,
-  // per restare coerenti con lo streak (che è sempre quello corrente).
-  const base = BADGES.filter((b) => b.id !== 'perfetta')
-  const todayBadges = today === oggi ? badges : computeBadges(oggi)
-  const praticheDone = base.filter((b) => todayBadges[b.id]).length
   const cycle = currentCycle(state.cycle, oggi)
+  const pred = prediction(state.cycle, oggi)
   const quote = quoteOfDay(parseKey(oggi))
-
-  // ── Bilancio / deficit calorico del giorno ──
-  // assunte (dai pasti) − attive bruciate (smartwatch) − metabolismo basale.
-  const profilo = state.settings.profilo
-  const metabolismo = Math.round(bmr(profilo.sesso, profilo.peso, profilo.altezza, profilo.eta))
-  const attiveOggi = state.activeKcalLog[today] ?? 0
-  const assunte = Math.round(consumed.kcal)
-  const bilancio = assunte - attiveOggi - metabolismo // < 0 = deficit
+  const fmtGiorno = (k: string) => {
+    const d = parseKey(k)
+    return `${d.getDate()} ${MESI_BREVI[d.getMonth()].toLowerCase()}`
+  }
 
   return (
     <div className="space-y-5 pb-6">
-      {/* Selettore giorno */}
-      <div className="flex items-center justify-between rounded-2xl bg-surface px-2 py-1.5 ring-1 ring-black/[0.05]">
-        <button
-          onClick={() => shiftDay(-1)}
-          className="h-9 w-9 rounded-full text-lg text-muted transition active:scale-90"
-        >
+      {/* Giorno — minimale */}
+      <div className="flex items-center justify-center gap-3 text-muted">
+        <button onClick={() => shiftDay(-1)} aria-label="Giorno precedente" className="px-2 text-lg transition active:scale-90">
           ‹
         </button>
-        <button onClick={() => setToday(oggi)} className="font-display text-sm font-medium tracking-wide">
+        <button onClick={() => setToday(oggi)} className="min-w-[96px] text-[11px] font-medium uppercase tracking-[0.22em]">
           {isToday ? 'Oggi' : formatLong(parseKey(today))}
         </button>
         <button
           onClick={() => shiftDay(1)}
           disabled={isToday}
-          className="h-9 w-9 rounded-full text-lg text-muted transition active:scale-90 disabled:opacity-20"
+          aria-label="Giorno successivo"
+          className="px-2 text-lg transition active:scale-90 disabled:opacity-20"
         >
           ›
         </button>
       </div>
 
-      {/* Ingresso — saluto + massima */}
-      <div className="px-1 pt-1">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="text-[11px] font-medium uppercase tracking-[0.2em] text-muted">
-              {greeting}
-            </div>
-            <h1 className="mt-1 font-display text-3xl tracking-tight">{firstName}</h1>
-          </div>
-          <Enso size={54} className="mt-1 shrink-0" />
+      {/* Saluto + frase del giorno, 調和 a destra */}
+      <div className="flex items-start justify-between gap-4 px-1">
+        <div className="min-w-0">
+          <h1 className="font-display text-[26px] leading-tight tracking-tight">
+            {greeting}, {firstName}
+          </h1>
+          <p className="mt-1.5 font-quote text-sm font-extralight italic leading-snug text-ink/75">{quote}</p>
         </div>
-        <p className="mt-1 overflow-hidden text-ellipsis whitespace-nowrap font-quote text-sm font-extralight italic leading-snug text-ink/80">
-          {quote}
-        </p>
+        <span
+          className="shrink-0 text-[22px] leading-none tracking-[0.15em] text-ink/80"
+          style={{ fontFamily: MINCHO, writingMode: 'vertical-rl' }}
+          aria-hidden
+        >
+          調和
+        </span>
       </div>
 
-      {/* Streak + pratiche di oggi */}
+      {/* Streak */}
       <Card>
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted">
-              Streak
-            </div>
-            <div className="mt-1 font-display text-4xl tabular">{state.gamification.streak}</div>
-            <div className="mt-0.5 text-xs text-muted">giorni consecutivi</div>
-          </div>
-          <Ring value={praticheDone} max={base.length} size={78} stroke={6} color="#211d19">
-            <span className="font-display text-2xl tabular text-teal">
-              {praticheDone}
-              <span className="text-sm text-muted">/{base.length}</span>
-            </span>
-            <span className="text-[9px] uppercase tracking-[0.14em] text-muted">oggi</span>
-          </Ring>
+        <div className="flex items-baseline gap-3">
+          <span className="font-display text-4xl tabular">{state.gamification.streak}</span>
+          <span className="text-sm text-muted">
+            {state.gamification.streak === 1 ? 'giorno consecutivo' : 'giorni consecutivi'}
+          </span>
         </div>
+        <div className="mt-0.5 text-[11px] font-medium uppercase tracking-[0.18em] text-muted">Streak</div>
       </Card>
 
       <MlwCard />
@@ -171,37 +166,49 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
         </div>
         {cycle ? (
           <>
-            <div className="mt-1.5 font-display text-lg tracking-tight">
-              {cycle.phase.nome}{' '}
-              <span className="text-base text-muted">· Giorno {cycle.day} di {cycle.length}</span>
+            <div className="mt-1.5 flex items-baseline justify-between gap-3">
+              <span className="font-display text-xl tracking-tight">{cycle.phase.nome}</span>
+              <span className="font-mono text-xs text-muted tabular">Giorno {cycle.day}</span>
             </div>
-            <p className="mt-1 text-sm leading-relaxed text-muted">{cycle.phase.descrizione}</p>
-            <div className="mt-3 grid grid-cols-3 gap-2">
-              <PhaseTile label="Energia" value={cycle.phase.energia} />
-              <PhaseTile label="Forza" value={cycle.phase.forza} />
-              <PhaseTile label="Recupero" value={cycle.phase.recupero} />
-            </div>
+            {pred && (
+              <div className="mt-1 text-sm text-muted">
+                Prossima mestruazione:{' '}
+                <span className="text-ink">
+                  {fmtGiorno(pred.nextStart)}
+                  {pred.daysToNext > 0
+                    ? ` · tra ${pred.daysToNext} ${pred.daysToNext === 1 ? 'giorno' : 'giorni'}`
+                    : pred.daysToNext === 0
+                      ? ' · oggi'
+                      : ` · in ritardo di ${-pred.daysToNext}`}
+                </span>
+              </div>
+            )}
             <p className="mt-3 border-l-2 border-teal/50 pl-3 text-sm leading-relaxed text-ink/85">
-              <span className="font-medium">Oggi:</span> {cycle.phase.consiglio}
+              <span className="font-medium">Allenamento di oggi:</span> {cycle.phase.consiglio}
             </p>
           </>
         ) : (
-          <p className="mt-1.5 text-sm leading-relaxed text-muted">
-            Segna l'inizio del ciclo per vedere qui la tua fase.
-          </p>
+          <p className="mt-1.5 text-sm leading-relaxed text-muted">Segna l'inizio del ciclo per vedere qui la tua fase.</p>
         )}
       </Card>
 
-      {/* Nutrimento di oggi */}
+      {/* Weight check */}
       <Card>
-        <CardTitle>Nutrimento di oggi</CardTitle>
+        <CardTitle>Weight check</CardTitle>
+        <div className="flex items-center gap-2.5">
+          <NumberInput value={peso || ''} onChange={setPeso} suffix="kg" className="flex-1" placeholder="0.0" />
+          <Button onClick={() => peso > 0 && setWeight(today, peso)}>Registra</Button>
+        </div>
+        {today in state.weightLog && (
+          <p className="mt-2.5 font-mono text-xs text-verde tabular">Oggi · {state.weightLog[today]} kg</p>
+        )}
+      </Card>
+
+      {/* Meal */}
+      <Card>
+        <CardTitle>Meal</CardTitle>
         <div className="flex justify-center">
-          <MacroDonut
-            proteine={consumed.proteine}
-            carboidrati={consumed.carboidrati}
-            grassi={consumed.grassi}
-            size={168}
-          >
+          <MacroDonut proteine={consumed.proteine} carboidrati={consumed.carboidrati} grassi={consumed.grassi} size={168}>
             <span className="font-mono text-2xl font-medium tabular">{Math.round(consumed.kcal)}</span>
             <span className="text-xs text-muted">/ {targets.kcal} kcal</span>
           </MacroDonut>
@@ -213,129 +220,80 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
         </div>
         <div className={`mt-3 rounded-2xl px-3 py-2 text-center font-mono text-xs tabular ${badges.macro ? 'bg-verde/10 text-verde' : 'bg-black/[0.04] text-muted'}`}>
           rapporto {consumedPct.p}/{consumedPct.c}/{consumedPct.g}% · obiettivo {targetPct.p}/{targetPct.c}/{targetPct.g}%
-          {badges.macro && ' ·'}
         </div>
         <Button variant="soft" className="mt-4 w-full" onClick={() => goTo('dieta')}>
           Apri il diario
         </Button>
       </Card>
 
-      {/* Deficit calorico + Energia spesa — sulla stessa riga */}
+      {/* Deficit + Energia spesa */}
       <div className="grid grid-cols-2 gap-4">
         <Card>
           <CardTitle>Deficit</CardTitle>
-          <div
-            className={`font-mono text-3xl tabular ${
-              bilancio < 0 ? 'text-verde' : bilancio > 0 ? 'text-arancio' : 'text-ink'
-            }`}
-          >
+          <div className={`font-mono text-3xl tabular ${bilancio < 0 ? 'text-verde' : bilancio > 0 ? 'text-arancio' : 'text-ink'}`}>
             {bilancio > 0 ? '+' : bilancio < 0 ? '−' : ''}
             {Math.abs(bilancio)}
           </div>
-          <div className="mt-0.5 text-xs text-muted">
-            kcal · {bilancio < 0 ? 'deficit' : bilancio > 0 ? 'surplus' : 'in pari'}
-          </div>
+          <div className="mt-0.5 text-xs text-muted">kcal · {bilancio < 0 ? 'deficit' : bilancio > 0 ? 'surplus' : 'in pari'}</div>
         </Card>
-
         <Card>
           <CardTitle>Energia spesa</CardTitle>
-          <NumberInput
-            value={attive || ''}
-            onChange={setAttive}
-            suffix="kcal"
-            className="w-full"
-            placeholder="0"
-          />
+          <NumberInput value={attive || ''} onChange={setAttive} suffix="kcal" className="w-full" placeholder="0" />
           <Button className="mt-2 w-full" onClick={() => setActiveKcal(today, attive)}>
             Registra
           </Button>
           {(state.activeKcalLog[today] ?? 0) > 0 && (
-            <p className="mt-2 font-mono text-xs text-verde tabular">
-              Oggi · {state.activeKcalLog[today]} kcal
-            </p>
+            <p className="mt-2 font-mono text-xs text-verde tabular">Oggi · {state.activeKcalLog[today]} kcal</p>
           )}
         </Card>
       </div>
 
-      {/* Pesata */}
-      <Card>
-        <CardTitle>Pesata del mattino</CardTitle>
-        <div className="flex items-center gap-2.5">
-          <NumberInput value={peso || ''} onChange={setPeso} suffix="kg" className="flex-1" placeholder="0.0" />
-          <Button onClick={() => peso > 0 && setWeight(today, peso)}>Registra</Button>
-        </div>
-        {today in state.weightLog && (
-          <p className="mt-2.5 font-mono text-xs text-verde tabular">
-            Oggi · {state.weightLog[today]} kg
-          </p>
-        )}
-      </Card>
-
-      {/* Idratazione */}
-      <Card>
-        <CardTitle>Idratazione</CardTitle>
-        <div className="flex items-center gap-5">
-          <Ring value={acqua} max={goals.waterTarget} size={110} stroke={11} color="#211d19">
-            <span className="font-mono text-base font-medium tabular">{fmtWater(acqua)}</span>
-            <span className="text-[10px] text-muted">/ {fmtWater(goals.waterTarget)}</span>
-          </Ring>
-          <div className="flex flex-1 flex-col gap-2">
-            <div className="grid grid-cols-2 gap-2">
-              <Button variant="soft" onClick={() => addWater(today, WATER_STEP_ML)}>
-                + {WATER_STEP_ML} ml
-              </Button>
-              <Button variant="soft" onClick={() => addWater(today, 500)}>
-                + 500 ml
-              </Button>
-            </div>
-            {acqua > 0 && (
-              <Button variant="ghost" className="!min-h-[38px]" onClick={() => addWater(today, -WATER_STEP_ML)}>
-                − {WATER_STEP_ML} ml
-              </Button>
-            )}
+      {/* Hydration + Steps, affiancate */}
+      <div className="grid grid-cols-2 gap-4">
+        <Card className="!p-4">
+          <CardTitle>Hydration</CardTitle>
+          <div className="mt-2 font-mono text-2xl tabular">{fmtWater(acqua)}</div>
+          <div className="text-[11px] text-muted">/ {fmtWater(goals.waterTarget)}</div>
+          <Progress value={acqua} max={goals.waterTarget} />
+          <div className="mt-3 grid grid-cols-2 gap-1.5">
+            <SmallBtn onClick={() => addWater(today, WATER_STEP_ML)}>+{WATER_STEP_ML}</SmallBtn>
+            <SmallBtn onClick={() => addWater(today, 500)}>+500</SmallBtn>
           </div>
-        </div>
-      </Card>
+          {acqua > 0 && (
+            <button onClick={() => addWater(today, -WATER_STEP_ML)} className="mt-2 w-full text-center text-[11px] text-muted">
+              − {WATER_STEP_ML} ml
+            </button>
+          )}
+        </Card>
+        <Card className="!p-4">
+          <CardTitle>Steps</CardTitle>
+          <div className="mt-2 font-mono text-2xl tabular">{fmtSteps(passiOggi)}</div>
+          <div className="text-[11px] text-muted">/ {fmtSteps(goals.stepTarget)}</div>
+          <Progress value={passiOggi} max={goals.stepTarget} />
+          <NumberInput value={passi || ''} onChange={setPassi} className="mt-3 w-full !px-3" placeholder="passi" />
+          <SmallBtn className="mt-1.5 w-full" onClick={() => setSteps(today, passi)}>
+            Registra
+          </SmallBtn>
+        </Card>
+      </div>
 
-      {/* Movimento */}
+      {/* Risultati di oggi — in orizzontale */}
       <Card>
-        <CardTitle>Movimento di oggi</CardTitle>
-        <div className="flex items-center gap-2.5">
-          <NumberInput value={passi || ''} onChange={setPassi} suffix="passi" className="flex-1" placeholder="0" />
-          <Button onClick={() => setSteps(today, passi)}>Registra</Button>
-        </div>
-        <div className="mt-3 h-1 overflow-hidden rounded-full bg-black/[0.06]">
-          <div
-            className="h-full rounded-full bg-teal/80 transition-all duration-500"
-            style={{
-              width: `${goals.stepTarget > 0 ? Math.min(100, Math.round((passiOggi / goals.stepTarget) * 100)) : 0}%`,
-            }}
-          />
-        </div>
-        <p className="mt-2 font-mono text-xs text-muted tabular">
-          {fmtSteps(passiOggi)} / {fmtSteps(goals.stepTarget)}
-          {passiOggi >= goals.stepTarget && <span className="text-verde"> ·</span>}
-        </p>
-      </Card>
-
-      {/* Rituali di oggi */}
-      <Card>
-        <CardTitle>Rituali di oggi</CardTitle>
-        <div className="space-y-1">
-          {RITUALI.map((r) => {
+        <CardTitle>Risultati di oggi</CardTitle>
+        <div className="grid grid-cols-4 gap-2">
+          {RISULTATI.map((r) => {
             const on = badges[r.id]
+            const Ico = Icon[r.icon]
             return (
-              <div key={r.id} className="flex items-center justify-between rounded-xl px-1 py-2">
-                <span className={`text-sm tracking-wide transition ${on ? 'text-ink' : 'text-muted/70'}`}>
-                  {r.label}
-                </span>
+              <div key={r.id} className="flex flex-col items-center gap-1.5 text-center">
                 <span
-                  className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] transition ${
-                    on ? 'bg-teal/15 text-teal ring-1 ring-teal/30' : 'bg-black/[0.04] text-transparent'
+                  className={`flex h-11 w-11 items-center justify-center rounded-full transition ${
+                    on ? 'bg-teal text-[#faf7f1]' : 'bg-black/[0.045] text-muted/50'
                   }`}
                 >
-                  ✓
+                  <Ico size={19} />
                 </span>
+                <span className={`text-[11px] leading-tight ${on ? 'text-ink' : 'text-muted'}`}>{r.label}</span>
               </div>
             )
           })}
@@ -345,12 +303,23 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
   )
 }
 
-function PhaseTile({ label, value }: { label: string; value: string }) {
+function Progress({ value, max }: { value: number; max: number }) {
+  const pct = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0
   return (
-    <div className="rounded-2xl bg-black/[0.04] p-2.5 text-center">
-      <div className="text-[10px] uppercase tracking-[0.1em] text-muted">{label}</div>
-      <div className="mt-0.5 font-display text-sm tracking-tight text-teal">{value}</div>
+    <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-black/[0.06]">
+      <div className={`h-full rounded-full transition-all duration-500 ${pct >= 100 ? 'bg-verde' : 'bg-teal'}`} style={{ width: `${pct}%` }} />
     </div>
+  )
+}
+
+function SmallBtn({ children, onClick, className = '' }: { children: React.ReactNode; onClick: () => void; className?: string }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`min-h-[36px] rounded-xl bg-teal/[0.1] px-2 text-xs font-medium text-teal transition active:scale-[0.97] ${className}`}
+    >
+      {children}
+    </button>
   )
 }
 

@@ -4,6 +4,7 @@ import { Card, Sheet } from './ui'
 import { addDays, dateKey, MESI_BREVI, mondayOf, parseKey, rangeLabel } from '../lib/date'
 import { GOALS, has, lastWeeks, monthStat, streak } from '../lib/mlw'
 
+const INK = '#211d19'
 const INIZ = ['L', 'M', 'M', 'G', 'V', 'S', 'D']
 const MESI_L = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre']
 const todayDate = () => parseKey(dateKey())
@@ -50,13 +51,11 @@ export function MlwCard() {
               key={g.k}
               onClick={() => toggleMlw(tk, i)}
               aria-pressed={on}
-              className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition active:scale-[0.99]"
-              style={{
-                background: on ? `${g.color}14` : 'transparent',
-                boxShadow: `inset 0 0 0 1px ${on ? `${g.color}66` : 'rgba(33,29,25,0.08)'}`,
-              }}
+              className={`flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition active:scale-[0.99] ${
+                on ? 'bg-black/[0.045]' : 'ring-1 ring-black/[0.06]'
+              }`}
             >
-              <Check on={on} color={g.color} />
+              <Check on={on} color={INK} />
               <span className="flex-1 font-display text-lg tracking-tight">{g.n}</span>
               <span className="font-mono text-xs text-muted tabular">{giorni(streak(log, i, today))}</span>
             </button>
@@ -123,7 +122,7 @@ export function MlwFull() {
                 const d = addDays(weekStart, j)
                 const k = dateKey(d)
                 if (d > today)
-                  return <span key={j} className="aspect-square w-full max-w-[40px] justify-self-center rounded-lg border-[1.5px] border-dashed opacity-40" style={{ borderColor: g.color }} />
+                  return <span key={j} className="aspect-square w-full max-w-[40px] justify-self-center rounded-lg border-[1.5px] border-dashed border-black/15 opacity-60" />
                 const on = has(log, k, i)
                 const isT = d.getTime() === today.getTime()
                 return (
@@ -133,7 +132,7 @@ export function MlwFull() {
                     aria-pressed={on}
                     aria-label={`${g.n}, ${d.getDate()} ${MESI_L[d.getMonth()]}: ${on ? 'fatto' : 'non fatto'}`}
                     className={`aspect-square w-full max-w-[40px] justify-self-center rounded-lg border-[1.5px] transition-colors ${isT ? 'outline outline-2 outline-offset-2 outline-black/30' : ''}`}
-                    style={{ borderColor: on ? g.color : 'rgba(33,29,25,0.14)', background: on ? g.color : 'transparent' }}
+                    style={{ borderColor: on ? INK : 'rgba(33,29,25,0.14)', background: on ? INK : 'transparent' }}
                   />
                 )
               })}
