@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { useStore } from '../store/store'
 import { useAuth } from '../auth/AuthProvider'
-import { levelInfo } from '../lib/gamification'
+import { levelInfo, liveStreak } from '../lib/gamification'
 import RemindersCard from '../components/RemindersCard'
 import { MedalTeaser, MedalWall } from '../components/Medals'
 import { masteryLabel } from '../lib/dojo'
@@ -56,11 +56,13 @@ export default function Profilo() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `chowa-backup-${new Date().toISOString().slice(0, 10)}.json`
+    a.download = `chowa-backup-${dateKey()}.json`
     a.click()
-    URL.revokeObjectURL(url)
+    // revoca dopo: su iOS una revoca immediata può annullare il download
+    setTimeout(() => URL.revokeObjectURL(url), 60_000)
   }
   const doImport = (file: File) => {
+    if (!confirm('Importare questo file? Sostituisce tutti i dati attuali dell\'app.')) return
     const reader = new FileReader()
     reader.onload = () => {
       const ok = importData(String(reader.result))
@@ -99,7 +101,11 @@ export default function Profilo() {
           type="file"
           accept="application/json"
           className="hidden"
-          onChange={(e) => e.target.files?.[0] && doImport(e.target.files[0])}
+          onChange={(e) => {
+            const f = e.target.files?.[0]
+            e.target.value = '' // così si può riscegliere lo stesso file
+            if (f) doImport(f)
+          }}
         />
         <SyncSheet open={sync} onClose={() => setSync(false)} />
         <BackupSheet open={backup} onClose={() => setBackup(false)} onExport={doExport} onRestore={importData} />
@@ -161,7 +167,7 @@ export default function Profilo() {
                 sub={deltaPeso != null ? `${deltaPeso > 0 ? '+' : deltaPeso < 0 ? '−' : ''}${Math.abs(deltaPeso).toFixed(1)} kg` : undefined}
                 subTone={deltaPeso == null ? 'muted' : deltaPeso < 0 ? 'verde' : deltaPeso > 0 ? 'arancio' : 'muted'}
               />
-              <StatTile label="Streak" value={`${state.gamification.streak}`} sub="giorni" />
+              <StatTile label="Streak" value={`${liveStreak(state.gamification, dateKey())}`} sub="giorni" />
               <StatTile label="Livello" value={`${lvl.livello}`} sub={`${lvl.inLevel} / ${lvl.soglia} XP`} />
               {cur ? (
                 <StatTile label="Ciclo" value={cur.phase.nome} sub={`Giorno ${cur.day}`} />
@@ -305,6 +311,16 @@ function EditProfileSheet({
   const [nome, setNome] = useState(currentName)
   const [avatar, setAvatar] = useState(currentAvatar)
   const fileRef = useRef<HTMLInputElement>(null)
+  // A ogni apertura si riparte dai dati salvati (non da modifiche abbandonate
+  // o da valori vecchi letti prima che arrivasse il cloud).
+  const [wasOpen, setWasOpen] = useState(open)
+  if (open !== wasOpen) {
+    setWasOpen(open)
+    if (open) {
+      setNome(currentName)
+      setAvatar(currentAvatar)
+    }
+  }
 
   const preview = avatar || null
   const pickPhoto = async (file: File) => {
@@ -445,7 +461,7 @@ function Row({
   tone?: 'teal' | 'danger'
   border?: boolean
 }) {
-  const color = tone === 'teal' ? 'text-teal' : tone === 'danger' ? 'text-red-300' : 'text-ink'
+  const color = tone === 'teal' ? 'text-teal' : tone === 'danger' ? 'text-shu' : 'text-ink'
   return (
     <button
       onClick={onClick}

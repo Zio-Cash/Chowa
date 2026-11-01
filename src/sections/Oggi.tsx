@@ -3,16 +3,17 @@ import { useStore } from '../store/store'
 import { useAuth } from '../auth/AuthProvider'
 import { dateKey, formatLong, MESI_BREVI, parseKey } from '../lib/date'
 import { dayMacros, macroPct, macroRatioOk } from '../lib/nutrition'
-import { BADGES, type BadgeState } from '../lib/gamification'
+import { BADGES, liveStreak, type BadgeState } from '../lib/gamification'
 import { quoteOfDay } from '../lib/dojo'
 import { currentCycle, prediction } from '../lib/cycle'
 import type { ViewId } from '../types'
-import { Button, Card, CardTitle, NumberInput } from '../components/ui'
+import { Button, Card, CardTitle, Eyebrow, NumberInput } from '../components/ui'
 import { Icon } from '../components/brand'
 import { MlwCard } from '../components/MoveLearnWork'
 import { MacroDonut } from '../components/charts'
 import { fmtSteps, fmtWater, WATER_STEP_ML } from '../lib/goals'
 import { bmr } from '../lib/calories'
+import { useDayCursor } from '../lib/useToday'
 
 const MINCHO = '"Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", "Songti SC", serif'
 
@@ -36,8 +37,7 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
     if (h < 18) return 'Buon pomeriggio'
     return 'Buonasera'
   })()
-  const oggi = dateKey()
-  const [today, setToday] = useState(oggi)
+  const [today, setToday, oggi] = useDayCursor()
   const isToday = today === oggi
   const shiftDay = (delta: number) => {
     const d = parseKey(today)
@@ -63,7 +63,8 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
     const assunte = Math.round(dayMacros(getMeals(date), state.foods, true).kcal)
     return { assunte, bilancio: assunte - (state.activeKcalLog[date] ?? 0) - metabolismo }
   }
-  const { bilancio } = bilancioDi(today)
+  const { bilancio, assunte } = bilancioDi(today)
+  const streak = liveStreak(state.gamification, oggi)
 
   const computeBadges = (date: string): BadgeState => {
     const dConsumed = dayMacros(getMeals(date), state.foods, true)
@@ -87,16 +88,10 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [badges.perfetta])
 
-  const [peso, setPeso] = useState<number>(state.weightLog[today] ?? 0)
-  const [passi, setPassi] = useState<number>(state.stepsLog[today] ?? 0)
-  const [attive, setAttive] = useState<number>(state.activeKcalLog[today] ?? 0)
-
-  useEffect(() => {
-    setPeso(state.weightLog[today] ?? 0)
-    setPassi(state.stepsLog[today] ?? 0)
-    setAttive(state.activeKcalLog[today] ?? 0)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [today])
+  // Bozze dei campi: seguono il valore salvato (cambio giorno o dati dal cloud).
+  const [peso, setPeso] = useDraft(state.weightLog[today] ?? 0, today)
+  const [passi, setPassi] = useDraft(state.stepsLog[today] ?? 0, today)
+  const [attive, setAttive] = useDraft(state.activeKcalLog[today] ?? 0, today)
 
   const cycle = currentCycle(state.cycle, oggi)
   const pred = prediction(state.cycle, oggi)
@@ -110,8 +105,12 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
     <div className="space-y-5 pb-6">
       {/* Giorno — minimale */}
       <div className="flex items-center justify-center gap-3 text-muted">
-        <button onClick={() => shiftDay(-1)} aria-label="Giorno precedente" className="px-2 text-lg transition active:scale-90">
-          ‹
+        <button
+          onClick={() => shiftDay(-1)}
+          aria-label="Giorno precedente"
+          className="flex h-10 w-10 items-center justify-center rounded-full transition active:bg-black/[0.05]"
+        >
+          <Icon.chevronLeft size={16} />
         </button>
         <button onClick={() => setToday(oggi)} className="min-w-[96px] text-[11px] font-medium uppercase tracking-[0.22em]">
           {isToday ? 'Oggi' : formatLong(parseKey(today))}
@@ -120,9 +119,9 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
           onClick={() => shiftDay(1)}
           disabled={isToday}
           aria-label="Giorno successivo"
-          className="px-2 text-lg transition active:scale-90 disabled:opacity-20"
+          className="flex h-10 w-10 items-center justify-center rounded-full transition active:bg-black/[0.05] disabled:opacity-20"
         >
-          ›
+          <Icon.chevronRight size={16} />
         </button>
       </div>
 
@@ -145,13 +144,11 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
 
       {/* Streak */}
       <Card>
-        <div className="flex items-baseline gap-3">
-          <span className="font-display text-4xl tabular">{state.gamification.streak}</span>
-          <span className="text-sm text-muted">
-            {state.gamification.streak === 1 ? 'giorno consecutivo' : 'giorni consecutivi'}
-          </span>
+        <Eyebrow>Streak</Eyebrow>
+        <div className="mt-1.5 flex items-baseline gap-3">
+          <span className="font-display text-4xl tabular">{streak}</span>
+          <span className="text-sm text-muted">{streak === 1 ? 'giorno consecutivo' : 'giorni consecutivi'}</span>
         </div>
-        <div className="mt-0.5 text-[11px] font-medium uppercase tracking-[0.18em] text-muted">Streak</div>
       </Card>
 
       <MlwCard />
@@ -159,8 +156,8 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
       {/* Ciclo */}
       <Card>
         <div className="flex items-baseline justify-between">
-          <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted">Ciclo</span>
-          <button onClick={() => goTo('cycle')} className="text-xs text-teal">
+          <Eyebrow>Ciclo</Eyebrow>
+          <button onClick={() => goTo('cycle')} className="text-xs text-teal transition active:opacity-60">
             {cycle ? 'Apri →' : 'Imposta →'}
           </button>
         </div>
@@ -230,15 +227,24 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
       <div className="grid grid-cols-2 gap-4">
         <Card>
           <CardTitle>Deficit</CardTitle>
-          <div className={`font-mono text-3xl tabular ${bilancio < 0 ? 'text-verde' : bilancio > 0 ? 'text-arancio' : 'text-ink'}`}>
-            {bilancio > 0 ? '+' : bilancio < 0 ? '−' : ''}
-            {Math.abs(bilancio)}
-          </div>
-          <div className="mt-0.5 text-xs text-muted">kcal · {bilancio < 0 ? 'deficit' : bilancio > 0 ? 'surplus' : 'in pari'}</div>
+          {assunte === 0 ? (
+            <>
+              <div className="font-mono text-3xl text-muted/60 tabular">—</div>
+              <div className="mt-0.5 text-xs text-muted">segna i pasti per vederlo</div>
+            </>
+          ) : (
+            <>
+              <div className={`font-mono text-3xl tabular ${bilancio < 0 ? 'text-verde' : bilancio > 0 ? 'text-arancio' : 'text-ink'}`}>
+                {bilancio > 0 ? '+' : bilancio < 0 ? '−' : ''}
+                {Math.abs(bilancio)}
+              </div>
+              <div className="mt-0.5 text-xs text-muted">kcal · {bilancio < 0 ? 'deficit' : bilancio > 0 ? 'surplus' : 'in pari'}</div>
+            </>
+          )}
         </Card>
         <Card>
           <CardTitle>Energia spesa</CardTitle>
-          <NumberInput value={attive || ''} onChange={setAttive} suffix="kcal" className="w-full" placeholder="0" />
+          <NumberInput value={attive || ''} onChange={setAttive} suffix="kcal" className="w-full" placeholder="0" integer />
           <Button className="mt-2 w-full" onClick={() => setActiveKcal(today, attive)}>
             Registra
           </Button>
@@ -270,7 +276,7 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
           <div className="mt-2 font-mono text-2xl tabular">{fmtSteps(passiOggi)}</div>
           <div className="text-[11px] text-muted">/ {fmtSteps(goals.stepTarget)}</div>
           <Progress value={passiOggi} max={goals.stepTarget} />
-          <NumberInput value={passi || ''} onChange={setPassi} className="mt-3 w-full !px-3" placeholder="passi" />
+          <NumberInput value={passi || ''} onChange={setPassi} className="mt-3 w-full !px-3" placeholder="passi" integer />
           <SmallBtn className="mt-1.5 w-full" onClick={() => setSteps(today, passi)}>
             Registra
           </SmallBtn>
@@ -307,7 +313,10 @@ function Progress({ value, max }: { value: number; max: number }) {
   const pct = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0
   return (
     <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-black/[0.06]">
-      <div className={`h-full rounded-full transition-all duration-500 ${pct >= 100 ? 'bg-verde' : 'bg-teal'}`} style={{ width: `${pct}%` }} />
+      <div
+        className={`h-full w-full origin-left rounded-full transition-transform duration-500 ${pct >= 100 ? 'bg-verde' : 'bg-teal'}`}
+        style={{ transform: `scaleX(${pct / 100})` }}
+      />
     </div>
   )
 }
@@ -357,4 +366,14 @@ function MacroTile({
       </div>
     </div>
   )
+}
+
+function useDraft(stored: number, day: string) {
+  const [draft, setDraft] = useState(stored)
+  const [src, setSrc] = useState(`${day}|${stored}`)
+  if (src !== `${day}|${stored}`) {
+    setSrc(`${day}|${stored}`)
+    setDraft(stored)
+  }
+  return [draft, setDraft] as const
 }

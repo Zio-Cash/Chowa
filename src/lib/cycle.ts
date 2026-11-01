@@ -123,10 +123,20 @@ export function averageCycleLength(cycle: CycleData): number | null {
   const s = [...cycle.starts].sort()
   if (s.length < 2) return null
   const diffs: number[] = []
-  for (let i = 1; i < s.length; i++) diffs.push(daysBetween(s[i - 1], s[i]))
+  // Solo intervalli plausibili: un giorno segnato per sbaglio (1 giorno) o un
+  // mese saltato (~56) non devono stravolgere le previsioni.
+  for (let i = 1; i < s.length; i++) {
+    const d = daysBetween(s[i - 1], s[i])
+    if (d >= 18 && d <= 50) diffs.push(d)
+  }
   const recent = diffs.slice(-6)
+  if (!recent.length) return null
   return Math.round(recent.reduce((a, b) => a + b, 0) / recent.length)
 }
+
+/** Durata da usare per le previsioni: media reale, altrimenti quella impostata. */
+const lengthFor = (cycle: CycleData) =>
+  averageCycleLength(cycle) ?? (cycle.cycleLength > 0 ? cycle.cycleLength : 28)
 
 export interface CyclePrediction {
   lastStart: string
@@ -139,7 +149,7 @@ export function prediction(cycle: CycleData, today: string): CyclePrediction | n
   const past = cycle.starts.filter((d) => d <= today).sort()
   if (past.length === 0) return null
   const lastStart = past[past.length - 1]
-  const len = averageCycleLength(cycle) ?? cycle.cycleLength
+  const len = lengthFor(cycle)
   const nextStart = addDays(lastStart, len)
   return {
     lastStart,
@@ -156,7 +166,7 @@ function startsUntil(cycle: CycleData, until: string): { date: string; predicted
   const actual = [...cycle.starts].sort()
   const res = actual.map((d) => ({ date: d, predicted: false }))
   if (actual.length) {
-    const len = averageCycleLength(cycle) ?? cycle.cycleLength
+    const len = lengthFor(cycle)
     let s = actual[actual.length - 1]
     for (let i = 0; i < 24; i++) {
       s = addDays(s, len)
@@ -169,13 +179,13 @@ function startsUntil(cycle: CycleData, until: string): { date: string; predicted
 
 /** Classifica una data per la resa nel calendario. */
 export function dayKind(cycle: CycleData, dateStr: string): DayKind {
-  const len = averageCycleLength(cycle) ?? cycle.cycleLength
+  const len = lengthFor(cycle)
   const starts = startsUntil(cycle, addDays(dateStr, len))
   for (const { date } of starts) {
     if (addDays(date, len - 14) === dateStr) return 'ovulation'
   }
   for (const { date, predicted } of starts) {
-    const end = addDays(date, cycle.periodLength - 1)
+    const end = addDays(date, Math.max(1, cycle.periodLength || 5) - 1)
     if (dateStr >= date && dateStr <= end) return predicted ? 'predicted' : 'period'
   }
   return null

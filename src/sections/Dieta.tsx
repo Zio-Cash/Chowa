@@ -10,6 +10,7 @@ import { MacroDonut } from '../components/charts'
 import { Icon } from '../components/brand'
 import { uid } from '../store/seed'
 import { analyzeFoodPhoto, decodeBarcode, lookupBarcode, type FoodDraftScan } from '../lib/foodScan'
+import { useDayCursor } from '../lib/useToday'
 
 // Categorie alimenti (le 6 assegnabili + "Favorites" come filtro speciale).
 const FOOD_CATS = ['Carbo', 'Protein', 'Vegetables', 'Fruit', 'Sweet', 'Other'] as const
@@ -42,8 +43,7 @@ const bucketOf = (c: string) => CAT_MAP[c] ?? 'Other'
 
 export default function Dieta() {
   const { state, getMeals, toggleMeal, addMeal, copyDay } = useStore()
-  const oggi = dateKey()
-  const [today, setToday] = useState(oggi)
+  const [today, setToday, oggi] = useDayCursor()
   const isToday = today === oggi
   const isFuture = today > oggi
   const weekMon = mondayOf(parseKey(today))
@@ -150,11 +150,13 @@ export default function Dieta() {
                 <button
                   onClick={() => !isFuture && toggleMeal(today, m.id)}
                   disabled={isFuture}
-                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 transition disabled:opacity-30 ${
-                    m.spuntato ? 'border-verde bg-verde text-[#06231d]' : 'border-black/20 text-transparent'
+                  aria-label={m.spuntato ? `${m.nome}: mangiato` : `Segna ${m.nome} come mangiato`}
+                  aria-pressed={m.spuntato}
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 transition active:scale-90 disabled:opacity-30 ${
+                    m.spuntato ? 'border-verde bg-verde text-[#faf7f1]' : 'border-black/20 text-transparent'
                   }`}
                 >
-                  ✓
+                  <Icon.check size={16} />
                 </button>
                 <button onClick={() => setEditMeal(m.id)} className="flex flex-1 items-center gap-2 text-left">
                   <div className="flex-1">
@@ -256,7 +258,7 @@ function MealEditor({ date, mealId, onClose }: { date: string; mealId: string; o
               onClose()
             }
           }}
-          className="flex h-11 w-11 items-center justify-center rounded-2xl bg-red-500/10 text-red-300"
+          className="flex h-11 w-11 items-center justify-center rounded-2xl bg-shu/10 text-shu"
           aria-label="Elimina pasto"
         >
           <Icon.trash size={18} />
@@ -577,7 +579,7 @@ function MealStructureSheet({ open, onClose }: { open: boolean; onClose: () => v
             <button
               onClick={() => list.length > 1 && remove(s.id)}
               disabled={list.length <= 1}
-              className="flex h-9 w-9 items-center justify-center text-red-300 disabled:opacity-30"
+              className="flex h-9 w-9 items-center justify-center text-shu disabled:opacity-30"
               aria-label="Elimina pasto"
             >
               <Icon.trash size={16} />
@@ -639,7 +641,8 @@ function ShoppingListSheet({ open, onClose }: { open: boolean; onClose: () => vo
   const toggle = (id: string) =>
     setChecked((s) => {
       const n = new Set(s)
-      n.has(id) ? n.delete(id) : n.add(id)
+      if (n.has(id)) n.delete(id)
+      else n.add(id)
       return n
     })
 
@@ -683,7 +686,7 @@ function ShoppingListSheet({ open, onClose }: { open: boolean; onClose: () => vo
                 type="date"
                 value={customStart}
                 max={customEnd}
-                onChange={(e) => setCustomStart(e.target.value)}
+                onChange={(e) => e.target.value && setCustomStart(e.target.value)}
                 className="min-h-[42px] rounded-2xl bg-surface2 px-3 text-sm outline-none ring-1 ring-black/[0.05]"
               />
             </label>
@@ -693,7 +696,7 @@ function ShoppingListSheet({ open, onClose }: { open: boolean; onClose: () => vo
                 type="date"
                 value={customEnd}
                 min={customStart}
-                onChange={(e) => setCustomEnd(e.target.value)}
+                onChange={(e) => e.target.value && setCustomEnd(e.target.value)}
                 className="min-h-[42px] rounded-2xl bg-surface2 px-3 text-sm outline-none ring-1 ring-black/[0.05]"
               />
             </label>
@@ -911,12 +914,12 @@ function FoodDB({ open, onClose }: { open: boolean; onClose: () => void }) {
                   onChange={(v) => setDraft({ ...draft, unita: v })}
                 />
               </Field>
-              <Field label={`Qualità: ${'★'.repeat(draft.qualita)}`}>
+              <Field label="Qualità">
                 <Segmented
                   options={[
-                    { value: '1', label: '★' },
-                    { value: '2', label: '★★' },
-                    { value: '3', label: '★★★' },
+                    { value: '1', label: 'Bassa' },
+                    { value: '2', label: 'Media' },
+                    { value: '3', label: 'Alta' },
                   ]}
                   value={String(draft.qualita)}
                   onChange={(v) => setDraft({ ...draft, qualita: Number(v) })}
@@ -993,7 +996,7 @@ function FoodDB({ open, onClose }: { open: boolean; onClose: () => void }) {
                 </button>
                 <button
                   onClick={() => confirm(`Eliminare ${f.nome}?`) && deleteFood(f.id)}
-                  className="flex h-9 w-9 items-center justify-center rounded-full text-red-300"
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-shu"
                   aria-label="Elimina"
                 >
                   <Icon.trash size={17} />

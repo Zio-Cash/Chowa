@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Icon } from './brand'
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>
@@ -70,13 +71,13 @@ export default function InstallButton({ className = '' }: { className?: string }
         onClick={handleClick}
         className={`inline-flex items-center justify-center gap-2 text-xs font-medium uppercase tracking-[0.2em] text-muted transition active:scale-[0.98] ${className}`}
       >
-        <span aria-hidden>↓</span> Installa l'app
+        <Icon.chevronDown size={14} /> Installa l'app
       </button>
 
       {showIOS && (
         <div className="fixed inset-0 z-[60] flex items-end justify-center" role="dialog">
-          <div className="absolute inset-0 bg-black/30" onClick={() => setShowIOS(false)} />
-          <div className="animate-fade-up relative w-full max-w-[480px] rounded-t-[28px] bg-surface p-6 pb-10 ring-1 ring-black/[0.06]">
+          <div className="backdrop-in absolute inset-0 bg-black/30" onClick={() => setShowIOS(false)} />
+          <div className="sheet-in relative w-full max-w-[480px] rounded-t-[28px] bg-surface p-6 pb-[calc(env(safe-area-inset-bottom)+1.75rem)] ring-1 ring-black/[0.06]">
             <h3 className="font-display text-xl font-medium text-ink">Installa Chōwa</h3>
             <p className="mt-2 text-sm text-muted">
               Su iPhone l'app si aggiunge dalla schermata Home di Safari:
@@ -84,7 +85,10 @@ export default function InstallButton({ className = '' }: { className?: string }
             <ol className="mt-4 space-y-3 text-sm text-ink">
               <li className="flex gap-3">
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal text-[11px] font-bold text-[#faf7f1]">1</span>
-                Tocca il pulsante <b>Condividi</b> ⬆️ nella barra di Safari
+                <span>
+                  Tocca il pulsante <b>Condividi</b>{' '}
+                  <Icon.share size={15} className="-mt-0.5 inline-block align-middle" /> nella barra di Safari
+                </span>
               </li>
               <li className="flex gap-3">
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal text-[11px] font-bold text-[#faf7f1]">2</span>

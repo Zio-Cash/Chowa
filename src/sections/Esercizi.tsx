@@ -111,7 +111,7 @@ function MyExercises({ onOpenLibrary }: { onOpenLibrary: () => void }) {
                     >
                       <Thumb src={imgs[0]} />
                       <span className="min-w-0 flex-1 truncate text-sm">{e.nome}</span>
-                      <span className="text-muted">{isOpen ? '▾' : '▸'}</span>
+                      {isOpen ? <Icon.chevronUp size={14} className="text-muted" /> : <Icon.chevronDown size={14} className="text-muted" />}
                     </button>
                     {isOpen && (
                       <div className="border-t border-black/[0.05] px-3 py-3">
@@ -134,7 +134,7 @@ function MyExercises({ onOpenLibrary }: { onOpenLibrary: () => void }) {
                               deleteCatalogExercise(e.id)
                               deleteExImage(e.id).then(reloadImgs)
                             }}
-                            className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium text-red-500"
+                            className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium text-shu"
                           >
                             <Icon.trash size={14} /> Elimina
                           </button>
@@ -241,7 +241,7 @@ function Library({ onPick }: { onPick?: (x: LibExercise) => void }) {
                 {x.m.map((m) => it(MUSCOLI, m)).join(', ')} · {it(ATTREZZI, x.e)}
               </span>
             </span>
-            <span className="text-muted">{onPick ? <Icon.check size={16} /> : '▸'}</span>
+            <span className="text-muted">{onPick ? <Icon.check size={16} /> : <Icon.chevronRight size={14} />}</span>
           </button>
         ))}
       </div>
@@ -444,22 +444,25 @@ function Thumb({ src }: { src?: string }) {
 /** Alterna le due foto (partenza/arrivo) come una piccola animazione. */
 function FlipImage({ srcs, alt }: { srcs: string[]; alt: string }) {
   const [k, setK] = useState(0)
+  // chiave stabile: l'array arriva nuovo a ogni render, il contenuto no
+  const sig = srcs.join('|')
   useEffect(() => {
-    if (srcs.length < 2) return
-    const t = window.setInterval(() => setK((v) => (v + 1) % srcs.length), 900)
+    if (sig.split('|').length < 2) return
+    const t = window.setInterval(() => setK((v) => (v + 1) % 2), 900)
     return () => window.clearInterval(t)
-  }, [srcs])
+  }, [sig])
+  // spazio riservato (3:2): niente salto della pagina quando l'immagine arriva
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-white">
+    <div className="relative aspect-[3/2] max-h-[280px] w-full overflow-hidden rounded-2xl bg-surface2">
       {srcs.map((s, i) => (
         <img
           key={s}
           src={s}
           alt={alt}
-          className={`w-full object-contain transition-opacity duration-300 ${i === 0 ? 'relative' : 'absolute inset-0 h-full'} ${
-            i === k ? 'opacity-100' : 'opacity-0'
+          decoding="async"
+          className={`absolute inset-0 h-full w-full object-contain transition-opacity duration-300 ${
+            i === k % srcs.length ? 'opacity-100' : 'opacity-0'
           }`}
-          style={{ maxHeight: 280 }}
         />
       ))}
     </div>
@@ -554,7 +557,7 @@ function ExerciseCatalogEditor({
         <Field label="Immagine">
           <input ref={input} type="file" accept="image/*" onChange={onFile} className="hidden" />
           {preview && (
-            <img src={preview} alt="" className="mb-2 max-h-48 w-full rounded-2xl bg-white object-contain" />
+            <img src={preview} alt="" className="mb-2 max-h-48 w-full rounded-2xl bg-surface2 object-contain" />
           )}
           <div className="flex flex-wrap gap-2">
             <button
@@ -579,7 +582,7 @@ function ExerciseCatalogEditor({
                   if (own) setPending(null)
                   else setLibId('')
                 }}
-                className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium text-red-500"
+                className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium text-shu"
               >
                 <Icon.trash size={14} /> Rimuovi
               </button>

@@ -156,6 +156,18 @@ export const Icon = {
     svg(<><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3Z" /><path d="M13.5 6.5l3 3" /></>, size, className),
   chevronUp: ({ size, className }: IconProps) => svg(<path d="M6 15l6-6 6 6" />, size, className),
   chevronDown: ({ size, className }: IconProps) => svg(<path d="M6 9l6 6 6-6" />, size, className),
+  chevronLeft: ({ size, className }: IconProps) => svg(<path d="M15 6l-6 6 6 6" />, size, className),
+  chevronRight: ({ size, className }: IconProps) => svg(<path d="M9 6l6 6-6 6" />, size, className),
+  share: ({ size, className }: IconProps) =>
+    svg(
+      <>
+        <path d="M12 3v12" />
+        <path d="M8 7l4-4 4 4" />
+        <path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1" />
+      </>,
+      size,
+      className,
+    ),
   camera: ({ size, className }: IconProps) =>
     svg(<><path d="M4 8h3l1.6-2.2h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" /><circle cx="12" cy="13" r="3.4" /></>, size, className),
   barcode: ({ size, className }: IconProps) =>

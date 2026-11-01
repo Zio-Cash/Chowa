@@ -68,9 +68,9 @@ export function resizeImage(file: File, max = 720, quality = 0.82): Promise<stri
       canvas.width = w
       canvas.height = h
       const ctx = canvas.getContext('2d')
+      URL.revokeObjectURL(url)
       if (!ctx) return reject(new Error('no ctx'))
       ctx.drawImage(img, 0, 0, w, h)
-      URL.revokeObjectURL(url)
       resolve(canvas.toDataURL('image/jpeg', quality))
     }
     img.onerror = () => {

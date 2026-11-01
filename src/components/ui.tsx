@@ -22,16 +22,14 @@ export function Card({
   )
 }
 
-export function CardTitle({ children, icon }: { children: ReactNode; icon?: string }) {
+export function CardTitle({ children }: { children: ReactNode }) {
+  return <h2 className="mb-4 font-display text-base tracking-wide text-ink">{children}</h2>
+}
+
+/** Etichetta piccola in maiuscolo: unica per tutta l'app. */
+export function Eyebrow({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <h2 className="mb-4 flex items-center gap-2.5 font-display text-[15px] font-medium tracking-wide text-ink">
-      {icon && (
-        <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-black/[0.04] text-base">
-          {icon}
-        </span>
-      )}
-      {children}
-    </h2>
+    <div className={`text-[11px] font-medium uppercase tracking-[0.16em] text-muted ${className}`}>{children}</div>
   )
 }
 
@@ -46,10 +44,10 @@ export function Button({
   const base =
     'inline-flex min-h-[46px] items-center justify-center gap-2 rounded-2xl px-5 text-sm font-medium tracking-wide transition active:scale-[0.98] disabled:opacity-40'
   const styles: Record<string, string> = {
-    primary: 'bg-teal text-[#faf7f1] shadow-[0_10px_30px_-12px_rgba(33, 29, 25,0.35)]',
+    primary: 'bg-teal text-[#faf7f1] shadow-[0_10px_30px_-12px_rgba(33,29,25,0.35)]',
     soft: 'bg-teal/[0.12] text-teal',
     ghost: 'bg-black/[0.05] text-ink',
-    danger: 'bg-red-500/10 text-red-300',
+    danger: 'bg-shu/10 text-shu',
   }
   return (
     <button className={`${base} ${styles[variant]} ${className}`} {...rest}>
@@ -95,8 +93,9 @@ export function Stepper({
     setText(cleaned)
     if (cleaned.trim() === '') return
     const n = parseFloat(cleaned.replace(',', '.'))
-    // niente clamp mentre digiti: si applica all'uscita dal campo
-    if (!Number.isNaN(n)) onChange(n)
+    // mentre digiti si salva solo un valore già nei limiti (es. "2" mentre
+    // scrivi "28" non deve finire nello store); il resto si sistema al blur
+    if (!Number.isNaN(n) && n === clamp(n)) onChange(n)
   }
 
   return (
@@ -104,7 +103,8 @@ export function Stepper({
       <button
         type="button"
         onClick={() => onChange(clamp(value - step))}
-        className="h-9 w-9 shrink-0 rounded-full bg-black/[0.07] text-lg font-bold text-ink active:scale-90"
+        aria-label="Diminuisci"
+        className="h-10 w-10 shrink-0 rounded-full bg-black/[0.07] text-lg font-bold text-ink transition active:scale-90"
       >
         −
       </button>
@@ -138,7 +138,8 @@ export function Stepper({
       <button
         type="button"
         onClick={() => onChange(clamp(value + step))}
-        className="h-9 w-9 shrink-0 rounded-full bg-black/[0.07] text-lg font-bold text-ink active:scale-90"
+        aria-label="Aumenta"
+        className="h-10 w-10 shrink-0 rounded-full bg-black/[0.07] text-lg font-bold text-ink transition active:scale-90"
       >
         +
       </button>
@@ -146,12 +147,14 @@ export function Stepper({
   )
 }
 
+// <div> e non <label>: un'etichetta "clicca" il primo pulsante che contiene,
+// quindi toccare il titolo cambiava la scelta (Sesso, Categoria, Serie…).
 export function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <label className="flex flex-col gap-1.5">
-      <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted">{label}</span>
+    <div className="flex flex-col gap-1.5">
+      <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted">{label}</span>
       {children}
-    </label>
+    </div>
   )
 }
 
@@ -162,6 +165,7 @@ export function NumberInput({
   placeholder,
   className = '',
   commitOnBlur = false,
+  integer = false,
 }: {
   value: number | ''
   onChange: (v: number) => void
@@ -174,6 +178,11 @@ export function NumberInput({
    * update globale per ogni battitura.
    */
   commitOnBlur?: boolean
+  /**
+   * Numeri interi (passi, kcal): punti e virgole sono separatori delle
+   * migliaia, così "10.000" vale 10000 e non 10.
+   */
+  integer?: boolean
 }) {
   // Buffer di testo locale: consente di digitare valori decimali con la
   // virgola o il punto (es. "70,5") senza che il valore venga azzerato a ogni
@@ -185,10 +194,13 @@ export function NumberInput({
     if (!focused.current) setText(value === '' ? '' : String(value))
   }, [value])
 
+  const toNum = (raw: string) =>
+    integer ? parseInt(raw.replace(/[^0-9]/g, ''), 10) : parseFloat(raw.replace(',', '.'))
+
   const parse = (raw: string): number => {
     const cleaned = raw.trim()
     if (cleaned === '') return 0
-    const n = parseFloat(cleaned.replace(',', '.'))
+    const n = toNum(cleaned)
     return Number.isNaN(n) ? (value === '' ? 0 : value) : n
   }
 
@@ -201,7 +213,7 @@ export function NumberInput({
       onChange(0)
       return
     }
-    const n = parseFloat(cleaned.replace(',', '.'))
+    const n = toNum(cleaned)
     if (!Number.isNaN(n)) onChange(n)
   }
 
@@ -209,7 +221,7 @@ export function NumberInput({
     <div className={`flex items-center rounded-2xl bg-black/[0.05] px-4 ring-1 ring-black/[0.04] focus-within:ring-teal/30 ${className}`}>
       <input
         type="text"
-        inputMode="decimal"
+        inputMode={integer ? 'numeric' : 'decimal'}
         value={text}
         placeholder={placeholder}
         onFocus={() => {
@@ -233,6 +245,32 @@ export function NumberInput({
   )
 }
 
+/** Frecce ‹ › per mese/anno: stesse ovunque. */
+export function NavArrows({
+  onPrev,
+  onNext,
+  prevDisabled,
+  nextDisabled,
+}: {
+  onPrev: () => void
+  onNext: () => void
+  prevDisabled?: boolean
+  nextDisabled?: boolean
+}) {
+  const cls =
+    'flex h-10 w-10 items-center justify-center rounded-full bg-black/[0.04] text-muted transition active:bg-black/[0.08] disabled:opacity-25'
+  return (
+    <div className="flex gap-1">
+      <button onClick={onPrev} disabled={prevDisabled} aria-label="Precedente" className={cls}>
+        <Icon.chevronLeft size={16} />
+      </button>
+      <button onClick={onNext} disabled={nextDisabled} aria-label="Successivo" className={cls}>
+        <Icon.chevronRight size={16} />
+      </button>
+    </div>
+  )
+}
+
 export function Segmented<T extends string>({
   options,
   value,
@@ -249,7 +287,8 @@ export function Segmented<T extends string>({
           key={o.value}
           type="button"
           onClick={() => onChange(o.value)}
-          className={`min-h-[40px] flex-1 whitespace-nowrap rounded-xl px-3 text-sm font-medium tracking-wide transition ${
+          aria-pressed={value === o.value}
+          className={`min-h-[40px] flex-1 whitespace-nowrap rounded-xl px-3 text-sm font-medium tracking-wide transition active:scale-[0.97] ${
             value === o.value ? 'bg-surface2 text-teal shadow-sm' : 'text-muted'
           }`}
         >
@@ -259,6 +298,17 @@ export function Segmented<T extends string>({
     </div>
   )
 }
+
+// Blocco dello scroll della pagina sotto ai fogli (contatore: fogli annidati).
+let sheetLocks = 0
+function lockScroll() {
+  if (sheetLocks++ === 0) document.documentElement.style.overflow = 'hidden'
+  return () => {
+    if (--sheetLocks === 0) document.documentElement.style.overflow = ''
+  }
+}
+
+const SHEET_OUT_MS = 220
 
 export function Sheet({
   open,
@@ -274,20 +324,75 @@ export function Sheet({
   /** Se true, il corpo non scorre: lo scroll lo gestiscono i figli (header fisso). */
   flush?: boolean
 }) {
-  if (!open) return null
+  // Il foglio resta montato durante l'animazione di uscita. La chiusura dal
+  // pulsante o dallo sfondo anima prima e poi avvisa il genitore, così scorre
+  // via anche quando il genitore lo smonta subito ({x && <Sheet …/>}).
+  const [shown, setShown] = useState(open)
+  const [closing, setClosing] = useState(false)
+  if (open && !shown) {
+    setShown(true)
+    setClosing(false)
+  }
+  if (!open && shown && !closing) setClosing(true)
+
+  const onCloseRef = useRef(onClose)
+  useEffect(() => {
+    onCloseRef.current = onClose
+  })
+  const internal = useRef(false)
+
+  useEffect(() => {
+    if (!closing) return
+    const t = setTimeout(() => {
+      setShown(false)
+      setClosing(false)
+      if (internal.current) {
+        internal.current = false
+        onCloseRef.current()
+      }
+    }, SHEET_OUT_MS)
+    return () => clearTimeout(t)
+  }, [closing])
+
+  useEffect(() => {
+    if (!shown) return
+    const unlock = lockScroll()
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        internal.current = true
+        setClosing(true)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => {
+      unlock()
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [shown])
+
+  if (!shown) return null
+  const requestClose = () => {
+    if (closing) return
+    internal.current = true
+    setClosing(true)
+  }
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center" role="dialog">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+    <div className="fixed inset-0 z-50 flex items-end justify-center" role="dialog" aria-modal="true" aria-label={title}>
       <div
-        className={`animate-fade-up relative flex max-h-[88dvh] w-full max-w-[480px] flex-col rounded-t-[28px] bg-surface p-5 pb-8 ring-1 ring-black/[0.05] ${
+        className={`absolute inset-0 touch-none bg-black/40 ${closing ? 'backdrop-out' : 'backdrop-in'}`}
+        onClick={requestClose}
+      />
+      <div
+        className={`relative flex max-h-[88dvh] w-full max-w-[480px] flex-col overscroll-contain rounded-t-[28px] bg-surface p-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] ring-1 ring-black/[0.05] ${
           flush ? 'overflow-hidden' : 'overflow-y-auto'
-        }`}
+        } ${closing ? 'sheet-out' : 'sheet-in'}`}
       >
         <div className="mb-4 flex shrink-0 items-center justify-between">
-          <h3 className="font-display text-xl font-medium tracking-wide">{title}</h3>
+          <h3 className="font-display text-xl tracking-wide">{title}</h3>
           <button
-            onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-black/[0.08] active:scale-90"
+            onClick={requestClose}
+            aria-label="Chiudi"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-black/[0.08] transition active:scale-90"
           >
             <Icon.close size={16} />
           </button>

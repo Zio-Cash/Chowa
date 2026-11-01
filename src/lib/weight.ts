@@ -66,6 +66,8 @@ export function projectToTarget(
   if (Math.abs(slopePerWeek) < 0.02) return null // sostanzialmente fermo
   if (Math.sign(remaining) !== Math.sign(slopePerWeek)) return null // ci si allontana
   const weeksToGo = remaining / slopePerWeek
+  // oltre ~2 anni la proiezione non ha senso (ritmo quasi fermo)
+  if (weeksToGo > 104) return null
   const etaDate = dateKey(addDays(parseKey(oggi), Math.round(weeksToGo * 7)))
   return { weeksToGo, etaDate, perWeek: slopePerWeek }
 }

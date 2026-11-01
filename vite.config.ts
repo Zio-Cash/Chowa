@@ -10,12 +10,14 @@ export default defineConfig({
       output: {
         // Librerie pesanti in chunk separati: primo avvio più leggero e
         // aggiornamenti più veloci (queste cambiano di rado, restano in cache).
-        manualChunks(id: string) {
-          if (id.includes('node_modules')) {
-            if (id.includes('firebase') || id.includes('@firebase')) return 'firebase'
-            if (id.includes('recharts') || id.includes('d3-') || id.includes('victory'))
-              return 'charts'
-          }
+        // React ha la priorità più alta: altrimenti finirebbe dentro il chunk
+        // dei grafici e lo trascinerebbe nel primo avvio anche quando non serve.
+        codeSplitting: {
+          groups: [
+            { name: 'react', test: /[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/, priority: 3 },
+            { name: 'firebase', test: /[\\/]node_modules[\\/](@?firebase)/, priority: 2 },
+            { name: 'charts', test: /[\\/]node_modules[\\/](recharts|d3-|victory|react-redux|@reduxjs|redux|immer|reselect|es-toolkit|decimal\.js|eventemitter3|react-is|use-sync-external-store)/, priority: 1 },
+          ],
         },
       },
     },
@@ -25,7 +27,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icon.svg', 'icon-maskable.svg'],
+      includeAssets: ['icon.svg', 'icon-maskable.svg', 'apple-touch-icon.png'],
       manifest: {
         name: 'Chōwa 調和 — Strength in Balance',
         short_name: 'Chōwa',
@@ -38,14 +40,31 @@ export default defineConfig({
         background_color: '#f6f3ed',
         theme_color: '#f6f3ed',
         icons: [
+          { src: 'icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: 'icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
           { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
-          { src: 'icon-maskable.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'maskable' },
         ],
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         navigateFallback: '/index.html',
         runtimeCaching: [
+          {
+            // font di Google: il CSS si aggiorna in background, i file restano in cache
+            urlPattern: ({ url }) => url.hostname === 'fonts.googleapis.com',
+            handler: 'StaleWhileRevalidate',
+            options: { cacheName: 'google-fonts-css' },
+          },
+          {
+            urlPattern: ({ url }) => url.hostname === 'fonts.gstatic.com',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts',
+              expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
           {
             // libreria esercizi (JSON): veloce dalla cache, aggiornata in background
             urlPattern: ({ url }) => url.pathname === '/exercises-lib.json',

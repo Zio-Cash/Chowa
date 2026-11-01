@@ -137,7 +137,15 @@ export default async (req: Request) => {
   const enc = new TextEncoder()
   const stream = new ReadableStream({
     async start(controller) {
-      const keepAlive = setInterval(() => controller.enqueue(enc.encode(' ')), 4000)
+      // se il telefono chiude la connessione, lo stream è già chiuso: niente eccezioni
+      const send = (text: string) => {
+        try {
+          controller.enqueue(enc.encode(text))
+        } catch {
+          clearInterval(keepAlive)
+        }
+      }
+      const keepAlive = setInterval(() => send(' '), 4000)
       let result: unknown
       try {
         result = await analyze(image, mediaType)
@@ -145,8 +153,12 @@ export default async (req: Request) => {
         result = { error: errorMessage(e) }
       }
       clearInterval(keepAlive)
-      controller.enqueue(enc.encode(JSON.stringify(result)))
-      controller.close()
+      send(JSON.stringify(result))
+      try {
+        controller.close()
+      } catch {
+        /* già chiuso */
+      }
     },
   })
   return new Response(stream, { headers: { 'content-type': 'application/json' } })

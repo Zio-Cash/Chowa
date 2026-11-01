@@ -1,3 +1,5 @@
+import { addDays, dateKey, parseKey } from './date'
+
 export const LEVEL_SIZE = 300
 
 export const XP = {
@@ -34,6 +36,16 @@ export function levelInfo(xp: number): LevelInfo {
   const inLevel = xp % LEVEL_SIZE
   const label = LABELS[Math.min(livello - 1, LABELS.length - 1)]
   return { livello, inLevel, soglia: LEVEL_SIZE, label, pct: inLevel / LEVEL_SIZE }
+}
+
+/**
+ * Streak da mostrare: quella salvata vale solo se l'ultimo giorno attivo è
+ * oggi o ieri; se hai saltato dei giorni è tornata a zero.
+ */
+export function liveStreak(g: { streak: number; ultimaData: string | null }, oggi: string): number {
+  if (!g.ultimaData) return 0
+  if (g.ultimaData === oggi) return g.streak
+  return g.ultimaData === dateKey(addDays(parseKey(oggi), -1)) ? g.streak : 0
 }
 
 export interface BadgeDef {

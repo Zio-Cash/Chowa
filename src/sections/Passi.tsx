@@ -18,14 +18,14 @@ import {
   weeksOfMonth,
 } from '../lib/date'
 import { fmtSteps } from '../lib/goals'
-import { Card, CardTitle, NumberInput } from '../components/ui'
+import { Card, NavArrows, NumberInput } from '../components/ui'
+import { Icon } from '../components/brand'
 
 const avg = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0)
 
 export default function Passi() {
   const { state, setSteps } = useStore()
   const stepTarget = state.settings.goals.stepTarget
-  const now = new Date()
   // Mese corrente = quello della settimana in corso (regola del giovedì).
   const cur = weekMonthOf()
   const [year, setYear] = useState(cur.year)
@@ -55,36 +55,32 @@ export default function Passi() {
 
   return (
     <div className="space-y-4 pb-4">
-      <Card gradient="bg-gradient-to-br from-[#ffffff] to-[#f1ece2] text-ink">
-        <div className="flex items-center justify-between">
-          <CardTitle>
-            <span className="text-ink">Passi {year}</span>
-          </CardTitle>
-          <div className="flex gap-1">
-            <button onClick={() => setYear((y) => y - 1)} className="h-8 w-8 rounded-full bg-black/15">
-              ‹
-            </button>
-            <button onClick={() => setYear((y) => y + 1)} className="h-8 w-8 rounded-full bg-black/15">
-              ›
-            </button>
-          </div>
+      <Card>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="font-display text-base tracking-wide">Passi {year}</h2>
+          <NavArrows
+            onPrev={() => setYear((y) => y - 1)}
+            onNext={() => setYear((y) => y + 1)}
+            prevDisabled={year <= startY}
+            nextDisabled={year >= cur.year}
+          />
         </div>
         <div className="font-mono text-3xl font-bold tabular">{fmtSteps(Math.round(yearAvg))}</div>
-        <div className="text-xs opacity-80">media giornaliera annuale · obiettivo {fmtSteps(stepTarget)}</div>
+        <div className="text-xs text-muted">media giornaliera annuale · obiettivo {fmtSteps(stepTarget)}</div>
         <div className="mt-3 h-40">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chart} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
-              <XAxis dataKey="m" tick={{ fill: '#211d19cc', fontSize: 10 }} axisLine={false} tickLine={false} />
+              <XAxis dataKey="m" tick={{ fill: '#837b6e', fontSize: 10 }} axisLine={false} tickLine={false} />
               <Tooltip
                 cursor={{ fill: '#211d1914' }}
-                contentStyle={{ borderRadius: 12, border: 'none', fontSize: 12, background: '#ffffff', color: '#211d19' }}
+                contentStyle={{ borderRadius: 12, border: 'none', fontSize: 12, background: '#fdfbf6', color: '#211d19' }}
                 formatter={(v) => [fmtSteps(Number(v)), 'media']}
               />
               <Bar dataKey="avg" radius={[6, 6, 0, 0]}>
                 {chart.map((r) => (
                   <Cell
                     key={r.i}
-                    fill={r.i === now.getMonth() && year === now.getFullYear() ? '#211d19' : '#d0cabd'}
+                    fill={r.i === cur.month0 && year === cur.year ? '#211d19' : '#cbc4b8'}
                   />
                 ))}
               </Bar>
@@ -110,7 +106,7 @@ export default function Passi() {
                 </span>
                 <span className="flex items-center gap-2 font-mono text-sm tabular">
                   <span className={mAvg ? '' : 'text-muted'}>{fmtSteps(Math.round(mAvg))}</span>
-                  <span className="text-muted">{open ? '▾' : '▸'}</span>
+                  {open ? <Icon.chevronUp size={14} className="text-muted" /> : <Icon.chevronDown size={14} className="text-muted" />}
                 </span>
               </button>
               {open && <MonthBody year={year} month={mi} stepsLog={state.stepsLog} onSet={setSteps} />}
@@ -155,7 +151,7 @@ function MonthBody({
               <span className="text-sm">{rangeLabel(w.start, w.end)}</span>
               <span className="flex items-center gap-2 font-mono text-xs tabular">
                 <span className={wAvg ? '' : 'text-muted'}>{fmtSteps(Math.round(wAvg))}</span>
-                <span className="text-muted">{open ? '▾' : '▸'}</span>
+                {open ? <Icon.chevronUp size={14} className="text-muted" /> : <Icon.chevronDown size={14} className="text-muted" />}
               </span>
             </button>
             {open && (
@@ -174,6 +170,7 @@ function MonthBody({
                         placeholder="—"
                         className="flex-1"
                         commitOnBlur
+                        integer
                       />
                     </div>
                   )

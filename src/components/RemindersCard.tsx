@@ -84,10 +84,11 @@ function Toggle({ on, onClick }: { on: boolean; onClick: () => void }) {
     <button
       onClick={onClick}
       aria-label="Attiva/disattiva"
-      className={`h-6 w-10 shrink-0 rounded-full p-0.5 transition ${on ? 'bg-teal' : 'bg-black/15'}`}
+      aria-pressed={on}
+      className={`h-7 w-12 shrink-0 rounded-full p-0.5 transition ${on ? 'bg-teal' : 'bg-black/15'}`}
     >
       <span
-        className={`block h-5 w-5 rounded-full bg-white shadow transition ${on ? 'translate-x-4' : ''}`}
+        className={`block h-6 w-6 rounded-full bg-surface2 shadow transition ${on ? 'translate-x-5' : ''}`}
       />
     </button>
   )

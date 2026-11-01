@@ -103,7 +103,7 @@ export default function SyncSheet({ open, onClose }: { open: boolean; onClose: (
                       <code className="min-w-0 flex-1 truncate font-mono text-xs text-muted">{v}</code>
                       <button
                         onClick={() => removeViewer(v)}
-                        className="shrink-0 text-xs text-red-400"
+                        className="shrink-0 text-xs text-shu"
                       >
                         Rimuovi
                       </button>

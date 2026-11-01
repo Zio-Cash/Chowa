@@ -13,7 +13,8 @@ import { MacroDonut } from '../components/charts'
 import { Icon } from '../components/brand'
 import { macroPct } from '../lib/nutrition'
 import { weightTrend } from '../lib/weight'
-import { dateKey } from '../lib/date'
+import { dateKey, parseKey } from '../lib/date'
+import { daysBetween } from '../lib/cycle'
 import type { AppState, Targets } from '../types'
 
 const sexOpts = (Object.keys(SEX_LABEL) as Sex[]).map((v) => ({ value: v, label: SEX_LABEL[v] }))
@@ -34,10 +35,11 @@ export default function Calorie() {
   const goals = state.settings.goals
   const [profilo, setProfiloLocal] = useState<CalorieProfile>(state.settings.profilo)
   const calc = useMemo(() => computeTargets(profilo), [profilo])
-  const [macros, setMacros] = useState<Macros>({
-    proteine: calc.proteine,
-    carboidrati: calc.carboidrati,
-    grassi: calc.grassi,
+  // Si parte dagli obiettivi salvati (anche se modificati a mano o adattivi),
+  // non dalla formula: aprire e premere "Imposta" non deve cambiarli.
+  const [macros, setMacros] = useState<Macros>(() => {
+    const t = state.settings.targets
+    return { proteine: t.proteine, carboidrati: t.carboidrati, grassi: t.grassi }
   })
 
   // Modifica profilo: aggiorna anche i macro dalla formula.
@@ -62,7 +64,7 @@ export default function Calorie() {
 
   return (
     <div className="space-y-4 pb-4">
-      <AdaptiveCard state={state} onApply={setTargets} />
+      <AdaptiveCard state={state} onApply={(t) => setTargets(t, true)} />
 
       <Card>
         <CardTitle>Calcolatore fabbisogno</CardTitle>
@@ -142,9 +144,11 @@ export default function Calorie() {
 
         <div className="mt-4 grid grid-cols-2 gap-2">
           <Button variant="ghost" onClick={ricalcola}>
-            ↺ Ricalcola
+            <Icon.reset size={16} /> Ricalcola
           </Button>
-          <Button onClick={imposta}>✓ Imposta obiettivi</Button>
+          <Button onClick={imposta}>
+            <Icon.check size={16} /> Imposta obiettivi
+          </Button>
         </div>
       </Card>
 
@@ -286,6 +290,15 @@ function AdaptiveCard({ state, onApply }: { state: AppState; onApply: (t: Target
     msg = `Stai calando in fretta (${s.toFixed(2)} kg/sett): meglio aggiungere circa 150 kcal per preservare massa muscolare e metabolismo.`
   } else {
     msg = `Il tuo ritmo è buono (${s < 0 ? '' : '+'}${s.toFixed(2)} kg/sett): mantieni le calorie attuali.`
+  }
+
+  // Dopo un aggiustamento si aspettano 2 settimane prima di proporne un altro:
+  // il peso ha bisogno di tempo per rispondere (e niente −150 ripetuti a ogni tocco).
+  const applicatoDaPoco =
+    !!state.settings.adattivoIl && daysBetween(state.settings.adattivoIl, dateKey()) < 14
+  if (applicatoDaPoco && delta !== 0) {
+    delta = 0
+    msg = `Hai aggiornato le calorie il ${parseKey(state.settings.adattivoIl!).getDate()}/${parseKey(state.settings.adattivoIl!).getMonth() + 1}: aspetta un paio di settimane per vedere l'effetto sul peso.`
   }
 
   const nuove: Targets = {

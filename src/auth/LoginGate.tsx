@@ -30,19 +30,22 @@ function isInAppBrowser(): boolean {
   return false
 }
 
-// Durata dell'intro della Welcome prima dell'apertura automatica.
-const ANIM_MS = 2600
+// Durata minima dell'intro (il tempo del login conta dentro, non si somma):
+// basta perché il kanji si metta a fuoco, senza far aspettare a ogni apertura.
+const ANIM_MS = 1500
 
 export default function LoginGate({ children }: { children: ReactNode }) {
   const { user, loading, signIn, authError } = useAuth()
   const [entered, setEntered] = useState(false)
   const [busy, setBusy] = useState(false)
   const intent = useRef(false)
+  const [shownAt] = useState(() => performance.now())
 
   // Se sei già autenticata, dopo l'animazione l'app si apre DA SOLA (niente pulsante).
   useEffect(() => {
     if (entered || !user) return
-    const t = setTimeout(() => setEntered(true), ANIM_MS)
+    const wait = Math.max(0, ANIM_MS - (performance.now() - shownAt))
+    const t = setTimeout(() => setEntered(true), wait)
     return () => clearTimeout(t)
   }, [user, entered])
 

@@ -5,7 +5,7 @@ import { dateKey } from '../lib/date'
 // Servono da rete di sicurezza: se il cloud si "svuota", qui restano gli
 // ultimi giorni per ripristinare in un tap.
 const KEY = 'chowa:snapshots'
-const MAX = 14
+const MAX = 7
 
 interface Snapshot {
   date: string // YYYY-MM-DD del giorno in cui è stato salvato
@@ -30,14 +30,15 @@ function load(): Snapshot[] {
 }
 
 function persist(list: Snapshot[]) {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(list))
-  } catch {
-    // quota superata: riprova tenendo solo gli ultimi 5 giorni
+  // Mai più di ~1,5 MB: localStorage (~5 MB) serve prima di tutto ai dati veri.
+  for (let n = list.length; n > 0; n--) {
+    const raw = JSON.stringify(list.slice(-n))
+    if (raw.length > 1_500_000 && n > 1) continue
     try {
-      localStorage.setItem(KEY, JSON.stringify(list.slice(-5)))
+      localStorage.setItem(KEY, raw)
+      return
     } catch {
-      /* niente da fare */
+      /* quota: riprova con meno copie */
     }
   }
 }

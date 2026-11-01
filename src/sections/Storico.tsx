@@ -5,7 +5,7 @@ import { fmtSteps, fmtWater } from '../lib/goals'
 import { dayRating, periodStats, weeksForMonth, type DaySummary } from '../lib/history'
 import { weeklyCoach } from '../lib/coach'
 import { Icon } from '../components/brand'
-import { Card, CardTitle } from '../components/ui'
+import { Card, CardTitle, NavArrows } from '../components/ui'
 
 const MESI = [
   'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
@@ -91,15 +91,12 @@ export default function Storico() {
         </Card>
       )}
 
-      <Card gradient="bg-gradient-to-br from-[#ffffff] to-[#f1ece2] text-ink">
-        <div className="flex items-center justify-between">
-          <CardTitle>
-            <span className="text-ink">{MESI[month]} {year}</span>
-          </CardTitle>
-          <div className="flex gap-1">
-            <button onClick={prev} disabled={atStart} className="h-8 w-8 rounded-full bg-black/15 disabled:opacity-25">‹</button>
-            <button onClick={next} disabled={atEnd} className="h-8 w-8 rounded-full bg-black/15 disabled:opacity-25">›</button>
-          </div>
+      <Card>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="font-display text-base tracking-wide">
+            {MESI[month]} {year}
+          </h2>
+          <NavArrows onPrev={prev} onNext={next} prevDisabled={atStart} nextDisabled={atEnd} />
         </div>
         <div className="mt-1 grid grid-cols-3 gap-2">
           <Stat n={stats.allenamenti} label="Allenamenti" />
@@ -179,14 +176,16 @@ function DayRow({ d, open, onToggle }: { d: DaySummary; open: boolean; onToggle:
   const rating = dayRating(d.score)
   return (
     <div className={`rounded-2xl ${d.perfetta ? 'bg-viola/10' : 'bg-black/[0.05]'}`}>
-      <button onClick={onToggle} className="flex w-full items-center gap-2 px-3 py-2">
-        <span className="flex w-14 flex-col items-start leading-tight">
+      <button onClick={onToggle} className="flex w-full items-center gap-2 px-3 py-2 text-left">
+        <span className="flex w-16 shrink-0 flex-col items-start leading-tight">
           <span className="font-mono text-sm font-bold tabular">
-            {GIORNI[date.getDay()]} {date.getDate()}
+            {isToday ? 'Oggi' : `${GIORNI[date.getDay()]} ${date.getDate()}`}
           </span>
-          {isToday && <span className="text-[10px] font-semibold text-arancio">oggi</span>}
+          {rating && (
+            <span className={`mt-0.5 rounded-full px-1.5 text-[10px] font-semibold ${rating.cls}`}>{rating.label}</span>
+          )}
         </span>
-        <span className="flex flex-1 items-center gap-1">
+        <span className="flex min-w-0 flex-1 items-center gap-1">
           {AREAS.map((a) => {
             const on = a.on(d)
             return (
@@ -201,12 +200,7 @@ function DayRow({ d, open, onToggle }: { d: DaySummary; open: boolean; onToggle:
             )
           })}
         </span>
-        {rating && (
-          <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${rating.cls}`}>
-            {rating.label}
-          </span>
-        )}
-        <span className="text-xs text-muted">{open ? '▾' : '▸'}</span>
+        {open ? <Icon.chevronUp size={14} className="shrink-0 text-muted" /> : <Icon.chevronDown size={14} className="shrink-0 text-muted" />}
       </button>
       {open && <DayDetail d={d} />}
     </div>

@@ -63,6 +63,38 @@ const isObj = (v: unknown): v is Record<string, unknown> =>
 const asArr = <T,>(v: unknown, fallback: T[]): T[] => (Array.isArray(v) ? (v as T[]) : fallback)
 const asMap = <T,>(v: unknown, fallback: T): T => (isObj(v) ? (v as T) : fallback)
 
+/** Tiene solo i giorni con un valore del tipo giusto (un import rovinato non deve far crashare). */
+function cleanDays<T>(m: Record<string, T>, ok: (v: unknown) => boolean): Record<string, T> {
+  const bad = Object.keys(m).filter((k) => !ok(m[k]))
+  if (!bad.length) return m
+  const out = { ...m }
+  for (const k of bad) delete out[k]
+  return out
+}
+
+const same = (a: unknown, b: unknown) => a === b || JSON.stringify(a) === JSON.stringify(b)
+
+/**
+ * Fusione a tre vie: base = ultimo stato condiviso col cloud, local = le mie
+ * modifiche non ancora inviate, remote = quello che è arrivato da un altro
+ * dispositivo. Per ogni campo (e per ogni giorno dentro le mappe) vince chi
+ * l'ha cambiato; se l'hanno cambiato entrambi, vince questo dispositivo.
+ */
+function merge3(base: unknown, local: unknown, remote: unknown, depth = 0): unknown {
+  if (same(local, base)) return remote
+  if (same(remote, base) || same(local, remote)) return local
+  if (depth < 3 && isObj(local) && isObj(remote)) {
+    const b = isObj(base) ? base : {}
+    const out: Record<string, unknown> = {}
+    for (const k of new Set([...Object.keys(local), ...Object.keys(remote), ...Object.keys(b)])) {
+      const v = merge3(b[k], local[k], remote[k], depth + 1)
+      if (v !== undefined) out[k] = v
+    }
+    return out
+  }
+  return local
+}
+
 /** Fonde uno stato parziale (da cache locale o cloud) sui valori di default. */
 function mergeState(loaded: Partial<AppState> | null): AppState {
   const base = seedState()
@@ -71,7 +103,7 @@ function mergeState(loaded: Partial<AppState> | null): AppState {
   return {
     ...base,
     // mappe per-giorno (oggetti { 'YYYY-MM-DD': ... })
-    diario: asMap(l.diario, base.diario),
+    diario: cleanDays(asMap(l.diario, base.diario), Array.isArray),
     workoutProgress: asMap(l.workoutProgress, base.workoutProgress),
     weightLog: asMap(l.weightLog, base.weightLog),
     stepsLog: asMap(l.stepsLog, base.stepsLog),
@@ -85,7 +117,7 @@ function mergeState(loaded: Partial<AppState> | null): AppState {
     medals: asMap(l.medals, base.medals),
     mlw: cleanMlw(l.mlw),
     // oggetti strutturati
-    executionPlan: asMap(l.executionPlan, base.executionPlan),
+    executionPlan: asArr(l.executionPlan, base.executionPlan),
     settings: {
       ...base.settings,
       ...(isObj(l.settings) ? l.settings : {}),
@@ -103,12 +135,18 @@ function mergeState(loaded: Partial<AppState> | null): AppState {
     gamification: {
       ...base.gamification,
       ...(isObj(l.gamification) ? l.gamification : {}),
-      eventi: asMap(l.gamification?.eventi, base.gamification.eventi),
+      eventi: cleanDays(asMap(l.gamification?.eventi, base.gamification.eventi), Array.isArray),
     },
   }
 }
 
-function hydrate(): AppState {
+// Di chi è la copia locale: se sul telefono entra un altro account non deve
+// ritrovarsi (né caricare nel suo cloud) i dati della persona precedente.
+const OWNER_KEY = 'fitvita:owner'
+
+function hydrate(uid: string | undefined): AppState {
+  const owner = loadJSON<string | null>(OWNER_KEY, null)
+  if (uid && owner && owner !== uid) return seedState()
   return mergeState(loadJSON<Partial<AppState> | null>(KEY, null))
 }
 
@@ -151,6 +189,8 @@ function mealsFromDefault(md: AppState['mealDefault']): Meal[] {
 interface StoreCtx {
   state: AppState
   persistent: boolean
+  /** L'ultimo salvataggio sul cloud non è riuscito (i dati restano sul telefono). */
+  syncError: boolean
   // cloud / condivisione
   readOnly: boolean
   cloudViewers: string[]
@@ -158,7 +198,7 @@ interface StoreCtx {
   removeViewer: (uid: string) => Promise<void>
   // settings
   setProfile: (p: CalorieProfile) => void
-  setTargets: (t: Targets) => void
+  setTargets: (t: Targets, adattivo?: boolean) => void
   setGoals: (g: DailyGoals) => void
   setAccount: (patch: Partial<Account>) => void
   setReminders: (items: ReminderItem[]) => void
@@ -226,7 +266,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const readOnly = viewingUid != null
   const targetUid = viewingUid ?? user?.uid ?? null
 
-  const [state, setStateRaw] = useState<AppState>(hydrate)
+  const [state, setStateRaw] = useState<AppState>(() => hydrate(user?.uid))
+  const [syncError, setSyncError] = useState(false)
   const persistent = storageIsPersistent()
   const [cloudViewers, setCloudViewers] = useState<string[]>([])
 
@@ -266,8 +307,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     // persona (il mio snapshot non è ancora arrivato): NON salvarli nella mia
     // cache. Il salvataggio riparte quando arriva il mio stato reale.
     if (justExitedReadOnly) return
-    if (!readOnly) saveJSON(KEY, state)
-  }, [state, readOnly])
+    if (!readOnly) {
+      saveJSON(KEY, state)
+      if (user) saveJSON(OWNER_KEY, user.uid)
+    }
+  }, [state, readOnly, user])
 
   // Backup automatico locale (rete di sicurezza): uno snapshot al giorno, solo
   // dei miei dati e solo dopo aver letto il cloud (mai stati vecchi/vuoti).
@@ -277,35 +321,74 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return () => clearTimeout(t)
   }, [state, readOnly])
 
+  // Ultimo stato condiviso col cloud (base per fondere modifiche concorrenti)
+  // e scrittura in attesa del debounce (da inviare subito se l'app si chiude).
+  const synced = useRef<AppState | null>(null)
+  const lastWritten = useRef<{ rev: number; state: AppState } | null>(null)
+  const pending = useRef<(() => void) | null>(null)
+  const pendingTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const flush = useCallback(() => {
+    if (pendingTimer.current) clearTimeout(pendingTimer.current)
+    pendingTimer.current = null
+    const w = pending.current
+    pending.current = null
+    w?.()
+  }, [])
+
   // Ascolto in tempo reale del documento cloud (mio o di chi sto guardando)
   useEffect(() => {
     if (!targetUid) return
     cloudReady.current = false // nuovo target: aspetta il suo primo snapshot
+    synced.current = null
     const ref = doc(db, 'states', targetUid)
     return onSnapshot(
       ref,
       (snap) => {
+        // Offline e senza copia in cache: "non esiste" non è affidabile.
+        // Non creare nulla (sovrascriverebbe il documento vero al rientro online).
+        if (!snap.exists() && snap.metadata.fromCache) return
         cloudReady.current = true // abbiamo letto lo stato del cloud: da ora si può scrivere
         if (snap.exists()) {
           const d = snap.data()
           if (typeof d.data === 'string') {
-            // Ignora l'eco di una MIA scrittura più vecchia della modifica locale.
-            const staleEcho =
-              d.writer === clientId.current &&
-              typeof d.rev === 'number' &&
-              d.rev < localRev.current
-            if (!staleEcho) {
-              skipWrite.current = true
+            const mine = d.writer === clientId.current && typeof d.rev === 'number'
+            if (mine && d.rev <= localRev.current) {
+              // Eco di una mia scrittura: non porta nulla di nuovo (e se è più
+              // vecchia sovrascriverebbe una modifica più recente). Conferma
+              // però che il cloud ora ha quella versione.
+              const w = lastWritten.current
+              if (w && w.rev === d.rev) synced.current = w.state
+            } else {
+              let remote: AppState | null = null
               try {
-                setStateRaw(mergeState(JSON.parse(d.data)))
+                remote = mergeState(JSON.parse(d.data))
               } catch {
                 // documento illeggibile: ignora
+              }
+              if (remote) {
+                // Fusione con le mie modifiche non ancora confermate dal cloud
+                // (base = ultima versione condivisa). Se non ne ho, è il remoto.
+                const merged =
+                  synced.current && !readOnly
+                    ? (merge3(synced.current, stateRef.current, remote) as AppState)
+                    : remote
+                synced.current = remote
+                if (merged === remote) {
+                  skipWrite.current = true
+                  setStateRaw(remote)
+                } else {
+                  // c'erano modifiche mie: le tengo e invio il risultato
+                  localRev.current += 1
+                  setStateRaw(mergeState(merged))
+                }
               }
             }
           }
           setCloudViewers(Array.isArray(d.viewers) ? d.viewers : [])
         } else if (!readOnly && user) {
           // Primo accesso: crea il documento col mio stato locale attuale
+          synced.current = stateRef.current
           setDoc(ref, {
             data: JSON.stringify(stateRef.current),
             viewers: [],
@@ -333,20 +416,48 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       skipWrite.current = false
       return
     }
-    const t = setTimeout(() => {
+    const uid = user.uid
+    const snapshot = state
+    const rev = localRev.current
+    pending.current = () => {
+      const data = JSON.stringify(snapshot)
+      lastWritten.current = { rev, state: snapshot }
       setDoc(
-        doc(db, 'states', user.uid),
-        {
-          data: JSON.stringify(state),
-          writer: clientId.current,
-          rev: localRev.current,
-          updatedAt: serverTimestamp(),
-        },
+        doc(db, 'states', uid),
+        { data, writer: clientId.current, rev, updatedAt: serverTimestamp() },
         { merge: true },
-      ).catch((e) => console.warn('[cloud] salvataggio fallito', e))
-    }, 800)
-    return () => clearTimeout(t)
-  }, [state, readOnly, user])
+      )
+        .then(() => setSyncError(false))
+        .catch((e) => {
+          console.warn('[cloud] salvataggio fallito', e)
+          setSyncError(true)
+        })
+    }
+    pendingTimer.current = setTimeout(flush, 800)
+    return () => {
+      if (pendingTimer.current) clearTimeout(pendingTimer.current)
+      pendingTimer.current = null
+    }
+  }, [state, readOnly, user, flush])
+
+  // App chiusa o messa in background: invia subito, senza aspettare il debounce.
+  useEffect(() => {
+    const onHide = () => {
+      if (document.visibilityState === 'hidden') flush()
+    }
+    document.addEventListener('visibilitychange', onHide)
+    window.addEventListener('pagehide', flush)
+    return () => {
+      document.removeEventListener('visibilitychange', onHide)
+      window.removeEventListener('pagehide', flush)
+      flush() // es. uscita dall'account
+    }
+  }, [flush])
+
+  // Entrando in sola lettura, la mia modifica in attesa parte prima del cambio.
+  useEffect(() => {
+    if (readOnly) flush()
+  }, [readOnly, flush])
 
   const addViewer = useCallback(
     async (viewer: string) => {
@@ -370,8 +481,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setState((s) => ({ ...s, settings: { ...s.settings, profilo: p } }))
   }, [])
 
-  const setTargets = useCallback((t: Targets) => {
-    setState((s) => ({ ...s, settings: { ...s.settings, targets: t } }))
+  const setTargets = useCallback((t: Targets, adattivo = false) => {
+    setState((s) => ({
+      ...s,
+      settings: { ...s.settings, targets: t, ...(adattivo ? { adattivoIl: dateKey() } : {}) },
+    }))
   }, [])
 
   const setGoals = useCallback((g: DailyGoals) => {
@@ -786,6 +900,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     () => ({
       state,
       persistent,
+      syncError,
       readOnly,
       cloudViewers,
       addViewer,
@@ -842,6 +957,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [
       state,
       persistent,
+      syncError,
       readOnly,
       cloudViewers,
       addViewer,

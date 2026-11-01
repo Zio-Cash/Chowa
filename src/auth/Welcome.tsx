@@ -92,11 +92,11 @@ export default function Welcome({
 
           {inApp && (
             <div
-              className="mb-4 rounded-2xl bg-amber-500/10 p-4 text-sm text-amber-700"
+              className="mb-4 rounded-2xl bg-arancio/10 p-4 text-sm text-ink"
               onClick={(e) => e.stopPropagation()}
             >
               <p className="mb-1 font-semibold">Apri in Safari</p>
-              <p className="text-amber-700/90">
+              <p className="text-ink/80">
                 Stai usando il browser interno di un'altra app: tocca i ··· e scegli “Apri in
                 Safari”, poi entra da lì.
               </p>
@@ -123,7 +123,7 @@ export default function Welcome({
             )}
           </div>
 
-          {authError && <p className="mt-3 text-center text-xs text-red-500">{authError}</p>}
+          {authError && <p className="mt-3 text-center text-xs text-shu">{authError}</p>}
 
           <div
             className="animate-fade-up mt-4 flex justify-center"

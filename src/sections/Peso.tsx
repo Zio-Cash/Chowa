@@ -13,6 +13,7 @@ import {
 import { Button, Card, CardTitle, NumberInput } from '../components/ui'
 import { projectToTarget, weightTrend } from '../lib/weight'
 import type { DailyGoals } from '../types'
+import { Icon } from '../components/brand'
 
 const fmt = (n?: number) => (n ? n.toFixed(1) : '—')
 const avg = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0)
@@ -94,14 +95,14 @@ export default function Peso() {
                 <CartesianGrid stroke="#211d1910" vertical={false} />
                 <XAxis
                   dataKey="label"
-                  tick={{ fill: '#8a847a', fontSize: 10 }}
+                  tick={{ fill: '#837b6e', fontSize: 10 }}
                   axisLine={false}
                   tickLine={false}
                   minTickGap={18}
                 />
                 <YAxis
                   domain={['dataMin - 0.5', 'dataMax + 0.5']}
-                  tick={{ fill: '#8a847a', fontSize: 10 }}
+                  tick={{ fill: '#837b6e', fontSize: 10 }}
                   axisLine={false}
                   tickLine={false}
                   width={44}
@@ -112,7 +113,7 @@ export default function Peso() {
                     borderRadius: 12,
                     border: 'none',
                     fontSize: 12,
-                    background: '#ffffff',
+                    background: '#fdfbf6',
                     color: '#211d19',
                   }}
                   formatter={(v) => [`${v} kg`, 'peso']}
@@ -160,7 +161,7 @@ export default function Peso() {
                   <span className={mDelta == null ? 'text-muted' : mDelta < 0 ? 'text-verde' : mDelta > 0 ? 'text-arancio' : ''}>
                     {mDelta == null ? '—' : `${mDelta > 0 ? '+' : mDelta < 0 ? '−' : ''}${Math.abs(mDelta).toFixed(1)} kg`}
                   </span>
-                  <span className="text-muted">{open ? '▾' : '▸'}</span>
+                  {open ? <Icon.chevronUp size={14} className="text-muted" /> : <Icon.chevronDown size={14} className="text-muted" />}
                 </span>
               </button>
               {open && (
@@ -208,7 +209,7 @@ function MonthBody({
               <span className="text-sm">{rangeLabel(w.start, w.end)}</span>
               <span className="flex items-center gap-2 font-mono text-xs tabular">
                 <span className={wAvg ? '' : 'text-muted'}>{fmt(wAvg)} kg</span>
-                <span className="text-muted">{open ? '▾' : '▸'}</span>
+                {open ? <Icon.chevronUp size={14} className="text-muted" /> : <Icon.chevronDown size={14} className="text-muted" />}
               </span>
             </button>
             {open && (
@@ -312,12 +313,17 @@ function GoalCard({
         <span className="font-mono text-3xl tabular">
           {fmt(current)} <span className="text-base text-muted">→ {target} kg</span>
         </span>
-        {resta != null && resta > 0 && <span className="text-sm text-muted">−{resta} kg</span>}
+        {resta != null && resta > 0 && (
+          <span className="text-sm text-muted">
+            {current != null && target > current ? '+' : '−'}
+            {resta} kg
+          </span>
+        )}
       </div>
       <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-black/[0.06]">
         <div
-          className="h-full rounded-full bg-teal transition-all"
-          style={{ width: `${Math.round(pct * 100)}%` }}
+          className="h-full w-full origin-left rounded-full bg-teal transition-transform duration-500"
+          style={{ transform: `scaleX(${pct})` }}
         />
       </div>
       <div className="mt-3 text-sm">

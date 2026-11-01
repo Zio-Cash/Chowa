@@ -89,6 +89,15 @@ export default function Routine() {
       return false
     }
     if (!parsed || !Array.isArray(parsed.blocchi)) return false
+    // Tutto controllato PRIMA di toccare il catalogo: un file a metà valido
+    // non deve lasciare esercizi aggiunti senza la giornata.
+    const valido = parsed.blocchi.every(
+      (b) =>
+        b &&
+        (b.esercizi == null ||
+          (Array.isArray(b.esercizi) && b.esercizi.every((e) => e && typeof e.nome === 'string' && e.nome.trim()))),
+    )
+    if (!valido) return false
 
     const byName = new Map(state.exerciseCatalog.map((c) => [c.nome.toLowerCase(), c]))
     const id = uid()
@@ -145,7 +154,7 @@ export default function Routine() {
               />
               <button
                 onClick={() => confirm(`Eliminare ${day.nome}?`) && deleteDay(day.id)}
-                className="flex h-8 w-8 items-center justify-center rounded-full text-red-300"
+                className="flex h-8 w-8 items-center justify-center rounded-full text-shu"
                 aria-label="Elimina giorno"
               >
                 <Icon.trash size={16} />

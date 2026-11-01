@@ -163,7 +163,7 @@ export function dayRating(score: number): DayRating | null {
   if (score <= 0) return null
   if (score >= 5) return { label: 'Eccellente', cls: 'bg-verde/15 text-verde' }
   if (score >= 3) return { label: 'Ok', cls: 'bg-arancio/15 text-arancio' }
-  return { label: 'Pessima', cls: 'bg-red-500/15 text-red-400' }
+  return { label: 'Pessima', cls: 'bg-shu/10 text-shu' }
 }
 
 /** Tutti i giorni di un mese come DaySummary (1..ultimo giorno). */

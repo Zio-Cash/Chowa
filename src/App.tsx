@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { StoreProvider, useStore } from './store/store'
 import { AuthProvider, useAuth } from './auth/AuthProvider'
@@ -8,14 +8,36 @@ import type { ViewId } from './types'
 import { useWakeLock } from './lib/useWakeLock'
 import { useReminders } from './lib/useReminders'
 import { MedalWatcher } from './components/Medals'
+import { useToday } from './lib/useToday'
 
-// Sezioni caricate on-demand: il primo avvio scarica solo la schermata attiva,
-// il resto (e le librerie pesanti come i grafici) arriva quando serve.
-const Oggi = lazy(() => import('./sections/Oggi'))
-const Dieta = lazy(() => import('./sections/Dieta'))
-const Workout = lazy(() => import('./sections/Workout'))
-const Cycle = lazy(() => import('./sections/Cycle'))
-const Profilo = lazy(() => import('./sections/Profilo'))
+// Sezioni in chunk separati: la Home parte subito (si scarica durante l'intro),
+// le altre appena l'app è aperta e il telefono è libero, così il primo tocco
+// su una scheda non mostra più la rotellina.
+const loadOggi = () => import('./sections/Oggi')
+const loaders = [
+  () => import('./sections/Workout'),
+  () => import('./sections/Dieta'),
+  () => import('./sections/Cycle'),
+  () => import('./sections/Profilo'),
+]
+const Oggi = lazy(loadOggi)
+const Workout = lazy(loaders[0])
+const Dieta = lazy(loaders[1])
+const Cycle = lazy(loaders[2])
+const Profilo = lazy(loaders[3])
+loadOggi().catch(() => {})
+
+function usePrefetchSections() {
+  useEffect(() => {
+    const run = () => loaders.forEach((l) => l().catch(() => {}))
+    if ('requestIdleCallback' in window) {
+      const id = requestIdleCallback(run, { timeout: 2500 })
+      return () => cancelIdleCallback(id)
+    }
+    const t = setTimeout(run, 1200)
+    return () => clearTimeout(t)
+  }, [])
+}
 
 type Tab = { id: ViewId; label: string; icon: (p: { size?: number; className?: string }) => ReactNode }
 
@@ -79,13 +101,22 @@ function SectionFallback() {
 }
 
 function Shell() {
-  const [view, setView] = useState<ViewId>('oggi')
-  const { state, persistent, readOnly } = useStore()
+  const [view, setViewState] = useState<ViewId>('oggi')
+  // Cambiando scheda si riparte dall'alto (non a metà della pagina precedente).
+  const setView = useCallback((v: ViewId) => {
+    setViewState(v)
+    window.scrollTo(0, 0)
+  }, [])
+  usePrefetchSections()
+  // Ridisegna tutto quando cambia il giorno (mezzanotte o ritorno in primo piano):
+  // le schermate che leggono dateKey() non restano ferme su ieri.
+  useToday()
+  const { state, persistent, readOnly, syncError } = useStore()
   const { setViewingUid } = useAuth()
   useWakeLock()
   useReminders(state.reminders ?? [])
   return (
-    <div className="min-h-dvh pb-24">
+    <div className="min-h-dvh pb-[calc(env(safe-area-inset-bottom)+5.5rem)]">
       <TopBar />
       {readOnly && (
         <div className="mx-auto max-w-[480px] px-4 pt-3">
@@ -99,12 +130,20 @@ function Shell() {
       )}
       {!persistent && (
         <div className="mx-auto max-w-[480px] px-4 pt-3">
-          <div className="rounded-2xl bg-amber-100 px-4 py-2 text-sm text-amber-800">
+          <div className="rounded-2xl bg-arancio/10 px-4 py-2 text-sm text-ink">
             Memoria del browser non disponibile: i dati non verranno salvati tra le sessioni.
           </div>
         </div>
       )}
-      <main className="mx-auto max-w-[480px] px-4 pt-4">
+      {syncError && !readOnly && (
+        <div className="mx-auto max-w-[480px] px-4 pt-3">
+          <div className="rounded-2xl bg-arancio/10 px-4 py-2 text-sm text-ink">
+            Non riesco a salvare sul cloud: i dati restano su questo telefono. Riprovo alla
+            prossima modifica.
+          </div>
+        </div>
+      )}
+      <main key={view} className="view-in mx-auto max-w-[480px] px-4 pt-4">
         <Suspense fallback={<SectionFallback />}>
           {view === 'oggi' && <Oggi goTo={setView} />}
           {view === 'workout' && <Workout />}

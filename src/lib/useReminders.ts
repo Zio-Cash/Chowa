@@ -7,6 +7,28 @@ import type { ReminderItem } from '../types'
  * Su iPhone/PWA le notifiche in background non sono garantite: per l'affidabilità
  * piena serve l'app nativa.
  */
+/** Android e le PWA installate su iPhone mostrano notifiche solo dal service worker. */
+function notify(body: string, tag: string) {
+  const opts = { body, tag, icon: '/icon-192.png' }
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready
+      .then((r) => r.showNotification('Chōwa 調和', opts))
+      .catch(() => {
+        try {
+          new Notification('Chōwa 調和', opts)
+        } catch {
+          /* ignora */
+        }
+      })
+    return
+  }
+  try {
+    new Notification('Chōwa 調和', opts)
+  } catch {
+    /* ignora */
+  }
+}
+
 export function useReminders(reminders: ReminderItem[]) {
   const fired = useRef<Record<string, string>>({})
   const ref = useRef(reminders)
@@ -21,17 +43,19 @@ export function useReminders(reminders: ReminderItem[]) {
       const today = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`
       for (const r of ref.current) {
         if (!r.on) continue
-        if (r.time === hhmm && fired.current[r.id] !== today) {
+        // >= e non ===: se il controllo salta il minuto esatto (app in
+        // background, timer rallentati) il promemoria parte appena possibile.
+        if (r.time <= hhmm && fired.current[r.id] !== today) {
           fired.current[r.id] = today
-          try {
-            new Notification('Chōwa 調和', { body: `${r.emoji} ${r.label}`, tag: r.id })
-          } catch {
-            /* ignora */
-          }
+          // la prima volta (apertura dopo l'orario) non si notifica in ritardo
+          if (!armed) continue
+          notify(r.label, r.id)
         }
       }
     }
+    let armed = false
     check()
+    armed = true
     const iv = window.setInterval(check, 30000)
     return () => window.clearInterval(iv)
   }, [])

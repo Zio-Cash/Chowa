@@ -24,6 +24,8 @@ export default function Foto() {
     const file = e.target.files?.[0]
     e.target.value = ''
     if (!file) return
+    // una foto per giorno: la seconda sostituirebbe la prima senza dirlo
+    if (photos.some((p) => p.date === dateKey()) && !confirm('Hai già una foto di oggi. Sostituirla?')) return
     setBusy(true)
     try {
       const dataUrl = await resizeImage(file, 720)
@@ -78,7 +80,7 @@ export default function Foto() {
               onClick={() => setView(p)}
               className="relative overflow-hidden rounded-2xl active:scale-[0.98]"
             >
-              <img src={p.dataUrl} alt={fmt(p.date)} className="aspect-[3/4] w-full object-cover" />
+              <img src={p.dataUrl} alt={fmt(p.date)} decoding="async" className="aspect-[3/4] w-full object-cover" />
               <span className="absolute bottom-0 left-0 right-0 bg-black/45 py-1 text-center text-xs font-medium text-white">
                 {fmt(p.date)}
               </span>
@@ -88,8 +90,12 @@ export default function Foto() {
       )}
 
       {view && (
-        <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-black/80 p-4" onClick={() => setView(null)}>
-          <img src={view.dataUrl} alt={fmt(view.date)} className="max-h-[78vh] w-auto rounded-2xl" />
+        <div
+          className="backdrop-in fixed inset-0 z-[60] flex flex-col items-center justify-center bg-black/80 p-4"
+          style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1rem)', paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}
+          onClick={() => setView(null)}
+        >
+          <img src={view.dataUrl} alt={fmt(view.date)} decoding="async" className="max-h-[78dvh] w-auto rounded-2xl" />
           <div className="mt-3 flex items-center gap-3">
             <span className="text-sm text-white/80">{fmt(view.date)}</span>
             <button

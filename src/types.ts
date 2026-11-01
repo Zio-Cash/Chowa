@@ -41,6 +41,8 @@ export interface Settings {
   profilo: CalorieProfile
   targets: Targets
   goals: DailyGoals
+  /** Data dell'ultimo aggiustamento "calorie adattive" applicato (YYYY-MM-DD). */
+  adattivoIl?: string
 }
 
 // ===== Alimenti =====

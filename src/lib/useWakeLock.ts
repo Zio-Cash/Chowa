@@ -20,6 +20,10 @@ export function useWakeLock() {
       if (document.visibilityState !== 'visible') return
       try {
         sentinel = await nav.wakeLock!.request('screen')
+        // il sistema lo rilascia quando l'app va in background: al ritorno va richiesto di nuovo
+        sentinel.addEventListener?.('release', () => {
+          sentinel = null
+        })
         if (cancelled) {
           sentinel.release?.()
           sentinel = null
@@ -51,4 +55,5 @@ export function useWakeLock() {
 
 interface WakeLockSentinelLike {
   release?: () => void
+  addEventListener?: (type: 'release', cb: () => void) => void
 }

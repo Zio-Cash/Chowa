@@ -1,12 +1,14 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useStore } from '../store/store'
 import { dateKey, formatLong, parseKey } from '../lib/date'
-import { beep, mmss, vibrate } from '../lib/sound'
+import { mmss } from '../lib/sound'
+import { restTimer, useRestTimer } from '../lib/restTimer'
 import type { ExExercise } from '../types'
 import { Button, Card, CardTitle, NumberInput, Segmented } from '../components/ui'
 import { Icon } from '../components/brand'
 import Esercizi from './Esercizi'
 import Routine from './Routine'
+import { useDayCursor } from '../lib/useToday'
 
 /** Riferimento "ultima volta" per un esercizio. */
 interface LastRef {
@@ -20,7 +22,7 @@ type TrainingTab = 'train' | 'routine' | 'catalog'
 export default function Workout() {
   const [tab, setTab] = useState<TrainingTab>('train')
   return (
-    <div className="space-y-4 pb-24">
+    <div className="space-y-4 pb-6">
       <Segmented
         options={[
           { value: 'train', label: 'Allenamento' },
@@ -38,22 +40,62 @@ export default function Workout() {
       )}
       {tab === 'routine' && <Routine />}
       {tab === 'catalog' && <Esercizi />}
+      <RestTimerBar />
     </div>
   )
 }
 
-// ===== Esecuzione =====
-interface TimerState {
-  sec: number
-  total: number
-  label: string
-  running: boolean
+// Timer di recupero — sopra la tab bar, visibile su tutte le sotto-schede
+function RestTimerBar() {
+  const timer = useRestTimer()
+  if (!timer) return null
+  const p = timer.total ? Math.min(1, timer.sec / timer.total) : 0
+  return (
+    <>
+      {/* spazio in fondo: il timer non copre gli ultimi esercizi */}
+      <div className="h-24" aria-hidden />
+      <div
+        className="sheet-in fixed inset-x-0 z-50 mx-auto max-w-[480px] px-3"
+        style={{ bottom: 'calc(env(safe-area-inset-bottom) + 74px)' }}
+      >
+        <div className="glass rounded-3xl bg-surface2/90 p-4 shadow-2xl ring-1 ring-black/[0.06]">
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <div className="truncate text-[11px] uppercase tracking-[0.16em] text-muted">{timer.label}</div>
+              <div className="font-mono text-3xl tabular">{mmss(timer.sec)}</div>
+            </div>
+            <div className="flex shrink-0 gap-1.5">
+              <TBtn label="Togli 15 secondi" onClick={() => restTimer.add(-15)}>
+                −15
+              </TBtn>
+              <TBtn label="Aggiungi 15 secondi" onClick={() => restTimer.add(15)}>
+                +15
+              </TBtn>
+              <TBtn label={timer.running ? 'Pausa' : 'Riprendi'} onClick={restTimer.toggle}>
+                {timer.running ? <Icon.pause size={16} /> : <Icon.play size={16} />}
+              </TBtn>
+              <TBtn label="Chiudi timer" onClick={restTimer.stop}>
+                <Icon.close size={16} />
+              </TBtn>
+            </div>
+          </div>
+          <div className="mt-2 h-1 overflow-hidden rounded-full bg-black/[0.08]">
+            <div
+              className="h-full w-full origin-left rounded-full bg-teal transition-transform duration-300 ease-linear"
+              style={{ transform: `scaleX(${p})` }}
+            />
+          </div>
+        </div>
+      </div>
+    </>
+  )
 }
+
+// ===== Esecuzione =====
 
 function Execution() {
   const { state, getSession, toggleSet, setSessionLoad, completeWorkout, resetSession } = useStore()
-  const oggi = dateKey()
-  const [today, setToday] = useState(oggi)
+  const [today, setToday, oggi] = useDayCursor()
   const isToday = today === oggi
   const shiftDay = (delta: number) => {
     const d = parseKey(today)
@@ -62,35 +104,26 @@ function Execution() {
     if (key <= oggi) setToday(key)
   }
   const plan = state.executionPlan
-  const [dayId, setDayId] = useState(plan[0]?.id ?? '')
-  const day = plan.find((d) => d.id === dayId) ?? plan[0]
   const sessionRaw = getSession(today)
+  // Giornata mostrata: quella scelta, altrimenti quella già iniziata in quella data.
+  const [picked, setPicked] = useState<{ date: string; id: string } | null>(null)
+  const dayId = picked?.date === today ? picked.id : (sessionRaw?.dayId ?? plan[0]?.id ?? '')
+  const setDayId = (id: string) => setPicked({ date: today, id })
+  const day = plan.find((d) => d.id === dayId) ?? plan[0]
   const session = sessionRaw && sessionRaw.dayId === day?.id ? sessionRaw : undefined
+  // In una data c'è una sola sessione: prima di iniziarne un'altra si chiede.
+  const otherStarted =
+    sessionRaw &&
+    day &&
+    sessionRaw.dayId !== day.id &&
+    Object.values(sessionRaw.esercizi).some((e) => e.sets.some(Boolean) || e.carico != null)
+  const canWrite = () =>
+    !otherStarted ||
+    confirm(
+      `In questa data hai già serie segnate su "${plan.find((d) => d.id === sessionRaw?.dayId)?.nome ?? 'un altro giorno'}". Sostituirle con "${day?.nome}"?`,
+    )
 
-  // ---- Timer ----
-  const [timer, setTimer] = useState<TimerState | null>(null)
-  const tick = useRef<number | null>(null)
-  useEffect(() => {
-    if (timer?.running) {
-      tick.current = window.setInterval(() => {
-        setTimer((t) => {
-          if (!t) return t
-          if (t.sec <= 1) {
-            beep(880, 250)
-            vibrate([200, 100, 200])
-            return { ...t, sec: 0, running: false }
-          }
-          if (t.sec <= 4) beep(660, 90)
-          return { ...t, sec: t.sec - 1 }
-        })
-      }, 1000)
-    }
-    return () => {
-      if (tick.current) window.clearInterval(tick.current)
-    }
-  }, [timer?.running])
-
-  const startTimer = (sec: number, label: string) => setTimer({ sec, total: sec, label, running: true })
+  const startTimer = restTimer.start
 
   // Riferimento "ultima volta": ultima sessione precedente per lo stesso giorno.
   const lastByEx = useMemo(() => {
@@ -101,7 +134,11 @@ function Execution() {
     for (const s of entries) {
       for (const [exId, e] of Object.entries(s.esercizi)) {
         if (!(exId in last)) {
-          last[exId] = { carico: e.carico, done: e.sets.filter(Boolean).length, date: s.date }
+          last[exId] = {
+            carico: e.carico,
+            done: e.sets.filter(Boolean).length,
+            date: s.date,
+          }
         }
       }
     }
@@ -112,8 +149,8 @@ function Execution() {
     return (
       <Card className="py-8 text-center">
         <p className="text-sm leading-relaxed text-muted">
-          Nessuna scheda ancora. Vai su <span className="text-teal">Routine</span> per costruire i tuoi
-          giorni di allenamento.
+          Nessuna scheda ancora. Vai su <span className="text-teal">Routine</span> per costruire i tuoi giorni
+          di allenamento.
         </p>
       </Card>
     )
@@ -123,7 +160,10 @@ function Execution() {
     .flatMap((b) => b.esercizi)
     .filter((e) => e.tipo === 'reps')
     .reduce((a, e) => a + e.serie, 0)
-  const doneSets = Object.values(session?.esercizi ?? {}).reduce((a, e) => a + e.sets.filter(Boolean).length, 0)
+  const doneSets = Object.values(session?.esercizi ?? {}).reduce(
+    (a, e) => a + e.sets.filter(Boolean).length,
+    0,
+  )
 
   return (
     <>
@@ -131,9 +171,10 @@ function Execution() {
       <div className="flex items-center justify-between rounded-2xl bg-surface px-2 py-1.5 ring-1 ring-black/[0.05]">
         <button
           onClick={() => shiftDay(-1)}
-          className="h-9 w-9 rounded-full text-lg text-muted transition active:scale-90"
+          aria-label="Giorno precedente"
+          className="flex h-10 w-10 items-center justify-center rounded-full text-muted transition active:bg-black/[0.05]"
         >
-          ‹
+          <Icon.chevronLeft size={16} />
         </button>
         <button onClick={() => setToday(oggi)} className="font-display text-sm font-medium tracking-wide">
           {isToday ? 'Oggi' : formatLong(parseKey(today))}
@@ -141,9 +182,10 @@ function Execution() {
         <button
           onClick={() => shiftDay(1)}
           disabled={isToday}
-          className="h-9 w-9 rounded-full text-lg text-muted transition active:scale-90 disabled:opacity-20"
+          aria-label="Giorno successivo"
+          className="flex h-10 w-10 items-center justify-center rounded-full text-muted transition active:bg-black/[0.05] disabled:opacity-20"
         >
-          ›
+          <Icon.chevronRight size={16} />
         </button>
       </div>
 
@@ -173,7 +215,9 @@ function Execution() {
         <div className="mt-3 space-y-4">
           {day.blocchi.map((b) => (
             <div key={b.id}>
-              <div className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.14em] text-muted">{b.nome}</div>
+              <div className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.14em] text-muted">
+                {b.nome}
+              </div>
               <div className="space-y-2">
                 {b.esercizi.map((ex) => (
                   <ExerciseRow
@@ -183,10 +227,11 @@ function Execution() {
                     sets={session?.esercizi[ex.id]?.sets ?? []}
                     carico={session?.esercizi[ex.id]?.carico}
                     onToggleSet={(i, wasDone) => {
+                      if (!canWrite()) return
                       toggleSet(today, day.id, ex.id, i, ex.serie)
                       if (!wasDone && ex.tipo === 'reps') startTimer(ex.riposoSec, `Riposo · ${ex.nome}`)
                     }}
-                    onLoad={(v) => setSessionLoad(today, day.id, ex.id, v)}
+                    onLoad={(v) => canWrite() && setSessionLoad(today, day.id, ex.id, v)}
                     onStartTime={() => startTimer(ex.durataSec ?? 60, ex.nome)}
                   />
                 ))}
@@ -199,7 +244,10 @@ function Execution() {
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-2">
-          <Button variant="ghost" onClick={() => confirm('Azzerare la sessione di oggi?') && resetSession(today)}>
+          <Button
+            variant="ghost"
+            onClick={() => confirm('Azzerare la sessione di oggi?') && resetSession(today)}
+          >
             <Icon.reset size={16} /> Azzera
           </Button>
           <Button onClick={() => completeWorkout(today, day.id)}>
@@ -207,47 +255,23 @@ function Execution() {
           </Button>
         </div>
       </Card>
-
-      {/* Timer di recupero — sopra la tab bar */}
-      {timer && (
-        <div
-          className="fixed inset-x-0 z-50 mx-auto max-w-[480px] px-3"
-          style={{ bottom: 'calc(env(safe-area-inset-bottom) + 74px)' }}
-        >
-          <div className="glass rounded-3xl bg-surface2/90 p-4 shadow-2xl ring-1 ring-black/[0.06]">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-[11px] uppercase tracking-[0.14em] text-muted">{timer.label}</div>
-                <div className="font-mono text-3xl tabular">{mmss(timer.sec)}</div>
-              </div>
-              <div className="flex gap-1.5">
-                <TBtn onClick={() => setTimer((t) => (t ? { ...t, sec: Math.max(0, t.sec - 15) } : t))}>−15</TBtn>
-                <TBtn onClick={() => setTimer((t) => (t ? { ...t, sec: t.sec + 15 } : t))}>+15</TBtn>
-                <TBtn onClick={() => setTimer((t) => (t ? { ...t, running: !t.running } : t))}>
-                  {timer.running ? <Icon.pause size={16} /> : <Icon.play size={16} />}
-                </TBtn>
-                <TBtn onClick={() => setTimer(null)}>
-                  <Icon.close size={16} />
-                </TBtn>
-              </div>
-            </div>
-            <div className="mt-2 h-1 overflow-hidden rounded-full bg-black/[0.08]">
-              <div
-                className="h-full rounded-full bg-teal transition-all"
-                style={{ width: `${timer.total ? (timer.sec / timer.total) * 100 : 0}%` }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
     </>
   )
 }
 
-function TBtn({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
+function TBtn({
+  children,
+  onClick,
+  label,
+}: {
+  children: React.ReactNode
+  onClick: () => void
+  label: string
+}) {
   return (
     <button
       onClick={onClick}
+      aria-label={label}
       className="flex h-11 min-w-11 items-center justify-center rounded-2xl bg-black/[0.08] px-3 font-mono text-sm active:scale-90"
     >
       {children}
@@ -307,7 +331,7 @@ function ExerciseRow({
                 key={i}
                 onClick={() => onToggleSet(i, !!done)}
                 className={`h-9 w-9 rounded-xl font-mono text-sm transition active:scale-90 ${
-                  done ? 'bg-verde text-[#14231c]' : 'bg-black/[0.06] text-ink'
+                  done ? 'bg-verde text-[#faf7f1]' : 'bg-black/[0.06] text-ink'
                 }`}
               >
                 {i + 1}
