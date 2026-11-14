@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await signInWithPopup(auth, googleProvider)
     } catch (e) {
-      setAuthError(e instanceof Error ? e.message : 'Accesso non riuscito.')
+      setAuthError(e instanceof Error ? e.message : 'Sign-in failed.')
     }
   }, [])
 
@@ -77,6 +77,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 // eslint-disable-next-line react-refresh/only-export-components
 export function useAuth(): AuthCtx {
   const v = useContext(Ctx)
-  if (!v) throw new Error('useAuth deve essere usato dentro AuthProvider')
+  if (!v) throw new Error('useAuth must be used inside AuthProvider')
   return v
 }

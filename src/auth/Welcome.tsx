@@ -35,10 +35,8 @@ export default function Welcome({
 
         {/* Contenuto. Se non sei loggata, tocca lo schermo per entrare. */}
         <div
-          onClick={needsSignIn ? onEnter : undefined}
-          className={`relative z-10 flex min-h-dvh flex-col items-center px-7 ${
-            needsSignIn ? 'cursor-pointer' : ''
-          }`}
+          onClick={onEnter}
+          className="relative z-10 flex min-h-dvh cursor-pointer flex-col items-center px-7"
           style={{
             paddingTop: 'calc(env(safe-area-inset-top) + 2.5rem)',
             paddingBottom: 'calc(env(safe-area-inset-bottom) + 2.5rem)',
@@ -95,10 +93,10 @@ export default function Welcome({
               className="mb-4 rounded-2xl bg-amber-500/10 p-4 text-sm text-amber-700"
               onClick={(e) => e.stopPropagation()}
             >
-              <p className="mb-1 font-semibold">Apri in Safari</p>
+              <p className="mb-1 font-semibold">Open in Safari</p>
               <p className="text-amber-700/90">
-                Stai usando il browser interno di un'altra app: tocca i ··· e scegli “Apri in
-                Safari”, poi entra da lì.
+                You’re in another app’s built-in browser: tap ··· and choose “Open in Safari”, then
+                sign in there.
               </p>
             </div>
           )}
@@ -108,11 +106,11 @@ export default function Welcome({
             {busy ? (
               <span className="flex items-center gap-2 text-[11px] uppercase tracking-[0.24em] text-muted">
                 <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-muted/30 border-t-muted" />
-                Accesso…
+                Signing in…
               </span>
             ) : needsSignIn ? (
               <span className="text-[11px] uppercase tracking-[0.3em] text-muted">
-                Tocca per entrare
+                Tap to enter
               </span>
             ) : (
               <span

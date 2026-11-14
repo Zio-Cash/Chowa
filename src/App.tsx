@@ -8,6 +8,7 @@ import type { ViewId } from './types'
 import { useWakeLock } from './lib/useWakeLock'
 import { useReminders } from './lib/useReminders'
 import { MedalWatcher } from './components/Medals'
+import { Onboarding } from './components/Onboarding'
 
 // Sezioni caricate on-demand: il primo avvio scarica solo la schermata attiva,
 // il resto (e le librerie pesanti come i grafici) arriva quando serve.
@@ -90,9 +91,9 @@ function Shell() {
       {readOnly && (
         <div className="mx-auto max-w-[480px] px-4 pt-3">
           <div className="flex items-center justify-between gap-3 rounded-2xl bg-teal/10 px-4 py-2 text-sm text-teal">
-            <span>Stai guardando i dati di un'altra persona (sola lettura).</span>
+            <span>You’re viewing someone else’s data (read-only).</span>
             <button onClick={() => setViewingUid(null)} className="shrink-0 font-semibold underline">
-              Esci
+              Exit
             </button>
           </div>
         </div>
@@ -100,7 +101,7 @@ function Shell() {
       {!persistent && (
         <div className="mx-auto max-w-[480px] px-4 pt-3">
           <div className="rounded-2xl bg-amber-100 px-4 py-2 text-sm text-amber-800">
-            Memoria del browser non disponibile: i dati non verranno salvati tra le sessioni.
+            Browser storage isn’t available: your data won’t be kept between sessions.
           </div>
         </div>
       )}
@@ -115,6 +116,7 @@ function Shell() {
       </main>
       <TabBar view={view} setView={setView} />
       <MedalWatcher />
+      <Onboarding />
     </div>
   )
 }

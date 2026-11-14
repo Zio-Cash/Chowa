@@ -6,7 +6,7 @@ import { deletePhoto, listPhotos, resizeImage, savePhoto, type ProgressPhoto } f
 
 const fmt = (k: string) => {
   const d = parseKey(k)
-  return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: '2-digit' })
+  return d.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: '2-digit' })
 }
 
 export default function Foto() {
@@ -30,13 +30,13 @@ export default function Foto() {
       await savePhoto({ date: dateKey(), dataUrl })
       await reload()
     } catch {
-      alert('Non è stato possibile salvare la foto.')
+      alert('Couldn’t save the photo.')
     }
     setBusy(false)
   }
 
   async function remove(date: string) {
-    if (!confirm('Eliminare questa foto?')) return
+    if (!confirm('Delete this photo?')) return
     await deletePhoto(date)
     setView(null)
     reload()
@@ -57,17 +57,17 @@ export default function Foto() {
         disabled={busy}
         className="flex w-full items-center justify-center gap-2 rounded-2xl bg-teal py-3.5 text-sm font-semibold uppercase tracking-[0.18em] text-[#faf7f1] transition active:scale-[0.98] disabled:opacity-60"
       >
-        <Icon.plus size={18} /> {busy ? 'Salvo…' : 'Aggiungi foto di oggi'}
+        <Icon.plus size={18} /> {busy ? 'Saving…' : 'Add today’s photo'}
       </button>
 
       <p className="px-1 text-xs text-muted">
-        Le foto restano solo su questo dispositivo (non vengono sincronizzate).
+        Photos stay on this device only (they aren’t synced).
       </p>
 
       {photos.length === 0 ? (
         <Card className="py-10 text-center">
           <p className="text-sm text-muted">
-            Nessuna foto ancora. Scatta la prima: tra qualche settimana vedrai la differenza.
+            No photos yet. Take your first one: in a few weeks you’ll see the difference.
           </p>
         </Card>
       ) : (
@@ -99,7 +99,7 @@ export default function Foto() {
               }}
               className="flex items-center gap-1 rounded-full bg-white/15 px-3 py-1.5 text-sm text-white"
             >
-              <Icon.trash size={15} /> Elimina
+              <Icon.trash size={15} /> Delete
             </button>
           </div>
         </div>

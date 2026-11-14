@@ -6,10 +6,10 @@ import { Button, Card, CardTitle, Field, Segmented, Stepper } from '../component
 import { Enso } from '../components/brand'
 
 const MESI = [
-  'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
-  'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre',
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
 ]
-const GIORNI = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom']
+const GIORNI = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 export default function Cycle() {
   const { state } = useStore()
@@ -21,8 +21,8 @@ export default function Cycle() {
     <div className="space-y-4 pb-6">
       <Segmented
         options={[
-          { value: 'fase', label: 'Fase' },
-          { value: 'calendario', label: 'Calendario' },
+          { value: 'fase', label: 'Phase' },
+          { value: 'calendario', label: 'Calendar' },
         ]}
         value={tab}
         onChange={(v) => setTab(v as 'fase' | 'calendario')}
@@ -81,11 +81,11 @@ function FaseView({ cur, onGoCalendar }: { cur: CurrentCycle | null; onGoCalenda
           <Enso size={64} />
         </div>
         <p className="text-sm leading-relaxed text-muted">
-          Nessun ciclo registrato. Vai su <span className="text-teal">Calendario</span> e segna il primo
-          giorno delle mestruazioni per vedere la tua fase.
+          No cycle logged yet. Go to <span className="text-teal">Calendar</span> and mark the first
+          day of your period to see your phase.
         </p>
         <Button variant="soft" className="mx-auto mt-4" onClick={onGoCalendar}>
-          Apri il calendario
+          Open calendar
         </Button>
       </Card>
     )
@@ -93,16 +93,16 @@ function FaseView({ cur, onGoCalendar }: { cur: CurrentCycle | null; onGoCalenda
 
   const p = cur.phase
   const impatto = [
-    { label: 'Energia', value: p.energia },
-    { label: 'Forza', value: p.forza },
-    { label: 'Recupero', value: p.recupero },
+    { label: 'Energy', value: p.energia },
+    { label: 'Strength', value: p.forza },
+    { label: 'Recovery', value: p.recupero },
     { label: 'Focus', value: p.focus },
   ]
   const corpo = [
-    { label: 'Durata', value: p.durata },
-    { label: 'Cosa succede', value: p.cosaSucede },
-    { label: 'Sintomi / cambiamenti', value: p.note },
-    { label: 'Scopo', value: p.scopo },
+    { label: 'Duration', value: p.durata },
+    { label: 'What happens', value: p.cosaSucede },
+    { label: 'Symptoms / changes', value: p.note },
+    { label: 'Purpose', value: p.scopo },
   ]
 
   return (
@@ -110,17 +110,19 @@ function FaseView({ cur, onGoCalendar }: { cur: CurrentCycle | null; onGoCalenda
       {/* Intestazione + orbita */}
       <div className="flex items-center justify-between gap-3 px-1 pt-1">
         <div className="min-w-0">
-          <div className="text-[11px] font-medium uppercase tracking-[0.2em] text-muted">Fase attuale</div>
+          <div className="text-[11px] font-medium uppercase tracking-[0.2em] text-muted">Current phase</div>
           <h1 className="mt-1 font-display text-3xl tracking-tight">{p.nome}</h1>
           <div className="mt-1 text-sm text-muted">
             {cur.late ? (
               <>
-                Giorno {cur.day} ·{' '}
-                <span className="text-arancio">in ritardo di {cur.day - cur.length}</span>
+                Day {cur.day} ·{' '}
+                <span className="text-arancio">
+                  {cur.day - cur.length} {cur.day - cur.length === 1 ? 'day' : 'days'} late
+                </span>
               </>
             ) : (
               <>
-                Giorno {cur.day} di {cur.length}
+                Day {cur.day} of {cur.length}
               </>
             )}
           </div>
@@ -131,7 +133,7 @@ function FaseView({ cur, onGoCalendar }: { cur: CurrentCycle | null; onGoCalenda
 
       {/* Impatto sull'allenamento */}
       <Card>
-        <CardTitle>Impatto sull'allenamento</CardTitle>
+        <CardTitle>Impact on your workouts</CardTitle>
         <div className="grid grid-cols-2 gap-2.5">
           {impatto.map((r) => (
             <div key={r.label} className="rounded-2xl bg-black/[0.04] p-3">
@@ -145,7 +147,7 @@ function FaseView({ cur, onGoCalendar }: { cur: CurrentCycle | null; onGoCalenda
 
       {/* Il corpo in questa fase */}
       <Card>
-        <CardTitle>Il tuo corpo in questa fase</CardTitle>
+        <CardTitle>Your body in this phase</CardTitle>
         <div className="space-y-3">
           {corpo.map((r) => (
             <div key={r.label}>
@@ -194,20 +196,20 @@ function CalendarView() {
       {/* Previsione */}
       {pred ? (
         <Card>
-          <CardTitle>Previsione</CardTitle>
+          <CardTitle>Forecast</CardTitle>
           <div className="space-y-1.5 text-sm">
-            <Row label="Ultimo ciclo" value={formatLong(parseKey(pred.lastStart))} />
+            <Row label="Last period" value={formatLong(parseKey(pred.lastStart))} />
             <Row
-              label="Prossimo previsto"
-              value={`${formatLong(parseKey(pred.nextStart))} · tra ${Math.max(0, pred.daysToNext)} gg`}
+              label="Next expected"
+              value={`${formatLong(parseKey(pred.nextStart))} · in ${Math.max(0, pred.daysToNext)} ${Math.max(0, pred.daysToNext) === 1 ? 'day' : 'days'}`}
               accent
             />
-            <Row label="Ovulazione stimata" value={formatLong(parseKey(pred.ovulation))} />
+            <Row label="Estimated ovulation" value={formatLong(parseKey(pred.ovulation))} />
           </div>
         </Card>
       ) : (
         <p className="rounded-2xl bg-black/[0.04] p-4 text-center text-sm text-muted">
-          Tocca un giorno del calendario (fino a oggi) per segnare l'inizio del ciclo.
+          Tap a day on the calendar (up to today) to mark the start of your period.
         </p>
       )}
 
@@ -256,20 +258,20 @@ function CalendarView() {
         </div>
         {/* Legenda */}
         <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted">
-          <Legend cls="bg-teal" label="Mestruazioni" />
-          <Legend cls="ring-1 ring-teal/50" label="Previsto" />
-          <Legend cls="ring-1 ring-verde/50" label="Ovulazione" />
+          <Legend cls="bg-teal" label="Period" />
+          <Legend cls="ring-1 ring-teal/50" label="Predicted" />
+          <Legend cls="ring-1 ring-verde/50" label="Ovulation" />
         </div>
         <p className="mt-2 text-[11px] leading-relaxed text-muted">
-          Tocca un giorno (fino a oggi) per segnare o rimuovere l'inizio del ciclo.
+          Tap a day (up to today) to mark or remove the start of your period.
         </p>
       </Card>
 
       {/* Impostazioni */}
       <Card>
-        <CardTitle>Impostazioni ciclo</CardTitle>
+        <CardTitle>Cycle settings</CardTitle>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Durata ciclo (gg)">
+          <Field label="Cycle length (days)">
             <Stepper
               value={cycle.cycleLength}
               onChange={(v) => setCycleSettings({ cycleLength: v })}
@@ -278,7 +280,7 @@ function CalendarView() {
               editable
             />
           </Field>
-          <Field label="Durata mestruazioni (gg)">
+          <Field label="Period length (days)">
             <Stepper
               value={cycle.periodLength}
               onChange={(v) => setCycleSettings({ periodLength: v })}
@@ -289,7 +291,7 @@ function CalendarView() {
           </Field>
         </div>
         <p className="mt-2 text-[11px] leading-relaxed text-muted">
-          Con almeno due inizi registrati la durata media viene calcolata dai tuoi dati reali.
+          Once you’ve logged at least two starts, the average length is calculated from your real data.
         </p>
       </Card>
     </div>
