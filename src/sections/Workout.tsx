@@ -23,9 +23,9 @@ export default function Workout() {
     <div className="space-y-4 pb-24">
       <Segmented
         options={[
-          { value: 'train', label: 'Allenamento' },
+          { value: 'train', label: 'Workout' },
           { value: 'routine', label: 'Routine' },
-          { value: 'catalog', label: 'Esercizi' },
+          { value: 'catalog', label: 'Exercises' },
         ]}
         value={tab}
         onChange={(v) => setTab(v as TrainingTab)}
@@ -112,8 +112,8 @@ function Execution() {
     return (
       <Card className="py-8 text-center">
         <p className="text-sm leading-relaxed text-muted">
-          Nessuna scheda ancora. Vai su <span className="text-teal">Routine</span> per costruire i tuoi
-          giorni di allenamento.
+          No routine yet. Head to <span className="text-teal">Routine</span> to build your workout
+          days.
         </p>
       </Card>
     )
@@ -136,7 +136,7 @@ function Execution() {
           ‹
         </button>
         <button onClick={() => setToday(oggi)} className="font-display text-sm font-medium tracking-wide">
-          {isToday ? 'Oggi' : formatLong(parseKey(today))}
+          {isToday ? 'Today' : formatLong(parseKey(today))}
         </button>
         <button
           onClick={() => shiftDay(1)}
@@ -167,7 +167,7 @@ function Execution() {
       <Card>
         <CardTitle>{day.nome}</CardTitle>
         <div className="-mt-2 mb-1 font-mono text-xs text-muted tabular">
-          {doneSets}/{totalSets} serie completate
+          {doneSets}/{totalSets} sets done
         </div>
 
         <div className="mt-3 space-y-4">
@@ -184,14 +184,14 @@ function Execution() {
                     carico={session?.esercizi[ex.id]?.carico}
                     onToggleSet={(i, wasDone) => {
                       toggleSet(today, day.id, ex.id, i, ex.serie)
-                      if (!wasDone && ex.tipo === 'reps') startTimer(ex.riposoSec, `Riposo · ${ex.nome}`)
+                      if (!wasDone && ex.tipo === 'reps') startTimer(ex.riposoSec, `Rest · ${ex.nome}`)
                     }}
                     onLoad={(v) => setSessionLoad(today, day.id, ex.id, v)}
                     onStartTime={() => startTimer(ex.durataSec ?? 60, ex.nome)}
                   />
                 ))}
                 {b.esercizi.length === 0 && (
-                  <p className="rounded-2xl bg-black/[0.04] px-3 py-2 text-xs text-muted">Blocco vuoto.</p>
+                  <p className="rounded-2xl bg-black/[0.04] px-3 py-2 text-xs text-muted">Empty block.</p>
                 )}
               </div>
             </div>
@@ -199,11 +199,11 @@ function Execution() {
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-2">
-          <Button variant="ghost" onClick={() => confirm('Azzerare la sessione di oggi?') && resetSession(today)}>
-            <Icon.reset size={16} /> Azzera
+          <Button variant="ghost" onClick={() => confirm('Reset today’s session?') && resetSession(today)}>
+            <Icon.reset size={16} /> Reset
           </Button>
           <Button onClick={() => completeWorkout(today, day.id)}>
-            <Icon.check size={16} /> Completa
+            <Icon.check size={16} /> Complete
           </Button>
         </div>
       </Card>
@@ -286,14 +286,14 @@ function ExerciseRow({
           </div>
           {showLast && (
             <div className="mt-0.5 font-mono text-[11px] text-teal/70 tabular">
-              Ultima: {last!.carico ? `${last!.carico} kg · ` : ''}
-              {last!.done} serie
+              Last time: {last!.carico ? `${last!.carico} kg · ` : ''}
+              {last!.done} {last!.done === 1 ? 'set' : 'sets'}
             </div>
           )}
         </div>
         {ex.tipo === 'tempo' && (
           <Button variant="soft" className="!min-h-[38px] !px-3" onClick={onStartTime}>
-            <Icon.play size={15} /> Avvia
+            <Icon.play size={15} /> Start
           </Button>
         )}
       </div>
@@ -315,7 +315,7 @@ function ExerciseRow({
             )
           })}
           <div className="ml-auto w-28">
-            <NumberInput value={carico ?? ''} onChange={onLoad} suffix="kg" placeholder="carico" />
+            <NumberInput value={carico ?? ''} onChange={onLoad} suffix="kg" placeholder="load" />
           </div>
         </div>
       )}
@@ -343,7 +343,7 @@ function PRCard() {
   if (list.length === 0) return null
   return (
     <Card>
-      <CardTitle>Record personali</CardTitle>
+      <CardTitle>Personal records</CardTitle>
       <div className="space-y-1.5">
         {list.map(([nome, carico]) => (
           <div key={nome} className="flex items-center justify-between rounded-2xl bg-black/[0.04] px-3 py-2">

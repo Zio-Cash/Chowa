@@ -29,7 +29,7 @@ export interface MedalDef {
   unit?: string
 }
 
-export const CATEGORIES = ['Passi', 'Costanza', 'Allenamento', 'Nutrizione', 'Acqua', 'Peso', 'Energia']
+export const CATEGORIES = ['Steps', 'Consistency', 'Workout', 'Nutrition', 'Water', 'Weight', 'Energy']
 
 const M = (
   cat: string,
@@ -40,68 +40,68 @@ const M = (
 ): MedalDef[] => list.map(([id, tier, goal, nome, desc]) => ({ id, cat, icon, metric, tier, goal, nome, desc, unit }))
 
 export const MEDALS: MedalDef[] = [
-  ...M('Passi', 'steps', 'maxSteps', [
-    ['passi_10k', 'bronze', 10000, 'Diecimila', '10.000 passi in un solo giorno'],
-    ['passi_15k', 'silver', 15000, 'Quindicimila', '15.000 passi in un solo giorno'],
-    ['passi_20k', 'gold', 20000, 'Ventimila', '20.000 passi in un solo giorno'],
-  ], 'passi'),
-  ...M('Passi', 'steps', 'totalSteps', [
-    ['passi_100k', 'bronze', 100000, 'Centomila', '100.000 passi in totale'],
-    ['passi_500k', 'silver', 500000, 'Mezzo milione', '500.000 passi in totale'],
-    ['passi_1m', 'gold', 1000000, 'Un milione', '1.000.000 di passi in totale'],
-  ], 'passi'),
-  ...M('Passi', 'steps', 'stepDays', [
-    ['passi_obj_7', 'bronze', 7, 'In cammino', 'Obiettivo passi raggiunto 7 giorni'],
-    ['passi_obj_30', 'silver', 30, 'Passo costante', 'Obiettivo passi raggiunto 30 giorni'],
-    ['passi_obj_100', 'gold', 100, 'Instancabile', 'Obiettivo passi raggiunto 100 giorni'],
-  ], 'giorni'),
-  ...M('Costanza', 'flame', 'bestStreak', [
-    ['streak_3', 'bronze', 3, 'Tre di fila', '3 giorni attivi consecutivi'],
-    ['streak_7', 'silver', 7, 'Una settimana', '7 giorni attivi consecutivi'],
-    ['streak_30', 'gold', 30, 'Un mese di fila', '30 giorni attivi consecutivi'],
-    ['streak_100', 'platinum', 100, 'Cento giorni', '100 giorni attivi consecutivi'],
-  ], 'giorni'),
-  ...M('Costanza', 'star', 'perfectDays', [
-    ['perfetta_1', 'bronze', 1, 'Giornata perfetta', 'Tutti i rituali completati in un giorno'],
-    ['perfetta_10', 'silver', 10, 'Dieci perfette', '10 giornate perfette'],
-    ['perfetta_50', 'gold', 50, 'Maestria', '50 giornate perfette'],
-  ], 'giornate'),
-  ...M('Allenamento', 'practice', 'workouts', [
-    ['workout_1', 'bronze', 1, 'Primo allenamento', 'Hai completato il tuo primo allenamento'],
-    ['workout_10', 'silver', 10, 'Dieci sessioni', '10 allenamenti completati'],
-    ['workout_50', 'gold', 50, 'Cinquanta sessioni', '50 allenamenti completati'],
-    ['workout_100', 'platinum', 100, 'Cento sessioni', '100 allenamenti completati'],
-  ], 'allenamenti'),
-  ...M('Nutrizione', 'bowl', 'diaryDays', [
-    ['diario_7', 'bronze', 7, 'Diario di una settimana', 'Pasti registrati per 7 giorni'],
-    ['diario_30', 'silver', 30, 'Un mese di diario', 'Pasti registrati per 30 giorni'],
-    ['diario_100', 'gold', 100, 'Cento giorni a tavola', 'Pasti registrati per 100 giorni'],
-  ], 'giorni'),
-  ...M('Nutrizione', 'bowl', 'deficitDays', [
-    ['deficit_7', 'bronze', 7, 'In equilibrio', '7 giorni chiusi in deficit'],
-    ['deficit_30', 'silver', 30, 'Disciplina', '30 giorni chiusi in deficit'],
-    ['deficit_90', 'gold', 90, 'Trasformazione', '90 giorni chiusi in deficit'],
-  ], 'giorni'),
-  ...M('Acqua', 'drop', 'waterDays', [
-    ['acqua_7', 'bronze', 7, 'Idratata', 'Obiettivo acqua raggiunto 7 giorni'],
-    ['acqua_30', 'silver', 30, 'Fonte', 'Obiettivo acqua raggiunto 30 giorni'],
-    ['acqua_100', 'gold', 100, 'Sorgente', 'Obiettivo acqua raggiunto 100 giorni'],
-  ], 'giorni'),
-  ...M('Peso', 'weight', 'weighIns', [
-    ['pesate_10', 'bronze', 10, 'Sulla bilancia', '10 pesate registrate'],
-    ['pesate_50', 'silver', 50, 'Monitoraggio', '50 pesate registrate'],
-    ['pesate_150', 'gold', 150, 'Precisione', '150 pesate registrate'],
-  ], 'pesate'),
-  ...M('Peso', 'weight', 'kgLost', [
-    ['kg_1', 'bronze', 1, 'Primo chilo', '1 kg in meno dall’inizio'],
-    ['kg_3', 'silver', 3, 'Tre chili', '3 kg in meno dall’inizio'],
-    ['kg_5', 'gold', 5, 'Cinque chili', '5 kg in meno dall’inizio'],
-    ['kg_10', 'platinum', 10, 'Dieci chili', '10 kg in meno dall’inizio'],
+  ...M('Steps', 'steps', 'maxSteps', [
+    ['passi_10k', 'bronze', 10000, 'Ten thousand', '10,000 steps in a single day'],
+    ['passi_15k', 'silver', 15000, 'Fifteen thousand', '15,000 steps in a single day'],
+    ['passi_20k', 'gold', 20000, 'Twenty thousand', '20,000 steps in a single day'],
+  ], 'steps'),
+  ...M('Steps', 'steps', 'totalSteps', [
+    ['passi_100k', 'bronze', 100000, 'One hundred thousand', '100,000 steps in total'],
+    ['passi_500k', 'silver', 500000, 'Half a million', '500,000 steps in total'],
+    ['passi_1m', 'gold', 1000000, 'One million', '1,000,000 steps in total'],
+  ], 'steps'),
+  ...M('Steps', 'steps', 'stepDays', [
+    ['passi_obj_7', 'bronze', 7, 'On the path', 'Step goal reached on 7 days'],
+    ['passi_obj_30', 'silver', 30, 'Steady stride', 'Step goal reached on 30 days'],
+    ['passi_obj_100', 'gold', 100, 'Tireless', 'Step goal reached on 100 days'],
+  ], 'days'),
+  ...M('Consistency', 'flame', 'bestStreak', [
+    ['streak_3', 'bronze', 3, 'Three in a row', '3 active days in a row'],
+    ['streak_7', 'silver', 7, 'One week', '7 active days in a row'],
+    ['streak_30', 'gold', 30, 'A month strong', '30 active days in a row'],
+    ['streak_100', 'platinum', 100, 'One hundred days', '100 active days in a row'],
+  ], 'days'),
+  ...M('Consistency', 'star', 'perfectDays', [
+    ['perfetta_1', 'bronze', 1, 'Perfect day', 'Every ritual completed in a single day'],
+    ['perfetta_10', 'silver', 10, 'Ten perfect days', '10 perfect days'],
+    ['perfetta_50', 'gold', 50, 'Mastery', '50 perfect days'],
+  ], 'days'),
+  ...M('Workout', 'practice', 'workouts', [
+    ['workout_1', 'bronze', 1, 'First workout', 'You completed your first workout'],
+    ['workout_10', 'silver', 10, 'Ten sessions', '10 workouts completed'],
+    ['workout_50', 'gold', 50, 'Fifty sessions', '50 workouts completed'],
+    ['workout_100', 'platinum', 100, 'One hundred sessions', '100 workouts completed'],
+  ], 'workouts'),
+  ...M('Nutrition', 'bowl', 'diaryDays', [
+    ['diario_7', 'bronze', 7, 'A week of logging', 'Meals logged on 7 days'],
+    ['diario_30', 'silver', 30, 'A month of logging', 'Meals logged on 30 days'],
+    ['diario_100', 'gold', 100, 'One hundred days at the table', 'Meals logged on 100 days'],
+  ], 'days'),
+  ...M('Nutrition', 'bowl', 'deficitDays', [
+    ['deficit_7', 'bronze', 7, 'In balance', '7 days closed in a deficit'],
+    ['deficit_30', 'silver', 30, 'Discipline', '30 days closed in a deficit'],
+    ['deficit_90', 'gold', 90, 'Transformation', '90 days closed in a deficit'],
+  ], 'days'),
+  ...M('Water', 'drop', 'waterDays', [
+    ['acqua_7', 'bronze', 7, 'Hydrated', 'Water goal reached on 7 days'],
+    ['acqua_30', 'silver', 30, 'Fountain', 'Water goal reached on 30 days'],
+    ['acqua_100', 'gold', 100, 'Wellspring', 'Water goal reached on 100 days'],
+  ], 'days'),
+  ...M('Weight', 'weight', 'weighIns', [
+    ['pesate_10', 'bronze', 10, 'On the scale', '10 weigh-ins logged'],
+    ['pesate_50', 'silver', 50, 'Keeping track', '50 weigh-ins logged'],
+    ['pesate_150', 'gold', 150, 'Precision', '150 weigh-ins logged'],
+  ], 'weigh-ins'),
+  ...M('Weight', 'weight', 'kgLost', [
+    ['kg_1', 'bronze', 1, 'First kilo', '1 kg down since you started'],
+    ['kg_3', 'silver', 3, 'Three kilos', '3 kg down since you started'],
+    ['kg_5', 'gold', 5, 'Five kilos', '5 kg down since you started'],
+    ['kg_10', 'platinum', 10, 'Ten kilos', '10 kg down since you started'],
   ], 'kg'),
-  ...M('Energia', 'flame', 'activeKcal', [
-    ['kcal_10k', 'bronze', 10000, 'Accesa', '10.000 kcal attive bruciate in totale'],
-    ['kcal_50k', 'silver', 50000, 'Fornace', '50.000 kcal attive bruciate in totale'],
-    ['kcal_100k', 'gold', 100000, 'Vulcano', '100.000 kcal attive bruciate in totale'],
+  ...M('Energy', 'flame', 'activeKcal', [
+    ['kcal_10k', 'bronze', 10000, 'Spark', '10,000 active kcal burned in total'],
+    ['kcal_50k', 'silver', 50000, 'Furnace', '50,000 active kcal burned in total'],
+    ['kcal_100k', 'gold', 100000, 'Volcano', '100,000 active kcal burned in total'],
   ], 'kcal'),
 ]
 

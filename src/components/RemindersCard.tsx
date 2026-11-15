@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useStore } from '../store/store'
 import { Card, CardTitle } from './ui'
 import { Icon } from './brand'
+import { reminderLabel } from '../lib/useReminders'
 
 const REMINDER_ICON: Record<string, keyof typeof Icon> = {
   pesata: 'weight',
@@ -41,7 +42,7 @@ export default function RemindersCard() {
 
   return (
     <Card>
-      <CardTitle>Promemoria</CardTitle>
+      <CardTitle>Reminders</CardTitle>
       <div className="space-y-2">
         {reminders.map((r) => (
           <div key={r.id} className="flex items-center gap-3 rounded-2xl bg-black/[0.04] px-3 py-2">
@@ -51,7 +52,7 @@ export default function RemindersCard() {
                 return <Ico size={18} />
               })()}
             </span>
-            <span className="flex-1 text-sm">{r.label}</span>
+            <span className="flex-1 text-sm">{reminderLabel(r)}</span>
             <input
               type="time"
               value={r.time}
@@ -68,12 +69,12 @@ export default function RemindersCard() {
           onClick={ensurePerm}
           className="mt-3 w-full rounded-2xl bg-teal py-2.5 text-sm font-medium text-[#faf7f1] active:scale-[0.98]"
         >
-          Attiva le notifiche
+          Turn on notifications
         </button>
       )}
       <p className="mt-2 text-[11px] leading-snug text-muted">
-        Su iPhone i promemoria arrivano con l'app installata; per notifiche sempre affidabili (anche
-        ad app chiusa) servirà la versione nativa.
+        On iPhone, reminders arrive when the app is installed; fully reliable notifications (even
+        with the app closed) will need the native version.
       </p>
     </Card>
   )
@@ -83,7 +84,7 @@ function Toggle({ on, onClick }: { on: boolean; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      aria-label="Attiva/disattiva"
+      aria-label="Turn on/off"
       className={`h-6 w-10 shrink-0 rounded-full p-0.5 transition ${on ? 'bg-teal' : 'bg-black/15'}`}
     >
       <span

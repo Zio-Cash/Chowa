@@ -903,6 +903,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 // eslint-disable-next-line react-refresh/only-export-components
 export function useStore(): StoreCtx {
   const v = useContext(Ctx)
-  if (!v) throw new Error('useStore deve essere usato dentro StoreProvider')
+  if (!v) throw new Error('useStore must be used inside StoreProvider')
   return v
 }

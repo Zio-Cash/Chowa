@@ -29,8 +29,8 @@ export default defineConfig({
       manifest: {
         name: 'Chōwa 調和 — Strength in Balance',
         short_name: 'Chōwa',
-        description: 'Il tuo percorso di forza, equilibrio e disciplina.',
-        lang: 'it',
+        description: 'Your path to strength, balance and discipline.',
+        lang: 'en',
         start_url: '/',
         scope: '/',
         display: 'standalone',

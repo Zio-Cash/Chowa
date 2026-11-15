@@ -58,7 +58,7 @@ export default function Passi() {
       <Card gradient="bg-gradient-to-br from-[#ffffff] to-[#f1ece2] text-ink">
         <div className="flex items-center justify-between">
           <CardTitle>
-            <span className="text-ink">Passi {year}</span>
+            <span className="text-ink">Steps {year}</span>
           </CardTitle>
           <div className="flex gap-1">
             <button onClick={() => setYear((y) => y - 1)} className="h-8 w-8 rounded-full bg-black/15">
@@ -70,7 +70,7 @@ export default function Passi() {
           </div>
         </div>
         <div className="font-mono text-3xl font-bold tabular">{fmtSteps(Math.round(yearAvg))}</div>
-        <div className="text-xs opacity-80">media giornaliera annuale · obiettivo {fmtSteps(stepTarget)}</div>
+        <div className="text-xs opacity-80">yearly daily average · goal {fmtSteps(stepTarget)}</div>
         <div className="mt-3 h-40">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chart} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
@@ -78,7 +78,7 @@ export default function Passi() {
               <Tooltip
                 cursor={{ fill: '#211d1914' }}
                 contentStyle={{ borderRadius: 12, border: 'none', fontSize: 12, background: '#ffffff', color: '#211d19' }}
-                formatter={(v) => [fmtSteps(Number(v)), 'media']}
+                formatter={(v) => [fmtSteps(Number(v)), 'average']}
               />
               <Bar dataKey="avg" radius={[6, 6, 0, 0]}>
                 {chart.map((r) => (
@@ -165,12 +165,12 @@ function MonthBody({
                   return (
                     <div key={key} className="flex items-center gap-2 rounded-xl px-2 py-1">
                       <span className="w-14 font-mono text-xs text-muted tabular">
-                        {d.getDate()}/{d.getMonth() + 1}
+                        {MESI_BREVI[d.getMonth()]} {d.getDate()}
                       </span>
                       <NumberInput
                         value={stepsLog[key] ?? ''}
                         onChange={(v) => onSet(key, v)}
-                        suffix="passi"
+                        suffix="steps"
                         placeholder="—"
                         className="flex-1"
                         commitOnBlur

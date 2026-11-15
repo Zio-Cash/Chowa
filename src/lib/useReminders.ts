@@ -7,6 +7,17 @@ import type { ReminderItem } from '../types'
  * Su iPhone/PWA le notifiche in background non sono garantite: per l'affidabilità
  * piena serve l'app nativa.
  */
+/** Etichette visibili per i promemoria di default (le label salvate restano in italiano). */
+const REMINDER_LABELS: Record<string, string> = {
+  pesata: 'Weigh in',
+  acqua: 'Drink water',
+  pranzo: 'Log lunch',
+  workout: 'Workout',
+  cena: 'Log dinner',
+}
+
+export const reminderLabel = (r: ReminderItem): string => REMINDER_LABELS[r.id] ?? r.label
+
 export function useReminders(reminders: ReminderItem[]) {
   const fired = useRef<Record<string, string>>({})
   const ref = useRef(reminders)
@@ -24,7 +35,7 @@ export function useReminders(reminders: ReminderItem[]) {
         if (r.time === hhmm && fired.current[r.id] !== today) {
           fired.current[r.id] = today
           try {
-            new Notification('Chōwa 調和', { body: `${r.emoji} ${r.label}`, tag: r.id })
+            new Notification('Chōwa 調和', { body: `${r.emoji} ${reminderLabel(r)}`, tag: r.id })
           } catch {
             /* ignora */
           }

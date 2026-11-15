@@ -18,7 +18,7 @@ const fmt = (n?: number) => (n ? n.toFixed(1) : '—')
 const avg = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0)
 const fmtData = (k: string) => {
   const d = parseKey(k)
-  return `${d.getDate()} ${MESI_BREVI[d.getMonth()].toLowerCase()} ${String(d.getFullYear()).slice(2)}`
+  return `${MESI_BREVI[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`
 }
 
 export default function Peso() {
@@ -35,7 +35,7 @@ export default function Peso() {
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([k, kg]) => {
         const d = parseKey(k)
-        return { k, label: `${d.getDate()}/${d.getMonth() + 1}`, kg }
+        return { k, label: `${MESI_BREVI[d.getMonth()]} ${d.getDate()}`, kg }
       })
     const primo = serie[0]?.kg
     const ultimo = serie[serie.length - 1]?.kg
@@ -69,7 +69,7 @@ export default function Peso() {
       />
 
       <Card>
-        <CardTitle>Andamento peso</CardTitle>
+        <CardTitle>Weight trend</CardTitle>
         <div className="flex items-baseline gap-3">
           <span className="font-mono text-3xl tabular">{fmt(ultimo)} kg</span>
           {serie.length > 1 && (
@@ -84,7 +84,7 @@ export default function Peso() {
           )}
         </div>
         <div className="mt-0.5 text-xs text-muted">
-          {serie.length > 1 ? `da ${fmt(primo)} kg all'inizio` : 'registra il peso per vedere l’andamento'}
+          {serie.length > 1 ? `from ${fmt(primo)} kg at the start` : 'log your weight to see the trend'}
         </div>
 
         <div className="mt-4 h-48">
@@ -115,7 +115,7 @@ export default function Peso() {
                     background: '#ffffff',
                     color: '#211d19',
                   }}
-                  formatter={(v) => [`${v} kg`, 'peso']}
+                  formatter={(v) => [`${v} kg`, 'weight']}
                 />
                 <Line
                   type="monotone"
@@ -129,7 +129,7 @@ export default function Peso() {
             </ResponsiveContainer>
           ) : (
             <div className="flex h-full items-center justify-center text-sm text-muted">
-              Servono almeno due pesate.
+              You need at least two weigh-ins.
             </div>
           )}
         </div>
@@ -218,7 +218,7 @@ function MonthBody({
                   return (
                     <div key={key} className="flex items-center gap-2 rounded-xl px-2 py-1">
                       <span className="w-14 font-mono text-xs text-muted tabular">
-                        {d.getDate()}/{d.getMonth() + 1}
+                        {MESI_BREVI[d.getMonth()]} {d.getDate()}
                       </span>
                       <NumberInput
                         value={weightLog[key] ?? ''}
@@ -265,13 +265,13 @@ function GoalCard({
   if (editing || target <= 0) {
     return (
       <Card>
-        <CardTitle>Obiettivo peso</CardTitle>
+        <CardTitle>Weight goal</CardTitle>
         <p className="-mt-2 mb-3 text-xs text-muted">
-          Imposta il peso che vuoi raggiungere: vedrai la proiezione al ritmo attuale.
+          Set the weight you want to reach: you’ll see a projection at your current pace.
         </p>
         <div className="flex items-center gap-2">
           <div className="flex-1">
-            <NumberInput value={draft || ''} onChange={setDraft} suffix="kg" placeholder="es. 68" />
+            <NumberInput value={draft || ''} onChange={setDraft} suffix="kg" placeholder="e.g. 68" />
           </div>
           <Button
             onClick={() => {
@@ -281,7 +281,7 @@ function GoalCard({
               }
             }}
           >
-            Salva
+            Save
           </Button>
         </div>
       </Card>
@@ -297,7 +297,7 @@ function GoalCard({
   return (
     <Card>
       <div className="flex items-center justify-between">
-        <CardTitle>Obiettivo peso</CardTitle>
+        <CardTitle>Weight goal</CardTitle>
         <button
           onClick={() => {
             setDraft(target)
@@ -305,7 +305,7 @@ function GoalCard({
           }}
           className="text-xs text-muted underline"
         >
-          modifica
+          edit
         </button>
       </div>
       <div className="flex items-baseline justify-between">
@@ -323,19 +323,19 @@ function GoalCard({
       <div className="mt-3 text-sm">
         {proj ? (
           proj.weeksToGo <= 0 ? (
-            <span className="font-medium text-verde">Obiettivo raggiunto</span>
+            <span className="font-medium text-verde">Goal reached</span>
           ) : (
             <span className="text-ink">
-              Al ritmo attuale ({proj.perWeek < 0 ? '−' : '+'}
-              {Math.abs(proj.perWeek).toFixed(2)} kg/sett) arrivi intorno al{' '}
+              At your current pace ({proj.perWeek < 0 ? '−' : '+'}
+              {Math.abs(proj.perWeek).toFixed(2)} kg/wk) you’ll get there around{' '}
               <b>{fmtData(proj.etaDate)}</b>.
             </span>
           )
         ) : (
           <span className="text-muted">
             {trend
-              ? 'Il ritmo attuale non ti avvicina all’obiettivo: aggiusta dieta o allenamento.'
-              : 'Registra qualche pesata per vedere la proiezione.'}
+              ? 'Your current pace isn’t moving you toward your goal: adjust your diet or workouts.'
+              : 'Log a few weigh-ins to see your projection.'}
           </span>
         )}
       </div>

@@ -13,12 +13,12 @@ export interface JourneyPhase {
 }
 
 const PHASES: JourneyPhase[] = [
-  { nome: 'Fondamenta', descrizione: 'Costruisci la base. Presenza prima della forza.' },
-  { nome: 'Radicamento', descrizione: 'La costanza diventa struttura.' },
-  { nome: 'Fluidità', descrizione: 'Il movimento inizia a scorrere senza sforzo.' },
-  { nome: 'Controllo', descrizione: 'Corpo e respiro rispondono all’intenzione.' },
-  { nome: 'Equilibrio', descrizione: 'Forza e quiete convivono.' },
-  { nome: 'Padronanza', descrizione: 'La disciplina è diventata natura.' },
+  { nome: 'Foundation', descrizione: 'Build the base. Presence before strength.' },
+  { nome: 'Rooting', descrizione: 'Consistency becomes structure.' },
+  { nome: 'Flow', descrizione: 'Movement starts to flow without effort.' },
+  { nome: 'Control', descrizione: 'Body and breath answer to intention.' },
+  { nome: 'Balance', descrizione: 'Strength and stillness live side by side.' },
+  { nome: 'Mastery', descrizione: 'Discipline has become nature.' },
 ]
 
 export function journeyPhase(livello: number): JourneyPhase {
@@ -36,11 +36,11 @@ export interface EnergyState {
 
 export function energyState(done: number, total: number): EnergyState {
   const level = total > 0 ? done / total : 0
-  if (level >= 0.99) return { label: 'Pieno', hint: 'Giornata completa. Ora riposa.', level }
-  if (level >= 0.66) return { label: 'Vivo', hint: 'Sei in flusso. Continua con calma.', level }
-  if (level >= 0.33) return { label: 'In moto', hint: 'Il ritmo è avviato.', level }
-  if (level > 0) return { label: 'Risveglio', hint: 'Un primo gesto è già pratica.', level }
-  return { label: 'Quiete', hint: 'Comincia da un solo respiro.', level }
+  if (level >= 0.99) return { label: 'Full', hint: 'Day complete. Now rest.', level }
+  if (level >= 0.66) return { label: 'Alive', hint: 'You’re in flow. Keep going, calmly.', level }
+  if (level >= 0.33) return { label: 'In motion', hint: 'The rhythm has begun.', level }
+  if (level > 0) return { label: 'Awakening', hint: 'A first gesture is already practice.', level }
+  return { label: 'Stillness', hint: 'Begin with a single breath.', level }
 }
 
 /**
@@ -53,14 +53,14 @@ export interface WeeklyFocus {
 }
 
 const FOCI: WeeklyFocus[] = [
-  { titolo: 'Respiro', nota: 'Lascia che il respiro guidi ogni movimento.' },
-  { titolo: 'Postura', nota: 'Allunga la colonna. Trova la tua verticale.' },
-  { titolo: 'Radici', nota: 'Peso stabile, appoggio consapevole.' },
-  { titolo: 'Fluidità', nota: 'Movimenti lenti, senza strappi.' },
-  { titolo: 'Controllo', nota: 'Meno intensità, più precisione.' },
-  { titolo: 'Ascolto', nota: 'Segui i segnali del corpo, non il numero.' },
-  { titolo: 'Costanza', nota: 'Non serve molto. Serve ogni giorno.' },
-  { titolo: 'Equilibrio', nota: 'Cerca la calma anche nello sforzo.' },
+  { titolo: 'Breath', nota: 'Let your breath lead every movement.' },
+  { titolo: 'Posture', nota: 'Lengthen your spine. Find your vertical.' },
+  { titolo: 'Roots', nota: 'Steady weight, mindful footing.' },
+  { titolo: 'Flow', nota: 'Slow movements, no jerks.' },
+  { titolo: 'Control', nota: 'Less intensity, more precision.' },
+  { titolo: 'Listening', nota: 'Follow your body’s signals, not the number.' },
+  { titolo: 'Consistency', nota: 'It doesn’t take much. It takes every day.' },
+  { titolo: 'Balance', nota: 'Seek calm, even in effort.' },
 ]
 
 function weekIndex(d = new Date()): number {
@@ -78,18 +78,18 @@ export function weeklyFocus(d = new Date()): WeeklyFocus {
  * tutto il giorno). Toni orientali contemporanei, senza cliché.
  */
 const QUOTES: string[] = [
-  'La disciplina è ricordarsi ciò che desideri davvero.',
-  'Fai poco, ma falla ogni giorno.',
-  'La forza silenziosa dura più della forza rumorosa.',
-  'Prima la calma, poi il movimento.',
-  'Ogni ripetizione è una piccola promessa mantenuta.',
-  'Il corpo segue dove la mente resta presente.',
-  'Non domare il corpo: ascoltalo.',
-  'La padronanza è mille gesti semplici, fatti bene.',
-  'Rallenta e vedrai più lontano.',
-  'La costanza è la forma più alta di talento.',
-  'Respira. Anche questo è allenamento.',
-  'Il progresso ama chi torna, non chi corre.',
+  'Discipline is remembering what you truly want.',
+  'Do a little, but do it every day.',
+  'Quiet strength outlasts loud strength.',
+  'First calm, then movement.',
+  'Every rep is a small promise kept.',
+  'The body follows where the mind stays present.',
+  'Don’t tame the body. Listen to it.',
+  'Mastery is a thousand simple gestures, done well.',
+  'Slow down, and you will see further.',
+  'Consistency is the highest form of talent.',
+  'Breathe. This, too, is training.',
+  'Progress favors those who return, not those who rush.',
 ]
 
 export function quoteOfDay(d = new Date()): string {
@@ -103,14 +103,14 @@ export function quoteOfDay(d = new Date()): string {
  * "RPG" solo a livello visivo dove serve).
  */
 export const MASTERY_LABELS = [
-  'Principiante',
-  'Allievo',
-  'Praticante',
-  'Costante',
-  'Adepto',
-  'Esperto',
-  'Veterano',
-  'Maestro',
+  'Beginner',
+  'Student',
+  'Practitioner',
+  'Steadfast',
+  'Adept',
+  'Expert',
+  'Veteran',
+  'Master',
   'Sensei',
 ]
 

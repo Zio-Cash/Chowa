@@ -1,11 +1,11 @@
-const GIORNI = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab']
+const GIORNI = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const MESI = [
-  'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
-  'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre',
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
 ]
 export const MESI_BREVI = [
-  'Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu',
-  'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic',
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
 ]
 
 /** Chiave locale YYYY-MM-DD (niente UTC shift). */
@@ -21,9 +21,14 @@ export function parseKey(key: string): Date {
   return new Date(y, m - 1, d)
 }
 
-/** es. "Lun 8 Giugno" */
+/** es. "Mon, June 8" */
 export function formatLong(d: Date = new Date()): string {
-  return `${GIORNI[d.getDay()]} ${d.getDate()} ${MESI[d.getMonth()]}`
+  return `${GIORNI[d.getDay()]}, ${MESI[d.getMonth()]} ${d.getDate()}`
+}
+
+/** es. "Nov 13" */
+export function formatShort(d: Date): string {
+  return `${MESI_BREVI[d.getMonth()]} ${d.getDate()}`
 }
 
 export function isYesterday(key: string, ref: string): boolean {
@@ -49,9 +54,9 @@ export function addDays(d: Date, n: number): Date {
   return r
 }
 
-/** es. "29 giu – 5 lug" */
+/** es. "Jun 29 – Jul 5" */
 export function rangeLabel(a: Date, b: Date): string {
-  return `${a.getDate()} ${MESI_BREVI[a.getMonth()].toLowerCase()} – ${b.getDate()} ${MESI_BREVI[b.getMonth()].toLowerCase()}`
+  return `${formatShort(a)} – ${formatShort(b)}`
 }
 
 export interface WeekRange {

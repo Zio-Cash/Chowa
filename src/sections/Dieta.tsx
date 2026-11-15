@@ -1,10 +1,10 @@
 import { useMemo, useRef, useState } from 'react'
 import { useStore } from '../store/store'
 import { addDays, dateKey, formatLong, mondayOf, parseKey } from '../lib/date'
-import { dayMacros, foodKcal100, itemMacros, macroPct, mealMacros } from '../lib/nutrition'
+import { dayMacros, foodKcal100, itemMacros, mealMacros } from '../lib/nutrition'
 import type { Food, FoodUnit, MealItem } from '../types'
 
-const WD = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom']
+const WD = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 import { Button, Card, CardTitle, Field, NumberInput, Segmented, Sheet, Stepper } from '../components/ui'
 import { MacroDonut } from '../components/charts'
 import { Icon } from '../components/brand'
@@ -40,6 +40,10 @@ const CAT_MAP: Record<string, string> = {
 }
 const bucketOf = (c: string) => CAT_MAP[c] ?? 'Other'
 
+// Etichette visibili dei filtri (i valori interni restano invariati nei dati).
+const CHIP_LABEL: Record<string, string> = { Mix: 'Saved meals', Carbo: 'Carbs', Sweet: 'Sweets' }
+const chipLabel = (c: string) => CHIP_LABEL[c] ?? c
+
 export default function Dieta() {
   const { state, getMeals, toggleMeal, addMeal, copyDay } = useStore()
   const oggi = dateKey()
@@ -52,8 +56,6 @@ export default function Dieta() {
   const meals = getMeals(today)
   const totals = useMemo(() => dayMacros(meals, state.foods, false), [meals, state.foods])
   const targets = state.settings.targets
-  const consumedPct = macroPct(totals.proteine, totals.carboidrati, totals.grassi)
-  const targetPct = macroPct(targets.proteine, targets.carboidrati, targets.grassi)
   const [editMeal, setEditMeal] = useState<string | null>(null)
   const [showDB, setShowDB] = useState(false)
   const [showShop, setShowShop] = useState(false)
@@ -66,17 +68,17 @@ export default function Dieta() {
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-2">
           <span className="font-display text-sm font-medium tracking-wide">
-            {isToday ? 'Oggi' : formatLong(parseKey(today))}
+            {isToday ? 'Today' : formatLong(parseKey(today))}
           </span>
           {isFuture && (
             <span className="rounded-full bg-teal/15 px-2 py-0.5 text-[10px] font-medium text-teal">
-              in programma
+              planned
             </span>
           )}
         </div>
         {!isToday && (
           <button onClick={() => setToday(oggi)} className="text-xs text-teal">
-            Oggi →
+            Today →
           </button>
         )}
       </div>
@@ -86,7 +88,7 @@ export default function Dieta() {
         <button
           onClick={() => shiftWeek(-1)}
           className="h-9 w-7 shrink-0 rounded-full text-muted active:scale-90"
-          aria-label="Settimana precedente"
+          aria-label="Previous week"
         >
           ‹
         </button>
@@ -117,14 +119,14 @@ export default function Dieta() {
         <button
           onClick={() => shiftWeek(1)}
           className="h-9 w-7 shrink-0 rounded-full text-muted active:scale-90"
-          aria-label="Settimana successiva"
+          aria-label="Next week"
         >
           ›
         </button>
       </div>
 
       <Card>
-        <CardTitle>{isToday ? 'Diario di oggi' : isFuture ? 'In programma' : 'Diario'}</CardTitle>
+        <CardTitle>{isToday ? 'Today’s food log' : isFuture ? 'Planned' : 'Food log'}</CardTitle>
         <div className="flex justify-center">
           <MacroDonut proteine={totals.proteine} carboidrati={totals.carboidrati} grassi={totals.grassi} size={170}>
             <span className="font-mono text-2xl font-bold tabular">{Math.round(totals.kcal)}</span>
@@ -132,13 +134,15 @@ export default function Dieta() {
           </MacroDonut>
         </div>
         <div className="mt-4 grid grid-cols-3 gap-2.5">
-          <MacroTile color="bg-prot" label="Proteine" c={totals.proteine} t={targets.proteine} cp={consumedPct.p} tp={targetPct.p} />
-          <MacroTile color="bg-carb" label="Carbo" c={totals.carboidrati} t={targets.carboidrati} cp={consumedPct.c} tp={targetPct.c} />
-          <MacroTile color="bg-fat" label="Grassi" c={totals.grassi} t={targets.grassi} cp={consumedPct.g} tp={targetPct.g} />
+          <MacroTile color="bg-prot" label="Protein" c={totals.proteine} t={targets.proteine} />
+          <MacroTile color="bg-carb" label="Carbs" c={totals.carboidrati} t={targets.carboidrati} />
+          <MacroTile color="bg-fat" label="Fat" c={totals.grassi} t={targets.grassi} />
         </div>
-        <div className="mt-2 rounded-2xl bg-black/[0.04] px-3 py-2 text-center font-mono text-xs text-muted tabular">
-          rapporto {consumedPct.p}/{consumedPct.c}/{consumedPct.g}% · obiettivo {targetPct.p}/{targetPct.c}/{targetPct.g}%
-        </div>
+        <p className="mt-3 text-center text-xs text-muted">
+          {Math.round(totals.kcal) <= targets.kcal
+            ? `${targets.kcal - Math.round(totals.kcal)} kcal left of ${targets.kcal}`
+            : `${Math.round(totals.kcal) - targets.kcal} kcal over your ${targets.kcal} target`}
+        </p>
       </Card>
 
       <div className="space-y-2">
@@ -160,8 +164,9 @@ export default function Dieta() {
                   <div className="flex-1">
                     <div className="font-semibold">{m.nome}</div>
                     <div className="font-mono text-xs text-muted tabular">
-                      {m.items.length} alimenti · P{Math.round(mm.proteine)} C{Math.round(mm.carboidrati)} G
-                      {Math.round(mm.grassi)}
+                      {m.items.length === 0
+                        ? 'Tap to add food'
+                        : `${m.items.length} ${m.items.length === 1 ? 'item' : 'items'} · P${Math.round(mm.proteine)} C${Math.round(mm.carboidrati)} F${Math.round(mm.grassi)}`}
                     </div>
                   </div>
                   <div className="text-right">
@@ -180,7 +185,7 @@ export default function Dieta() {
           onClick={() => copyDay(dateKey(addDays(parseKey(today), -1)), today)}
           className="flex w-full items-center justify-center gap-2 rounded-2xl bg-teal/[0.08] py-3 text-sm font-medium text-teal transition active:scale-[0.98]"
         >
-          <Icon.reset size={16} /> Copia i pasti di ieri
+          <Icon.reset size={16} /> Copy yesterday’s meals
         </button>
       )}
 
@@ -190,14 +195,14 @@ export default function Dieta() {
           onClick={() => setShowActions(true)}
           className="flex items-center gap-2 rounded-full bg-black/[0.04] px-4 py-2 text-sm text-muted transition active:scale-[0.98]"
         >
-          <Icon.dots size={16} /> Azioni
+          <Icon.dots size={16} /> More
         </button>
       </div>
 
       <MealActionsSheet
         open={showActions}
         onClose={() => setShowActions(false)}
-        onAddMeal={() => addMeal(today, 'Pasto', '')}
+        onAddMeal={() => addMeal(today, 'Meal', '')}
         onStruct={() => setShowStruct(true)}
         onDB={() => setShowDB(true)}
         onShop={() => setShowShop(true)}
@@ -219,13 +224,14 @@ function MealEditor({ date, mealId, onClose }: { date: string; mealId: string; o
   const meal = getMeals(date).find((m) => m.id === mealId)
   const [q, setQ] = useState('')
   const [cat, setCat] = useState('Favorites')
+  const [ordering, setOrdering] = useState(false)
   if (!meal) return null
 
   const presetKcal = (items: MealItem[]) =>
     items.reduce((a, it) => a + itemMacros(it, state.foods).kcal, 0)
   const saveAsMix = () => {
     if (meal.items.length === 0) return
-    const nome = prompt('Nome del mix:', meal.nome)?.trim()
+    const nome = prompt('Name for this saved meal:', meal.nome)?.trim()
     if (nome) addMealPreset(nome, meal.items)
   }
 
@@ -242,30 +248,9 @@ function MealEditor({ date, mealId, onClose }: { date: string; mealId: string; o
 
   return (
     <Sheet open onClose={onClose} title={meal.nome}>
-      {/* Nome pasto + elimina */}
-      <div className="mb-3 flex items-center gap-2">
-        <input
-          value={meal.nome}
-          onChange={(e) => updateMeal(date, mealId, { nome: e.target.value })}
-          className="min-h-[44px] flex-1 rounded-2xl bg-surface2 px-4 outline-none ring-1 ring-black/[0.05]"
-        />
-        <button
-          onClick={() => {
-            if (confirm('Eliminare questo pasto?')) {
-              deleteMeal(date, mealId)
-              onClose()
-            }
-          }}
-          className="flex h-11 w-11 items-center justify-center rounded-2xl bg-red-500/10 text-red-300"
-          aria-label="Elimina pasto"
-        >
-          <Icon.trash size={18} />
-        </button>
-      </div>
-
       {/* Alimenti nel pasto — SOPRA, così vedi subito cosa aggiungi */}
       <div className="mb-1 flex items-center justify-between px-1">
-        <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Nel pasto</span>
+        <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted">In this meal</span>
         <span className="font-mono text-xs text-muted tabular">
           {meal.items.length} · {Math.round(mm.kcal)} kcal
         </span>
@@ -273,7 +258,7 @@ function MealEditor({ date, mealId, onClose }: { date: string; mealId: string; o
       <div className="max-h-[184px] space-y-2 overflow-y-auto">
         {meal.items.length === 0 && (
           <p className="rounded-2xl bg-black/[0.04] p-3 text-center text-sm text-muted">
-            Nessun alimento. Tocca un cibo qui sotto per aggiungerlo.
+            Nothing yet. Tap a food below to add it.
           </p>
         )}
         {meal.items.map((it, i) => {
@@ -295,7 +280,7 @@ function MealEditor({ date, mealId, onClose }: { date: string; mealId: string; o
               <button
                 onClick={() => removeItem(date, mealId, i)}
                 className="flex h-8 w-8 items-center justify-center rounded-full bg-black/[0.06] text-muted"
-                aria-label="Rimuovi"
+                aria-label={`Remove ${f?.nome ?? 'item'}`}
               >
                 <Icon.close size={16} />
               </button>
@@ -312,22 +297,25 @@ function MealEditor({ date, mealId, onClose }: { date: string; mealId: string; o
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Cerca alimento…"
+          placeholder="Search food…"
           className="min-h-[46px] flex-1 bg-transparent outline-none"
         />
         {q && (
-          <button onClick={() => setQ('')} className="text-muted" aria-label="Pulisci">
+          <button onClick={() => setQ('')} className="text-muted" aria-label="Clear search">
             <Icon.close size={18} />
           </button>
         )}
       </div>
 
-      {/* Filtri — Mix + categorie fisse, sempre presenti (niente salti) */}
+      {/* Filtri — Saved meals + categorie fisse, sempre presenti (niente salti) */}
       <div className="mt-2 flex gap-1.5 overflow-x-auto pb-1">
         {['Mix', ...CHIP_CATS].map((c) => (
           <button
             key={c}
-            onClick={() => setCat(c)}
+            onClick={() => {
+              setCat(c)
+              setOrdering(false)
+            }}
             className={`min-h-[34px] shrink-0 whitespace-nowrap rounded-full px-3 text-xs font-medium tracking-wide transition ${
               cat === c && !q.trim()
                 ? 'bg-teal text-[#faf7f1]'
@@ -336,10 +324,17 @@ function MealEditor({ date, mealId, onClose }: { date: string; mealId: string; o
                   : 'bg-surface2 text-muted'
             }`}
           >
-            {c}
+            {chipLabel(c)}
           </button>
         ))}
       </div>
+      {cat !== 'Mix' && !q.trim() && quick.length > 1 && (
+        <div className="mt-1 flex justify-end">
+          <button onClick={() => setOrdering((o) => !o)} className="min-h-[32px] px-1 text-xs font-medium text-muted">
+            {ordering ? 'Done' : 'Reorder'}
+          </button>
+        </div>
+      )}
 
       {/* Lista — Mix preimpostati oppure alimenti; altezza FISSA (~6 righe) */}
       <div className="mt-2 h-72 space-y-1.5 overflow-y-auto">
@@ -350,19 +345,19 @@ function MealEditor({ date, mealId, onClose }: { date: string; mealId: string; o
               disabled={meal.items.length === 0}
               className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-black/10 py-2 text-sm text-muted disabled:opacity-40"
             >
-              <Icon.plus size={16} /> Salva questo pasto come mix
+              <Icon.plus size={16} /> Save this meal for later
             </button>
             {state.mealPresets.length === 0 && (
               <p className="rounded-2xl bg-black/[0.04] p-3 text-center text-sm text-muted">
-                Nessun mix salvato. Assembla un pasto e salvalo qui.
+                No saved meals yet. Build a meal once, save it, and add it again in one tap.
               </p>
             )}
             {state.mealPresets.map((p) => (
               <div key={p.id} className="flex items-center gap-1 rounded-2xl bg-surface2 px-2 py-1.5">
                 <button
-                  onClick={() => confirm(`Eliminare il mix "${p.nome}"?`) && deleteMealPreset(p.id)}
+                  onClick={() => confirm(`Delete “${p.nome}”?`) && deleteMealPreset(p.id)}
                   className="flex h-9 w-9 items-center justify-center text-muted"
-                  aria-label="Elimina mix"
+                  aria-label={`Delete ${p.nome}`}
                 >
                   <Icon.trash size={16} />
                 </button>
@@ -373,7 +368,7 @@ function MealEditor({ date, mealId, onClose }: { date: string; mealId: string; o
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm">{p.nome}</div>
                     <div className="font-mono text-[11px] text-muted tabular">
-                      {p.items.length} alimenti · {Math.round(presetKcal(p.items))} kcal
+                      {p.items.length} {p.items.length === 1 ? 'item' : 'items'} · {Math.round(presetKcal(p.items))} kcal
                     </div>
                   </div>
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-teal/15 text-teal">
@@ -387,12 +382,12 @@ function MealEditor({ date, mealId, onClose }: { date: string; mealId: string; o
           <>
         {quick.length === 0 && (
           <p className="rounded-2xl bg-black/[0.04] p-3 text-center text-sm text-muted">
-            Nessun alimento qui.
+            {q.trim() ? 'No food matches your search.' : cat === 'Favorites' ? 'Tap the star next to a food to keep it here.' : 'No food in this category.'}
           </p>
         )}
         {quick.map((f, vi) => {
           const inMeal = meal.items.filter((it) => it.foodId === f.id).length
-          const canOrder = !q.trim()
+          const canOrder = ordering && !q.trim()
           return (
             <div key={f.id} className="flex items-center gap-1 rounded-2xl bg-surface2 px-2 py-1.5">
               {canOrder && (
@@ -401,7 +396,7 @@ function MealEditor({ date, mealId, onClose }: { date: string; mealId: string; o
                     onClick={() => vi > 0 && swapFoods(f.id, quick[vi - 1].id)}
                     disabled={vi === 0}
                     className="flex h-5 w-6 items-center justify-center text-muted disabled:opacity-20"
-                    aria-label="Sposta su"
+                    aria-label="Move up"
                   >
                     <Icon.chevronUp size={16} />
                   </button>
@@ -409,7 +404,7 @@ function MealEditor({ date, mealId, onClose }: { date: string; mealId: string; o
                     onClick={() => vi < quick.length - 1 && swapFoods(f.id, quick[vi + 1].id)}
                     disabled={vi === quick.length - 1}
                     className="flex h-5 w-6 items-center justify-center text-muted disabled:opacity-20"
-                    aria-label="Sposta giù"
+                    aria-label="Move down"
                   >
                     <Icon.chevronDown size={16} />
                   </button>
@@ -418,7 +413,7 @@ function MealEditor({ date, mealId, onClose }: { date: string; mealId: string; o
               <button
                 onClick={() => toggleFav(f.id)}
                 className="flex h-9 w-9 items-center justify-center"
-                aria-label="Preferito"
+                aria-label={f.preferito ? `Remove ${f.nome} from favorites` : `Add ${f.nome} to favorites`}
               >
                 {f.preferito ? (
                   <Icon.star size={18} className="text-teal" />
@@ -450,6 +445,29 @@ function MealEditor({ date, mealId, onClose }: { date: string; mealId: string; o
         )}
       </div>
 
+      {/* Azioni sul pasto: in fondo, lontane dal pollice */}
+      <div className="mt-4 flex items-center justify-between border-t border-black/[0.06] pt-3">
+        <button
+          onClick={() => {
+            const nome = prompt('Rename meal:', meal.nome)?.trim()
+            if (nome) updateMeal(date, mealId, { nome })
+          }}
+          className="flex min-h-[44px] items-center gap-2 px-1 text-sm font-medium text-muted"
+        >
+          <Icon.edit size={16} /> Rename
+        </button>
+        <button
+          onClick={() => {
+            if (confirm(`Delete ${meal.nome}?`)) {
+              deleteMeal(date, mealId)
+              onClose()
+            }
+          }}
+          className="flex min-h-[44px] items-center gap-2 px-1 text-sm font-medium text-red-600"
+        >
+          <Icon.trash size={16} /> Delete meal
+        </button>
+      </div>
     </Sheet>
   )
 }
@@ -469,13 +487,13 @@ function MealActionsSheet({
     fn()
   }
   const items = [
-    { icon: <Icon.plus size={18} />, label: 'Aggiungi pasto', run: act(onAddMeal) },
-    { icon: <Icon.edit size={18} />, label: 'Modifica pasti', run: act(onStruct) },
-    { icon: <Icon.db size={18} />, label: 'Database alimenti', run: act(onDB) },
-    { icon: <Icon.cart size={18} />, label: 'Lista della spesa', run: act(onShop) },
+    { icon: <Icon.plus size={18} />, label: 'Add a meal', run: act(onAddMeal) },
+    { icon: <Icon.edit size={18} />, label: 'Edit daily meals', run: act(onStruct) },
+    { icon: <Icon.db size={18} />, label: 'Food database', run: act(onDB) },
+    { icon: <Icon.cart size={18} />, label: 'Shopping list', run: act(onShop) },
   ]
   return (
-    <Sheet open={open} onClose={onClose} title="Azioni">
+    <Sheet open={open} onClose={onClose} title="More">
       <div className="space-y-1.5">
         {items.map((it) => (
           <button
@@ -493,14 +511,12 @@ function MealActionsSheet({
 }
 
 function MacroTile({
-  color, label, c, t, cp, tp,
+  color, label, c, t,
 }: {
   color: string
   label: string
   c: number
   t: number
-  cp: number
-  tp: number
 }) {
   const pct = t > 0 ? Math.min(100, Math.round((c / t) * 100)) : 0
   return (
@@ -512,9 +528,6 @@ function MacroTile({
       <div className="mt-1.5 font-mono text-sm font-medium tabular">
         {Math.round(c)}
         <span className="text-xs font-normal text-muted">/{t}g</span>
-      </div>
-      <div className="font-mono text-[10px] text-muted tabular">
-        {cp}% <span className="opacity-60">/ {tp}%</span>
       </div>
       <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-black/[0.06]">
         <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
@@ -531,7 +544,7 @@ function MealStructureSheet({ open, onClose }: { open: boolean; onClose: () => v
   const rename = (id: string, nome: string) =>
     updateMealDefault((l) => l.map((s) => (s.id === id ? { ...s, nome } : s)))
   const remove = (id: string) => updateMealDefault((l) => l.filter((s) => s.id !== id))
-  const add = () => updateMealDefault((l) => [...l, { id: uid(), nome: 'Pasto' }])
+  const add = () => updateMealDefault((l) => [...l, { id: uid(), nome: 'Meal' }])
   const move = (id: string, dir: -1 | 1) =>
     updateMealDefault((l) => {
       const i = l.findIndex((s) => s.id === id)
@@ -543,10 +556,10 @@ function MealStructureSheet({ open, onClose }: { open: boolean; onClose: () => v
     })
 
   return (
-    <Sheet open={open} onClose={onClose} title="Struttura pasti">
+    <Sheet open={open} onClose={onClose} title="Daily meals">
       <p className="mb-3 text-sm leading-relaxed text-muted">
-        Definisci i pasti di una giornata: nome, ordine e quanti sono. Vale per i giorni non ancora
-        compilati.
+        Set the meals of a typical day: names, order and how many. Applies to days you haven’t logged
+        yet.
       </p>
       <div className="space-y-1.5">
         {list.map((s, i) => (
@@ -578,7 +591,7 @@ function MealStructureSheet({ open, onClose }: { open: boolean; onClose: () => v
               onClick={() => list.length > 1 && remove(s.id)}
               disabled={list.length <= 1}
               className="flex h-9 w-9 items-center justify-center text-red-300 disabled:opacity-30"
-              aria-label="Elimina pasto"
+              aria-label="Delete meal"
             >
               <Icon.trash size={16} />
             </button>
@@ -586,7 +599,7 @@ function MealStructureSheet({ open, onClose }: { open: boolean; onClose: () => v
         ))}
       </div>
       <Button variant="soft" className="mt-3 w-full" onClick={add}>
-        <Icon.plus size={16} /> Aggiungi pasto
+        <Icon.plus size={16} /> Add a meal
       </Button>
     </Sheet>
   )
@@ -644,25 +657,25 @@ function ShoppingListSheet({ open, onClose }: { open: boolean; onClose: () => vo
     })
 
   const copyList = () => {
-    let txt = `Lista della spesa (${formatLong(parseKey(start))} – ${formatLong(parseKey(end))})\n`
+    let txt = `Shopping list (${formatLong(parseKey(start))} – ${formatLong(parseKey(end))})\n`
     for (const g of GROUP_ORDER) {
       const xs = groups[g]
       if (!xs?.length) continue
       txt += `\n${g}\n` + xs.map((x) => `- ${x.nome} · ${fmtQty(x.qty, x.unita)}`).join('\n') + '\n'
     }
     navigator.clipboard?.writeText(txt.trim()).then(
-      () => alert('Lista copiata negli appunti.'),
-      () => alert('Copia non riuscita.'),
+      () => alert('Shopping list copied.'),
+      () => alert('Couldn’t copy the list.'),
     )
   }
 
   return (
-    <Sheet open={open} onClose={onClose} title="Lista della spesa" flush>
+    <Sheet open={open} onClose={onClose} title="Shopping list" flush>
       <div className="shrink-0">
         <div className="mb-3 flex gap-1.5">
           {([
-            { v: '7next', label: 'Prossimi 7 giorni' },
-            { v: 'custom', label: 'Scegli date' },
+            { v: '7next', label: 'Next 7 days' },
+            { v: 'custom', label: 'Pick dates' },
           ] as const).map((o) => (
             <button
               key={o.v}
@@ -678,7 +691,7 @@ function ShoppingListSheet({ open, onClose }: { open: boolean; onClose: () => vo
         {mode === 'custom' && (
           <div className="mb-2 grid grid-cols-2 gap-2">
             <label className="flex flex-col gap-1">
-              <span className="px-1 text-[11px] uppercase tracking-[0.12em] text-muted">Da</span>
+              <span className="px-1 text-[11px] uppercase tracking-[0.12em] text-muted">From</span>
               <input
                 type="date"
                 value={customStart}
@@ -688,7 +701,7 @@ function ShoppingListSheet({ open, onClose }: { open: boolean; onClose: () => vo
               />
             </label>
             <label className="flex flex-col gap-1">
-              <span className="px-1 text-[11px] uppercase tracking-[0.12em] text-muted">A</span>
+              <span className="px-1 text-[11px] uppercase tracking-[0.12em] text-muted">To</span>
               <input
                 type="date"
                 value={customEnd}
@@ -705,7 +718,7 @@ function ShoppingListSheet({ open, onClose }: { open: boolean; onClose: () => vo
           </span>
           {total > 0 && (
             <button onClick={copyList} className="text-xs text-teal">
-              Copia
+              Copy
             </button>
           )}
         </div>
@@ -714,7 +727,7 @@ function ShoppingListSheet({ open, onClose }: { open: boolean; onClose: () => vo
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto">
         {total === 0 ? (
           <p className="rounded-2xl bg-black/[0.04] p-4 text-center text-sm text-muted">
-            Nessun pasto pianificato in questo periodo.
+            No meals planned in this period. Plan meals ahead in the food log to build your list.
           </p>
         ) : (
           GROUP_ORDER.map((g) => {
@@ -806,7 +819,7 @@ function FoodDB({ open, onClose }: { open: boolean; onClose: () => void }) {
       setScanInfo(d)
       setFormOpen(true)
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Analisi non riuscita.')
+      alert(err instanceof Error ? err.message : 'Analysis failed.')
     }
     setScanBusy(null)
   }
@@ -831,30 +844,30 @@ function FoodDB({ open, onClose }: { open: boolean; onClose: () => void }) {
   }
 
   return (
-    <Sheet open={open} onClose={onClose} title="Database alimenti" flush>
+    <Sheet open={open} onClose={onClose} title="Food database" flush>
       {formOpen ? (
         // ---- Form aggiungi/modifica (a tutta altezza, scorrevole) ----
         <div className="min-h-0 flex-1 overflow-y-auto">
           <div className="mb-3 flex items-center justify-between">
             <span className="font-display text-base text-ink">
-              {editId ? 'Modifica alimento' : 'Nuovo alimento'}
+              {editId ? 'Edit food' : 'New food'}
             </span>
             <button onClick={closeForm} className="text-sm font-medium text-muted underline">
-              Annulla
+              Cancel
             </button>
           </div>
           {scanInfo && !editId && (
             <div className="mb-3 rounded-2xl bg-teal/[0.06] px-3 py-2.5 text-xs leading-relaxed text-ink">
               <div className="mb-0.5 flex items-center gap-1.5 font-medium">
                 {scanInfo.fonte === 'ia' ? <Icon.camera size={14} /> : <Icon.barcode size={14} />}
-                {scanInfo.fonte === 'ia' ? 'Valori stimati dalla foto' : 'Valori dal codice a barre'}
-                {scanInfo.confidenza && <span className="text-muted">· affidabilità {scanInfo.confidenza}</span>}
+                {scanInfo.fonte === 'ia' ? 'Values estimated from the photo' : 'Values from the barcode'}
+                {scanInfo.confidenza && <span className="text-muted">· confidence {scanInfo.confidenza}</span>}
               </div>
               {scanInfo.porzione_g ? (
-                <div className="text-muted">Porzione nella foto: circa {scanInfo.porzione_g} g</div>
+                <div className="text-muted">Portion in the photo: about {scanInfo.porzione_g} g</div>
               ) : null}
               {scanInfo.note && <div className="text-muted">{scanInfo.note}</div>}
-              <div className="mt-1 text-muted">Controlla i numeri e correggi se serve, poi salva.</div>
+              <div className="mt-1 text-muted">Check the numbers, fix them if needed, then save.</div>
             </div>
           )}
           <Card className="!bg-surface">
@@ -862,22 +875,22 @@ function FoodDB({ open, onClose }: { open: boolean; onClose: () => void }) {
               <input
                 value={draft.nome}
                 onChange={(e) => setDraft({ ...draft, nome: e.target.value })}
-                placeholder="Nome alimento"
+                placeholder="Food name"
                 autoFocus
                 className="min-h-[44px] w-full rounded-2xl bg-black/[0.06] px-3 font-semibold outline-none"
               />
               <div className="grid grid-cols-3 gap-2">
-                <Field label="Prot/100">
+                <Field label="Protein/100">
                   <NumberInput value={draft.p100} onChange={(v) => setDraft({ ...draft, p100: v })} />
                 </Field>
-                <Field label="Carb/100">
+                <Field label="Carbs/100">
                   <NumberInput value={draft.c100} onChange={(v) => setDraft({ ...draft, c100: v })} />
                 </Field>
-                <Field label="Gras/100">
+                <Field label="Fat/100">
                   <NumberInput value={draft.g100} onChange={(v) => setDraft({ ...draft, g100: v })} />
                 </Field>
               </div>
-              <Field label="Kcal/100 (opzionale · auto dai macro se vuoto)">
+              <Field label="Kcal/100 (optional · from macros if empty)">
                 <NumberInput
                   value={draft.k100 || ''}
                   onChange={(v) => setDraft({ ...draft, k100: v })}
@@ -885,7 +898,7 @@ function FoodDB({ open, onClose }: { open: boolean; onClose: () => void }) {
                   placeholder={`auto: ${Math.round(foodKcal100({ ...draft, k100: 0 } as Food))}`}
                 />
               </Field>
-              <Field label="Categoria">
+              <Field label="Category">
                 <div className="flex flex-wrap gap-1.5">
                   {FOOD_CATS.map((c) => (
                     <button
@@ -896,12 +909,12 @@ function FoodDB({ open, onClose }: { open: boolean; onClose: () => void }) {
                         bucketOf(draft.categoria) === c ? 'bg-teal text-[#faf7f1]' : 'bg-black/[0.06] text-muted'
                       }`}
                     >
-                      {c}
+                      {chipLabel(c)}
                     </button>
                   ))}
                 </div>
               </Field>
-              <Field label="Unità">
+              <Field label="Unit">
                 <Segmented<FoodUnit>
                   options={[
                     { value: 'g', label: 'g' },
@@ -911,7 +924,7 @@ function FoodDB({ open, onClose }: { open: boolean; onClose: () => void }) {
                   onChange={(v) => setDraft({ ...draft, unita: v })}
                 />
               </Field>
-              <Field label={`Qualità: ${'★'.repeat(draft.qualita)}`}>
+              <Field label={`Quality: ${'★'.repeat(draft.qualita)}`}>
                 <Segmented
                   options={[
                     { value: '1', label: '★' },
@@ -924,9 +937,9 @@ function FoodDB({ open, onClose }: { open: boolean; onClose: () => void }) {
               </Field>
               <div className="grid grid-cols-2 gap-2 pt-1">
                 <Button variant="ghost" onClick={closeForm}>
-                  Annulla
+                  Cancel
                 </Button>
-                <Button onClick={save}>{editId ? 'Salva modifiche' : '+ Aggiungi'}</Button>
+                <Button onClick={save}>{editId ? 'Save changes' : '+ Add'}</Button>
               </div>
             </div>
           </Card>
@@ -938,14 +951,14 @@ function FoodDB({ open, onClose }: { open: boolean; onClose: () => void }) {
             <input ref={photoInput} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => onScan('ia', e)} />
             <input ref={barcodeInput} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => onScan('barcode', e)} />
             <Button className="mb-2 w-full" onClick={openNew}>
-              <Icon.plus size={18} /> Nuovo alimento
+              <Icon.plus size={18} /> New food
             </Button>
             <div className="mb-3 grid grid-cols-2 gap-2">
               <Button variant="soft" disabled={!!scanBusy} onClick={() => photoInput.current?.click()}>
-                {scanBusy === 'ia' ? <Spinner /> : <Icon.camera size={17} />} {scanBusy === 'ia' ? 'Analizzo…' : 'Foto con IA'}
+                {scanBusy === 'ia' ? <Spinner /> : <Icon.camera size={17} />} {scanBusy === 'ia' ? 'Analyzing…' : 'AI photo'}
               </Button>
               <Button variant="soft" disabled={!!scanBusy} onClick={() => barcodeInput.current?.click()}>
-                {scanBusy === 'barcode' ? <Spinner /> : <Icon.barcode size={17} />} {scanBusy === 'barcode' ? 'Cerco…' : 'Codice a barre'}
+                {scanBusy === 'barcode' ? <Spinner /> : <Icon.barcode size={17} />} {scanBusy === 'barcode' ? 'Looking up…' : 'Barcode'}
               </Button>
             </div>
             <div className="mb-2 flex items-center gap-2 rounded-2xl bg-surface px-4 ring-1 ring-black/[0.05] focus-within:ring-teal/30">
@@ -955,7 +968,7 @@ function FoodDB({ open, onClose }: { open: boolean; onClose: () => void }) {
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                placeholder="Cerca / filtra…"
+                placeholder="Search…"
                 className="min-h-[44px] flex-1 bg-transparent outline-none"
               />
             </div>
@@ -963,14 +976,14 @@ function FoodDB({ open, onClose }: { open: boolean; onClose: () => void }) {
 
           <div className="min-h-0 flex-1 space-y-1.5 overflow-y-auto">
             {list.length === 0 && (
-              <p className="px-2 py-6 text-center text-sm text-muted">Nessun alimento trovato.</p>
+              <p className="px-2 py-6 text-center text-sm text-muted">No food found.</p>
             )}
             {list.map((f) => (
               <div key={f.id} className="flex items-center gap-1 rounded-2xl bg-surface px-2 py-2">
                 <button
                   onClick={() => toggleFav(f.id)}
                   className="flex h-9 w-9 items-center justify-center"
-                  aria-label="Preferito"
+                  aria-label="Favorite"
                 >
                   {f.preferito ? (
                     <Icon.star size={18} className="text-teal" />
@@ -981,20 +994,20 @@ function FoodDB({ open, onClose }: { open: boolean; onClose: () => void }) {
                 <button onClick={() => openEdit(f)} className="min-w-0 flex-1 text-left">
                   <div className="truncate text-sm">{f.nome}</div>
                   <div className="font-mono text-[11px] text-muted tabular">
-                    {bucketOf(f.categoria)} · {Math.round(foodKcal100(f))}kcal · P{f.p100} C{f.c100} G{f.g100}
+                    {chipLabel(bucketOf(f.categoria))} · {Math.round(foodKcal100(f))} kcal · P{f.p100} C{f.c100} F{f.g100}
                   </div>
                 </button>
                 <button
                   onClick={() => openEdit(f)}
                   className="flex h-9 w-9 items-center justify-center rounded-full text-muted"
-                  aria-label="Modifica"
+                  aria-label="Edit"
                 >
                   <Icon.edit size={17} />
                 </button>
                 <button
-                  onClick={() => confirm(`Eliminare ${f.nome}?`) && deleteFood(f.id)}
+                  onClick={() => confirm(`Delete ${f.nome}?`) && deleteFood(f.id)}
                   className="flex h-9 w-9 items-center justify-center rounded-full text-red-300"
-                  aria-label="Elimina"
+                  aria-label="Delete"
                 >
                   <Icon.trash size={17} />
                 </button>
