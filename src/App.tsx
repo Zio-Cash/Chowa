@@ -9,6 +9,7 @@ import { useWakeLock } from './lib/useWakeLock'
 import { useReminders } from './lib/useReminders'
 import { MedalWatcher } from './components/Medals'
 import { useToday } from './lib/useToday'
+import { Onboarding } from './components/Onboarding'
 
 // Sezioni in chunk separati: la Home parte subito (si scarica durante l'intro),
 // le altre appena l'app è aperta e il telefono è libero, così il primo tocco
@@ -121,9 +122,9 @@ function Shell() {
       {readOnly && (
         <div className="mx-auto max-w-[480px] px-4 pt-3">
           <div className="flex items-center justify-between gap-3 rounded-2xl bg-teal/10 px-4 py-2 text-sm text-teal">
-            <span>Stai guardando i dati di un'altra persona (sola lettura).</span>
+            <span>You’re viewing someone else’s data (read-only).</span>
             <button onClick={() => setViewingUid(null)} className="shrink-0 font-semibold underline">
-              Esci
+              Exit
             </button>
           </div>
         </div>
@@ -131,15 +132,15 @@ function Shell() {
       {!persistent && (
         <div className="mx-auto max-w-[480px] px-4 pt-3">
           <div className="rounded-2xl bg-arancio/10 px-4 py-2 text-sm text-ink">
-            Memoria del browser non disponibile: i dati non verranno salvati tra le sessioni.
+            Browser storage isn’t available: your data won’t be kept between sessions.
           </div>
         </div>
       )}
       {syncError && !readOnly && (
         <div className="mx-auto max-w-[480px] px-4 pt-3">
           <div className="rounded-2xl bg-arancio/10 px-4 py-2 text-sm text-ink">
-            Non riesco a salvare sul cloud: i dati restano su questo telefono. Riprovo alla
-            prossima modifica.
+            Can’t save to the cloud right now: your data stays on this phone. I’ll retry on
+            your next change.
           </div>
         </div>
       )}
@@ -154,6 +155,7 @@ function Shell() {
       </main>
       <TabBar view={view} setView={setView} />
       <MedalWatcher />
+      <Onboarding />
     </div>
   )
 }

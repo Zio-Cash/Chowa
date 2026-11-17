@@ -29,23 +29,23 @@ export function weeklyCoach(state: AppState, oggi: string = dateKey()): CoachRep
 
   // Allenamenti
   if (stats.allenamenti >= 3)
-    msgs.push({ tone: 'good', text: `${stats.allenamenti} allenamenti questa settimana — ottimo ritmo.` })
+    msgs.push({ tone: 'good', text: `${stats.allenamenti} workouts this week — great rhythm.` })
   else
     msgs.push({
       tone: stats.allenamenti === 0 ? 'warn' : 'info',
-      text: `${stats.allenamenti} allenament${stats.allenamenti === 1 ? 'o' : 'i'}: prova a puntare ad almeno 3.`,
+      text: `${stats.allenamenti} workout${stats.allenamenti === 1 ? '' : 's'} this week: try to aim for at least 3.`,
     })
 
   // Deficit / energia
   if (stats.mediaDeficit !== 0 || stats.mediaKcal > 0) {
     const d = stats.mediaDeficit
     if (d < -850)
-      msgs.push({ tone: 'warn', text: `Deficit medio molto alto (${Math.round(d)} kcal/g): valuta +100–150 kcal per non rallentare il metabolismo.` })
+      msgs.push({ tone: 'warn', text: `Average deficit is very high (${Math.round(d)} kcal/day): consider +100–150 kcal so your metabolism doesn't slow down.` })
     else if (d < -150)
-      msgs.push({ tone: 'good', text: `Deficit medio ${Math.round(d)} kcal/g: in linea col dimagrimento.` })
+      msgs.push({ tone: 'good', text: `Average deficit ${Math.round(d)} kcal/day: right on track for fat loss.` })
     else if (d > 150)
-      msgs.push({ tone: 'warn', text: `Surplus medio +${Math.round(d)} kcal/g: occhio alle porzioni se vuoi dimagrire.` })
-    else msgs.push({ tone: 'info', text: `Sei intorno al mantenimento (${Math.round(d)} kcal/g di media).` })
+      msgs.push({ tone: 'warn', text: `Average surplus +${Math.round(d)} kcal/day: watch your portions if you want to lose weight.` })
+    else msgs.push({ tone: 'info', text: `You're around maintenance (${Math.round(d)} kcal/day on average).` })
   }
 
   // Trend peso + obiettivo
@@ -54,21 +54,21 @@ export function weeklyCoach(state: AppState, oggi: string = dateKey()): CoachRep
   if (trend) {
     const s = trend.slopePerWeek
     const verso =
-      Math.abs(s) < 0.1 ? 'stabile' : s < 0 ? `in calo di ${Math.abs(s).toFixed(2)} kg/sett` : `in aumento di ${s.toFixed(2)} kg/sett`
+      Math.abs(s) < 0.1 ? 'stable' : s < 0 ? `down ${Math.abs(s).toFixed(2)} kg/wk` : `up ${s.toFixed(2)} kg/wk`
     if (target > 0) {
       const proj = projectToTarget(trend.current, target, s, oggi)
       if (proj && proj.weeksToGo > 0)
-        msgs.push({ tone: 'good', text: `Peso ${verso}: all'obiettivo di ${target} kg in circa ${Math.max(1, Math.round(proj.weeksToGo))} settimane.` })
-      else if (proj && proj.weeksToGo <= 0) msgs.push({ tone: 'good', text: `Hai raggiunto l'obiettivo di ${target} kg!` })
-      else msgs.push({ tone: 'warn', text: `Peso ${verso}: così non ti avvicini ai ${target} kg. Rivedi dieta o movimento.` })
+        msgs.push({ tone: 'good', text: `Weight ${verso}: ${target} kg goal in about ${Math.max(1, Math.round(proj.weeksToGo))} week${Math.max(1, Math.round(proj.weeksToGo)) === 1 ? '' : 's'}.` })
+      else if (proj && proj.weeksToGo <= 0) msgs.push({ tone: 'good', text: `You've reached your ${target} kg goal!` })
+      else msgs.push({ tone: 'warn', text: `Weight ${verso}: at this pace you won't get closer to ${target} kg. Revisit your diet or activity.` })
     } else {
-      msgs.push({ tone: 'info', text: `Peso ${verso} nelle ultime settimane.` })
+      msgs.push({ tone: 'info', text: `Weight ${verso} over the last few weeks.` })
     }
   }
 
   // Aderenza diario
   if (stats.giorniDieta < Math.min(5, n))
-    msgs.push({ tone: 'info', text: `Pasti registrati ${stats.giorniDieta}/${n} giorni: più registri, più i numeri sono veri.` })
+    msgs.push({ tone: 'info', text: `Meals logged on ${stats.giorniDieta}/${n} days: the more you log, the more accurate your numbers.` })
 
   return { giorni: n, messages: msgs.slice(0, 5) }
 }

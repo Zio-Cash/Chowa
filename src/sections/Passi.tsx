@@ -57,7 +57,7 @@ export default function Passi() {
     <div className="space-y-4 pb-4">
       <Card>
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-display text-base tracking-wide">Passi {year}</h2>
+          <h2 className="font-display text-base tracking-wide">Steps {year}</h2>
           <NavArrows
             onPrev={() => setYear((y) => y - 1)}
             onNext={() => setYear((y) => y + 1)}
@@ -66,7 +66,7 @@ export default function Passi() {
           />
         </div>
         <div className="font-mono text-3xl font-bold tabular">{fmtSteps(Math.round(yearAvg))}</div>
-        <div className="text-xs text-muted">media giornaliera annuale · obiettivo {fmtSteps(stepTarget)}</div>
+        <div className="text-xs text-muted">yearly daily average · goal {fmtSteps(stepTarget)}</div>
         <div className="mt-3 h-40">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chart} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
@@ -74,7 +74,7 @@ export default function Passi() {
               <Tooltip
                 cursor={{ fill: '#211d1914' }}
                 contentStyle={{ borderRadius: 12, border: 'none', fontSize: 12, background: '#fdfbf6', color: '#211d19' }}
-                formatter={(v) => [fmtSteps(Number(v)), 'media']}
+                formatter={(v) => [fmtSteps(Number(v)), 'average']}
               />
               <Bar dataKey="avg" radius={[6, 6, 0, 0]}>
                 {chart.map((r) => (
@@ -161,12 +161,12 @@ function MonthBody({
                   return (
                     <div key={key} className="flex items-center gap-2 rounded-xl px-2 py-1">
                       <span className="w-14 font-mono text-xs text-muted tabular">
-                        {d.getDate()}/{d.getMonth() + 1}
+                        {MESI_BREVI[d.getMonth()]} {d.getDate()}
                       </span>
                       <NumberInput
                         value={stepsLog[key] ?? ''}
                         onChange={(v) => onSet(key, v)}
-                        suffix="passi"
+                        suffix="steps"
                         placeholder="—"
                         className="flex-1"
                         commitOnBlur

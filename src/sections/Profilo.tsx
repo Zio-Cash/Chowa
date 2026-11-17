@@ -20,10 +20,10 @@ type Tab = 'io' | 'progressi' | 'percorso' | 'medaglie'
 type Inner = 'equilibrio' | 'settings' | null
 
 const TABS: { value: Tab; label: string }[] = [
-  { value: 'io', label: 'Io' },
-  { value: 'progressi', label: 'Progressi' },
-  { value: 'percorso', label: 'Percorso' },
-  { value: 'medaglie', label: 'Medaglie' },
+  { value: 'io', label: 'Me' },
+  { value: 'progressi', label: 'Progress' },
+  { value: 'percorso', label: 'Journey' },
+  { value: 'medaglie', label: 'Medals' },
 ]
 
 export default function Profilo() {
@@ -38,7 +38,7 @@ export default function Profilo() {
 
   const oggi = dateKey()
   const lvl = levelInfo(state.gamification.xp)
-  const nome = state.account.nome?.trim() || (user?.displayName || '').trim() || 'Praticante'
+  const nome = state.account.nome?.trim() || (user?.displayName || '').trim() || 'You'
   const avatar = state.account.avatar || user?.photoURL || null
 
   const targets = state.settings.targets
@@ -62,11 +62,11 @@ export default function Profilo() {
     setTimeout(() => URL.revokeObjectURL(url), 60_000)
   }
   const doImport = (file: File) => {
-    if (!confirm('Importare questo file? Sostituisce tutti i dati attuali dell\'app.')) return
+    if (!confirm('Import this file? It replaces all the data currently in the app.')) return
     const reader = new FileReader()
     reader.onload = () => {
       const ok = importData(String(reader.result))
-      alert(ok ? 'Dati importati' : 'File non valido')
+      alert(ok ? 'Data imported' : 'Invalid file')
     }
     reader.readAsText(file)
   }
@@ -75,18 +75,18 @@ export default function Profilo() {
   if (inner === 'settings') {
     return (
       <div className="pb-6">
-        <BackHeader onBack={() => setInner(null)} title="Dati e impostazioni" />
+        <BackHeader onBack={() => setInner(null)} title="Data & settings" />
         <Card className="!p-2">
-          <Row label="Sincronizzazione" tone="teal" onClick={() => setSync(true)} />
-          <Row label="Backup e ripristino" onClick={() => setBackup(true)} border />
-          <Row label="Esporta dati" onClick={doExport} border />
-          <Row label="Importa dati" onClick={() => fileRef.current?.click()} border />
+          <Row label="Sync" tone="teal" onClick={() => setSync(true)} />
+          <Row label="Backup & restore" onClick={() => setBackup(true)} border />
+          <Row label="Export data" onClick={doExport} border />
+          <Row label="Import data" onClick={() => fileRef.current?.click()} border />
           <Row
-            label="Reset dati"
+            label="Reset data"
             tone="danger"
             border
             onClick={() => {
-              if (confirm('Azzerare tutti i dati e ripartire dai seed?')) resetAll()
+              if (confirm('Reset all data and start over from the defaults?')) resetAll()
             }}
           />
         </Card>
@@ -94,7 +94,7 @@ export default function Profilo() {
           onClick={signOut}
           className="mt-4 w-full rounded-2xl bg-black/[0.05] py-3.5 text-sm font-medium tracking-wide text-muted transition active:scale-[0.99]"
         >
-          Esci
+          Sign out
         </button>
         <input
           ref={fileRef}
@@ -115,7 +115,7 @@ export default function Profilo() {
   if (inner === 'equilibrio') {
     return (
       <div className="pb-6">
-        <BackHeader onBack={() => setInner(null)} title="Equilibrio" />
+        <BackHeader onBack={() => setInner(null)} title="Balance" />
         <Calorie />
       </div>
     )
@@ -125,7 +125,7 @@ export default function Profilo() {
     <div className="space-y-4 pb-6">
       {/* Identità */}
       <div className="flex items-center gap-4 px-1 pt-1">
-        <button onClick={() => setEditOpen(true)} className="relative shrink-0 active:scale-95" aria-label="Modifica profilo">
+        <button onClick={() => setEditOpen(true)} className="relative shrink-0 active:scale-95" aria-label="Edit profile">
           {avatar ? (
             <img
               src={avatar}
@@ -145,7 +145,7 @@ export default function Profilo() {
         <div className="min-w-0 flex-1">
           <h1 className="truncate font-display text-2xl font-medium tracking-tight">{nome}</h1>
           <div className="mt-0.5 text-sm text-muted">
-            {masteryLabel(lvl.livello)} · Livello {lvl.livello}
+            {masteryLabel(lvl.livello)} · Level {lvl.livello}
           </div>
           <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-black/[0.07]">
             <div className="h-full rounded-full bg-teal" style={{ width: `${Math.round(lvl.pct * 100)}%` }} />
@@ -159,20 +159,23 @@ export default function Profilo() {
         <>
           {/* In sintesi */}
           <Card>
-            <div className="mb-3 text-[11px] font-medium uppercase tracking-[0.14em] text-muted">In sintesi</div>
+            <div className="mb-3 text-[11px] font-medium uppercase tracking-[0.14em] text-muted">At a glance</div>
             <div className="grid grid-cols-2 gap-2.5">
               <StatTile
-                label="Peso"
+                label="Weight"
                 value={pesoAttuale != null ? `${pesoAttuale} kg` : '—'}
                 sub={deltaPeso != null ? `${deltaPeso > 0 ? '+' : deltaPeso < 0 ? '−' : ''}${Math.abs(deltaPeso).toFixed(1)} kg` : undefined}
                 subTone={deltaPeso == null ? 'muted' : deltaPeso < 0 ? 'verde' : deltaPeso > 0 ? 'arancio' : 'muted'}
               />
-              <StatTile label="Streak" value={`${liveStreak(state.gamification, dateKey())}`} sub="giorni" />
-              <StatTile label="Livello" value={`${lvl.livello}`} sub={`${lvl.inLevel} / ${lvl.soglia} XP`} />
+              {(() => {
+                const s = liveStreak(state.gamification, dateKey())
+                return <StatTile label="Streak" value={`${s}`} sub={s === 1 ? 'day' : 'days'} />
+              })()}
+              <StatTile label="Level" value={`${lvl.livello}`} sub={`${lvl.inLevel} / ${lvl.soglia} XP`} />
               {cur ? (
-                <StatTile label="Ciclo" value={cur.phase.nome} sub={`Giorno ${cur.day}`} />
+                <StatTile label="Cycle" value={cur.phase.nome} sub={`Day ${cur.day}`} />
               ) : (
-                <StatTile label="Obiettivo" value={goals.pesoTarget ? `${goals.pesoTarget} kg` : '—'} sub="peso" />
+                <StatTile label="Goal" value={goals.pesoTarget ? `${goals.pesoTarget} kg` : '—'} sub="weight" />
               )}
             </div>
           </Card>
@@ -181,16 +184,16 @@ export default function Profilo() {
           <Card>
             <button onClick={() => setInner('equilibrio')} className="w-full text-left">
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Equilibrio</span>
-                <span className="text-xs text-teal">Apri →</span>
+                <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Balance</span>
+                <span className="text-xs text-teal">Open →</span>
               </div>
               <div className="space-y-1.5 text-sm">
-                <ObjRow label="Calorie" value={`${targets.kcal} kcal`} />
-                <ObjRow label="Macro" value={`P ${targets.proteine} · C ${targets.carboidrati} · G ${targets.grassi} g`} />
-                <ObjRow label="Passi" value={fmtSteps(goals.stepTarget)} />
-                <ObjRow label="Acqua" value={fmtWater(goals.waterTarget)} />
+                <ObjRow label="Calories" value={`${targets.kcal} kcal`} />
+                <ObjRow label="Macros" value={`P ${targets.proteine} · C ${targets.carboidrati} · F ${targets.grassi} g`} />
+                <ObjRow label="Steps" value={fmtSteps(goals.stepTarget)} />
+                <ObjRow label="Water" value={fmtWater(goals.waterTarget)} />
               </div>
-              <p className="mt-2.5 text-xs text-muted">Calcolatore, calorie adattive e obiettivi giornalieri</p>
+              <p className="mt-2.5 text-xs text-muted">Calculator, adaptive calories and daily goals</p>
             </button>
           </Card>
 
@@ -205,8 +208,8 @@ export default function Profilo() {
               className="flex w-full items-center justify-between rounded-2xl px-3 py-3.5 text-left transition active:scale-[0.99]"
             >
               <span>
-                <span className="block text-sm font-medium tracking-wide text-ink">Dati e impostazioni</span>
-                <span className="block text-xs text-muted">Sincronizzazione, backup, export e reset</span>
+                <span className="block text-sm font-medium tracking-wide text-ink">Data & settings</span>
+                <span className="block text-xs text-muted">Sync, backup, export and reset</span>
               </span>
               <span className="text-muted">›</span>
             </button>
@@ -235,7 +238,7 @@ function BackHeader({ onBack, title }: { onBack: () => void; title: string }) {
       onClick={onBack}
       className="mb-4 flex items-center gap-1.5 text-sm text-muted transition active:scale-95"
     >
-      ‹ <span className="tracking-wide">Profilo</span>
+      ‹ <span className="tracking-wide">Profile</span>
       <span className="ml-1 text-ink">· {title}</span>
     </button>
   )
@@ -327,42 +330,42 @@ function EditProfileSheet({
     try {
       setAvatar(await resizeImage(file))
     } catch {
-      alert('Immagine non valida.')
+      alert('Invalid image.')
     }
   }
 
   return (
-    <Sheet open={open} onClose={onClose} title="Modifica profilo">
+    <Sheet open={open} onClose={onClose} title="Edit profile">
       <div className="mb-4 flex items-center gap-4">
         {preview ? (
           <img src={preview} alt="" className="h-20 w-20 rounded-full object-cover ring-1 ring-black/10" />
         ) : (
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-surface2 font-display text-3xl text-teal ring-1 ring-black/10">
-            {(nome || googleName || 'P').charAt(0).toUpperCase()}
+            {(nome || googleName || 'Y').charAt(0).toUpperCase()}
           </div>
         )}
         <div className="flex flex-col gap-2">
           <Button variant="soft" onClick={() => fileRef.current?.click()}>
-            Cambia foto
+            Change photo
           </Button>
           {avatar && (
             <button onClick={() => setAvatar('')} className="text-xs text-muted">
-              Rimuovi foto
+              Remove photo
             </button>
           )}
         </div>
       </div>
 
-      <Field label="Nome">
+      <Field label="Name">
         <input
           value={nome}
           onChange={(e) => setNome(e.target.value)}
-          placeholder={googleName || 'Il tuo nome'}
+          placeholder={googleName || 'Your name'}
           className="min-h-[46px] w-full rounded-2xl bg-surface2 px-4 outline-none ring-1 ring-black/[0.05] focus:ring-teal/30"
         />
       </Field>
       {googleName && (
-        <p className="mt-1 px-1 text-[11px] text-muted">Lascia vuoto per usare il nome dell'account ({googleName}).</p>
+        <p className="mt-1 px-1 text-[11px] text-muted">Leave empty to use your account name ({googleName}).</p>
       )}
 
       <Button
@@ -372,7 +375,7 @@ function EditProfileSheet({
           onClose()
         }}
       >
-        Salva
+        Save
       </Button>
 
       <input
@@ -400,31 +403,31 @@ function BackupSheet({
   const snaps = open ? listSnapshots() : []
 
   const restore = (date: string) => {
-    if (!confirm(`Ripristinare i dati salvati il ${formatLong(parseKey(date))}?\nLo stato attuale verrà sostituito.`)) return
+    if (!confirm(`Restore the data saved on ${formatLong(parseKey(date))}?\nYour current data will be replaced.`)) return
     const data = getSnapshot(date)
     if (!data) return
     const ok = onRestore(JSON.stringify(data))
-    alert(ok ? 'Dati ripristinati.' : 'Ripristino non riuscito.')
+    alert(ok ? 'Data restored.' : 'Restore failed.')
     if (ok) onClose()
   }
 
   return (
-    <Sheet open={open} onClose={onClose} title="Backup e ripristino">
+    <Sheet open={open} onClose={onClose} title="Backup & restore">
       <p className="mb-4 text-sm leading-relaxed text-muted">
-        L'app salva da sola una copia di sicurezza ogni giorno (ultimi 14 giorni), sul dispositivo. Se
-        qualcosa va storto, ripristini con un tap.
+        The app automatically saves a backup copy on this device every day (last 14 days). If
+        something goes wrong, you can restore it with one tap.
       </p>
 
       <Button variant="soft" className="mb-4 w-full" onClick={onExport}>
-        Esporta un file di backup ora
+        Export a backup file now
       </Button>
 
       <div className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.14em] text-muted">
-        Copie automatiche
+        Automatic backups
       </div>
       {snaps.length === 0 ? (
         <p className="rounded-2xl bg-black/[0.04] p-4 text-center text-sm text-muted">
-          Nessuna copia ancora. Verrà creata automaticamente durante l'uso.
+          No backups yet. One will be created automatically as you use the app.
         </p>
       ) : (
         <div className="space-y-1.5">
@@ -433,14 +436,14 @@ function BackupSheet({
               <div className="min-w-0">
                 <div className="text-sm">{formatLong(parseKey(s.date))}</div>
                 <div className="font-mono text-[11px] text-muted tabular">
-                  {s.giorniDiario} gg diario · {s.giorniPeso} pesate
+                  {s.giorniDiario} {s.giorniDiario === 1 ? 'food log day' : 'food log days'} · {s.giorniPeso} {s.giorniPeso === 1 ? 'weigh-in' : 'weigh-ins'}
                 </div>
               </div>
               <button
                 onClick={() => restore(s.date)}
                 className="shrink-0 rounded-xl bg-teal/15 px-3 py-1.5 text-xs font-medium text-teal active:scale-95"
               >
-                Ripristina
+                Restore
               </button>
             </div>
           ))}

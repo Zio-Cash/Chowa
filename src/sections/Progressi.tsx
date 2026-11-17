@@ -12,9 +12,9 @@ export default function Progressi() {
     <div className="space-y-4">
       <Segmented
         options={[
-          { value: 'peso', label: 'Peso' },
-          { value: 'passi', label: 'Passi' },
-          { value: 'foto', label: 'Foto' },
+          { value: 'peso', label: 'Weight' },
+          { value: 'passi', label: 'Steps' },
+          { value: 'foto', label: 'Photos' },
         ]}
         value={tab}
         onChange={(v) => setTab(v as Tab)}

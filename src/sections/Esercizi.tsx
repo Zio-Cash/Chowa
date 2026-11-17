@@ -28,8 +28,8 @@ export default function Esercizi() {
     <div className="space-y-4 pb-4">
       <Segmented
         options={[
-          { value: 'miei', label: 'I miei' },
-          { value: 'libreria', label: 'Libreria' },
+          { value: 'miei', label: 'Mine' },
+          { value: 'libreria', label: 'Library' },
         ]}
         value={view}
         onChange={(v) => setView(v as 'miei' | 'libreria')}
@@ -78,16 +78,16 @@ function MyExercises({ onOpenLibrary }: { onOpenLibrary: () => void }) {
 
       <div className="grid grid-cols-2 gap-2">
         <Button variant="soft" onClick={() => setEditing('new')}>
-          <Icon.plus size={16} /> Nuovo
+          <Icon.plus size={16} /> New
         </Button>
         <Button variant="soft" onClick={onOpenLibrary}>
-          <Icon.search size={16} /> Dalla libreria
+          <Icon.search size={16} /> From library
         </Button>
       </div>
 
       {list.length === 0 && (
         <p className="rounded-2xl bg-black/[0.04] p-4 text-center text-sm text-muted">
-          Nessun esercizio in questa categoria. Aggiungine uno o prendilo dalla libreria.
+          No exercises in this category yet. Add one, or pick one from the library.
         </p>
       )}
 
@@ -119,24 +119,24 @@ function MyExercises({ onOpenLibrary }: { onOpenLibrary: () => void }) {
                         {e.descrizione ? (
                           <p className="mt-3 text-sm leading-relaxed text-muted">{e.descrizione}</p>
                         ) : (
-                          imgs.length === 0 && <p className="text-sm text-muted">Nessuna spiegazione o immagine.</p>
+                          imgs.length === 0 && <p className="text-sm text-muted">No description or image.</p>
                         )}
                         <div className="mt-3 flex gap-2">
                           <button
                             onClick={() => setEditing(e)}
                             className="flex items-center gap-1.5 rounded-xl bg-black/[0.05] px-3 py-1.5 text-xs font-medium text-muted"
                           >
-                            <Icon.edit size={14} /> Modifica
+                            <Icon.edit size={14} /> Edit
                           </button>
                           <button
                             onClick={() => {
-                              if (!confirm(`Eliminare ${e.nome}?`)) return
+                              if (!confirm(`Delete ${e.nome}?`)) return
                               deleteCatalogExercise(e.id)
                               deleteExImage(e.id).then(reloadImgs)
                             }}
                             className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium text-shu"
                           >
-                            <Icon.trash size={14} /> Elimina
+                            <Icon.trash size={14} /> Delete
                           </button>
                         </div>
                       </div>
@@ -197,7 +197,7 @@ function Library({ onPick }: { onPick?: (x: LibExercise) => void }) {
   if (err)
     return (
       <p className="rounded-2xl bg-black/[0.04] p-4 text-center text-sm text-muted">
-        Non riesco a caricare la libreria. Serve la connessione la prima volta.
+        Couldn’t load the library. You need a connection the first time.
       </p>
     )
   if (!all)
@@ -216,16 +216,16 @@ function Library({ onPick }: { onPick?: (x: LibExercise) => void }) {
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Cerca (es. squat, row, plank)…"
+          placeholder="Search (e.g. squat, row, plank)…"
           className="min-h-[44px] flex-1 bg-transparent outline-none"
         />
       </div>
       <div className="grid grid-cols-3 gap-2">
-        <FilterSelect label="Muscolo" value={muscolo} onChange={setMuscolo} map={MUSCOLI} />
-        <FilterSelect label="Attrezzo" value={attrezzo} onChange={setAttrezzo} map={ATTREZZI} />
-        <FilterSelect label="Tipo" value={tipo} onChange={setTipo} map={TIPI} />
+        <FilterSelect label="Muscle" value={muscolo} onChange={setMuscolo} map={MUSCOLI} />
+        <FilterSelect label="Equipment" value={attrezzo} onChange={setAttrezzo} map={ATTREZZI} />
+        <FilterSelect label="Type" value={tipo} onChange={setTipo} map={TIPI} />
       </div>
-      <div className="px-1 text-xs text-muted">{filtered.length} esercizi</div>
+      <div className="px-1 text-xs text-muted">{filtered.length} {filtered.length === 1 ? 'exercise' : 'exercises'}</div>
 
       <div className="space-y-2">
         {filtered.slice(0, shown).map((x) => (
@@ -247,11 +247,11 @@ function Library({ onPick }: { onPick?: (x: LibExercise) => void }) {
       </div>
       {shown < filtered.length && (
         <Button variant="ghost" className="w-full" onClick={() => setShown((n) => n + PAGE)}>
-          Mostra altri
+          Show more
         </Button>
       )}
       <p className="px-1 text-center text-[11px] text-muted">
-        Immagini e dati: Free Exercise DB (pubblico dominio)
+        Images and data: Free Exercise DB (public domain)
       </p>
 
       {detail && <LibDetail x={detail} onClose={() => setDetail(null)} />}
@@ -311,7 +311,7 @@ function LibDetail({ x, onClose }: { x: LibExercise; onClose: () => void }) {
 
   const addToMine = () => {
     ensureInCatalog()
-    setDone('Aggiunto ai tuoi esercizi')
+    setDone('Added to your exercises')
   }
 
   const addToDay = () => {
@@ -331,12 +331,12 @@ function LibDetail({ x, onClose }: { x: LibExercise; onClose: () => void }) {
     updateExecutionPlan((p) =>
       p.map((d) => {
         if (d.id !== dayId) return d
-        const blocchi = d.blocchi.length ? d.blocchi : [{ id: uid(), nome: 'Esercizi', esercizi: [] }]
+        const blocchi = d.blocchi.length ? d.blocchi : [{ id: uid(), nome: 'Exercises', esercizi: [] }]
         const last = blocchi.length - 1
         return { ...d, blocchi: blocchi.map((b, i) => (i === last ? { ...b, esercizi: [...b.esercizi, ex] } : b)) }
       }),
     )
-    setDone(`Aggiunto a ${day.nome}`)
+    setDone(`Added to ${day.nome}`)
   }
 
   return (
@@ -361,7 +361,7 @@ function LibDetail({ x, onClose }: { x: LibExercise; onClose: () => void }) {
         {x.i.length > 0 && (
           <div>
             <button onClick={() => setShowInstr((v) => !v)} className="text-sm font-medium text-teal">
-              {showInstr ? 'Nascondi istruzioni' : 'Come si esegue (in inglese)'}
+              {showInstr ? 'Hide instructions' : 'How to do it'}
             </button>
             {showInstr && (
               <ol className="mt-2 list-decimal space-y-1.5 pl-5 text-sm leading-relaxed text-muted">
@@ -375,11 +375,11 @@ function LibDetail({ x, onClose }: { x: LibExercise; onClose: () => void }) {
 
         {existing ? (
           <p className="rounded-2xl bg-black/[0.04] px-3 py-2 text-sm text-muted">
-            È già nei tuoi esercizi ({existing.categoria} · {existing.sub}).
+            Already in your exercises ({existing.categoria} · {existing.sub}).
           </p>
         ) : (
           <div className="space-y-2 rounded-2xl bg-black/[0.03] p-3">
-            <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted">Nei tuoi esercizi come</div>
+            <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted">Add to your exercises as</div>
             <div className="flex flex-wrap gap-1.5">
               {CATS.map((c) => (
                 <button
@@ -398,7 +398,7 @@ function LibDetail({ x, onClose }: { x: LibExercise; onClose: () => void }) {
         <div className="space-y-2">
           {!existing && (
             <Button className="w-full" onClick={addToMine}>
-              <Icon.plus size={16} /> Aggiungi ai miei esercizi
+              <Icon.plus size={16} /> Add to my exercises
             </Button>
           )}
           {state.executionPlan.length > 0 && (
@@ -415,7 +415,7 @@ function LibDetail({ x, onClose }: { x: LibExercise; onClose: () => void }) {
                 ))}
               </select>
               <Button variant="soft" onClick={addToDay}>
-                Aggiungi alla scheda
+                Add to routine
               </Button>
             </div>
           )}
@@ -518,7 +518,7 @@ function ExerciseCatalogEditor({
     try {
       setPending(file.type === 'image/gif' ? await readAsDataUrl(file) : await resizeImage(file, 640))
     } catch {
-      alert('Non è stato possibile caricare l’immagine.')
+      alert('Couldn’t load the image.')
     }
     setBusy(false)
   }
@@ -540,7 +540,7 @@ function ExerciseCatalogEditor({
 
   if (picking)
     return (
-      <Sheet open onClose={() => setPicking(false)} title="Scegli dalla libreria">
+      <Sheet open onClose={() => setPicking(false)} title="Choose from library">
         <Library
           onPick={(x) => {
             setLibId(x.id)
@@ -552,9 +552,9 @@ function ExerciseCatalogEditor({
     )
 
   return (
-    <Sheet open onClose={onClose} title={exercise ? 'Modifica esercizio' : 'Nuovo esercizio'}>
+    <Sheet open onClose={onClose} title={exercise ? 'Edit exercise' : 'New exercise'}>
       <div className="space-y-3">
-        <Field label="Immagine">
+        <Field label="Image">
           <input ref={input} type="file" accept="image/*" onChange={onFile} className="hidden" />
           {preview && (
             <img src={preview} alt="" className="mb-2 max-h-48 w-full rounded-2xl bg-surface2 object-contain" />
@@ -565,7 +565,7 @@ function ExerciseCatalogEditor({
               onClick={() => setPicking(true)}
               className="flex items-center gap-1.5 rounded-xl bg-teal px-3 py-2 text-xs font-medium text-[#faf7f1]"
             >
-              <Icon.search size={14} /> {libId ? 'Cambia dalla libreria' : 'Scegli dalla libreria'}
+              <Icon.search size={14} /> {libId ? 'Change from library' : 'Choose from library'}
             </button>
             <button
               type="button"
@@ -573,7 +573,7 @@ function ExerciseCatalogEditor({
               disabled={busy}
               className="flex items-center gap-1.5 rounded-xl bg-black/[0.05] px-3 py-2 text-xs font-medium text-muted"
             >
-              <Icon.plus size={14} /> {busy ? 'Carico…' : 'Foto o GIF tua'}
+              <Icon.plus size={14} /> {busy ? 'Loading…' : 'Your photo or GIF'}
             </button>
             {(own || libId) && (
               <button
@@ -584,23 +584,23 @@ function ExerciseCatalogEditor({
                 }}
                 className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium text-shu"
               >
-                <Icon.trash size={14} /> Rimuovi
+                <Icon.trash size={14} /> Remove
               </button>
             )}
           </div>
           <p className="mt-1.5 text-[11px] text-muted">
-            Le immagini della libreria si vedono su tutti i dispositivi; le foto tue restano su questo.
+            Library images show on all your devices; your own photos stay on this one.
           </p>
         </Field>
-        <Field label="Nome">
+        <Field label="Name">
           <input
             value={nome}
             onChange={(e) => setNome(e.target.value)}
-            placeholder="Es. Squat"
+            placeholder="e.g. Squat"
             className="min-h-[46px] w-full rounded-2xl bg-surface2 px-4 outline-none ring-1 ring-black/[0.05] focus:ring-teal/30"
           />
         </Field>
-        <Field label="Categoria">
+        <Field label="Category">
           <div className="flex flex-wrap gap-1.5">
             {CATS.map((c) => (
               <button
@@ -616,20 +616,20 @@ function ExerciseCatalogEditor({
             ))}
           </div>
         </Field>
-        <Field label="Sottocategoria">
+        <Field label="Subcategory">
           <Segmented<ExSub> options={SUBS.map((s) => ({ value: s, label: s }))} value={sub} onChange={setSub} />
         </Field>
-        <Field label="Spiegazione (opzionale)">
+        <Field label="Description (optional)">
           <textarea
             value={descrizione}
             onChange={(e) => setDescrizione(e.target.value)}
             rows={4}
-            placeholder="Come si esegue l'esercizio…"
+            placeholder="How to perform the exercise…"
             className="w-full resize-none rounded-2xl bg-surface2 px-4 py-3 text-sm leading-relaxed outline-none ring-1 ring-black/[0.05] focus:ring-teal/30"
           />
         </Field>
         <Button className="w-full" onClick={save}>
-          {exercise ? 'Salva modifiche' : 'Aggiungi al catalogo'}
+          {exercise ? 'Save changes' : 'Add to catalog'}
         </Button>
       </div>
     </Sheet>

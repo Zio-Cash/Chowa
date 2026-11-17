@@ -103,7 +103,7 @@ export function Stepper({
       <button
         type="button"
         onClick={() => onChange(clamp(value - step))}
-        aria-label="Diminuisci"
+        aria-label="Decrease"
         className="h-10 w-10 shrink-0 rounded-full bg-black/[0.07] text-lg font-bold text-ink transition active:scale-90"
       >
         −
@@ -138,7 +138,7 @@ export function Stepper({
       <button
         type="button"
         onClick={() => onChange(clamp(value + step))}
-        aria-label="Aumenta"
+        aria-label="Increase"
         className="h-10 w-10 shrink-0 rounded-full bg-black/[0.07] text-lg font-bold text-ink transition active:scale-90"
       >
         +
@@ -261,10 +261,10 @@ export function NavArrows({
     'flex h-10 w-10 items-center justify-center rounded-full bg-black/[0.04] text-muted transition active:bg-black/[0.08] disabled:opacity-25'
   return (
     <div className="flex gap-1">
-      <button onClick={onPrev} disabled={prevDisabled} aria-label="Precedente" className={cls}>
+      <button onClick={onPrev} disabled={prevDisabled} aria-label="Previous" className={cls}>
         <Icon.chevronLeft size={16} />
       </button>
-      <button onClick={onNext} disabled={nextDisabled} aria-label="Successivo" className={cls}>
+      <button onClick={onNext} disabled={nextDisabled} aria-label="Next" className={cls}>
         <Icon.chevronRight size={16} />
       </button>
     </div>
@@ -391,7 +391,7 @@ export function Sheet({
           <h3 className="font-display text-xl tracking-wide">{title}</h3>
           <button
             onClick={requestClose}
-            aria-label="Chiudi"
+            aria-label="Close"
             className="flex h-10 w-10 items-center justify-center rounded-full bg-black/[0.08] transition active:scale-90"
           >
             <Icon.close size={16} />

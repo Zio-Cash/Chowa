@@ -71,39 +71,39 @@ export default function InstallButton({ className = '' }: { className?: string }
         onClick={handleClick}
         className={`inline-flex items-center justify-center gap-2 text-xs font-medium uppercase tracking-[0.2em] text-muted transition active:scale-[0.98] ${className}`}
       >
-        <Icon.chevronDown size={14} /> Installa l'app
+        <Icon.chevronDown size={14} /> Install the app
       </button>
 
       {showIOS && (
         <div className="fixed inset-0 z-[60] flex items-end justify-center" role="dialog">
           <div className="backdrop-in absolute inset-0 bg-black/30" onClick={() => setShowIOS(false)} />
           <div className="sheet-in relative w-full max-w-[480px] rounded-t-[28px] bg-surface p-6 pb-[calc(env(safe-area-inset-bottom)+1.75rem)] ring-1 ring-black/[0.06]">
-            <h3 className="font-display text-xl font-medium text-ink">Installa Chōwa</h3>
+            <h3 className="font-display text-xl font-medium text-ink">Install Chōwa</h3>
             <p className="mt-2 text-sm text-muted">
-              Su iPhone l'app si aggiunge dalla schermata Home di Safari:
+              On iPhone, add the app to your Home Screen from Safari:
             </p>
             <ol className="mt-4 space-y-3 text-sm text-ink">
               <li className="flex gap-3">
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal text-[11px] font-bold text-[#faf7f1]">1</span>
                 <span>
-                  Tocca il pulsante <b>Condividi</b>{' '}
-                  <Icon.share size={15} className="-mt-0.5 inline-block align-middle" /> nella barra di Safari
+                  Tap the <b>Share</b> button{' '}
+                  <Icon.share size={15} className="-mt-0.5 inline-block align-middle" /> in Safari’s toolbar
                 </span>
               </li>
               <li className="flex gap-3">
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal text-[11px] font-bold text-[#faf7f1]">2</span>
-                Scorri e scegli <b>Aggiungi a Home</b>
+                Scroll down and choose <b>Add to Home Screen</b>
               </li>
               <li className="flex gap-3">
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal text-[11px] font-bold text-[#faf7f1]">3</span>
-                Conferma con <b>Aggiungi</b>: l'icona comparirà come un'app
+                Confirm with <b>Add</b>: the icon will appear like any other app
               </li>
             </ol>
             <button
               onClick={() => setShowIOS(false)}
               className="mt-6 w-full rounded-2xl bg-teal py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#faf7f1] active:scale-[0.98]"
             >
-              Ho capito
+              Got it
             </button>
           </div>
         </div>

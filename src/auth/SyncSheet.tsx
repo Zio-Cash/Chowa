@@ -20,7 +20,7 @@ function CodeBox({ code }: { code: string }) {
         {code}
       </code>
       <Button variant="soft" onClick={copy} className="shrink-0 px-3">
-        {copied ? 'Copiato' : 'Copia'}
+        {copied ? 'Copied' : 'Copy'}
       </Button>
     </div>
   )
@@ -50,50 +50,50 @@ export default function SyncSheet({ open, onClose }: { open: boolean; onClose: (
   }
 
   return (
-    <Sheet open={open} onClose={onClose} title="Sincronizzazione">
+    <Sheet open={open} onClose={onClose} title="Sync">
       <div className="space-y-3">
         <Card>
           <p className="text-xs text-muted">Account</p>
           <p className="font-semibold text-ink">{user.displayName ?? user.email}</p>
           <p className="truncate text-xs text-muted">{user.email}</p>
           <Button variant="ghost" className="mt-3 w-full" onClick={signOut}>
-            Esci
+            Sign out
           </Button>
         </Card>
 
         {readOnly ? (
           <Card>
             <p className="mb-2 text-sm text-ink">
-              Stai guardando i dati di un'altra persona (sola lettura).
+              You’re viewing someone else’s data (read-only).
             </p>
             <Button className="w-full" onClick={() => setViewingUid(null)}>
-              Torna ai miei dati
+              Back to my data
             </Button>
           </Card>
         ) : (
           <>
             <Card>
-              <p className="mb-1 font-semibold text-ink">Il mio codice</p>
+              <p className="mb-1 font-semibold text-ink">My code</p>
               <p className="mb-2 text-xs text-muted">
-                Dallo a chi vuoi che veda i tuoi dati: lo inserirà nella sua app.
+                Share it with anyone you want to see your data: they’ll enter it in their app.
               </p>
               <CodeBox code={user.uid} />
             </Card>
 
             <Card>
-              <p className="mb-1 font-semibold text-ink">Chi può vedere i miei dati</p>
+              <p className="mb-1 font-semibold text-ink">Who can see my data</p>
               <p className="mb-2 text-xs text-muted">
-                Incolla il codice della persona (lo trova nella sua app) per autorizzarla.
+                Paste the person’s code (they’ll find it in their app) to give them access.
               </p>
               <div className="flex gap-2">
                 <input
                   value={viewerCode}
                   onChange={(e) => setViewerCode(e.target.value)}
-                  placeholder="Codice spettatore"
+                  placeholder="Viewer code"
                   className="min-h-[44px] min-w-0 flex-1 rounded-2xl bg-black/[0.06] px-3 font-mono text-xs outline-none"
                 />
                 <Button onClick={onAddViewer} className="shrink-0 px-4">
-                  Aggiungi
+                  Add
                 </Button>
               </div>
               {cloudViewers.length > 0 && (
@@ -105,7 +105,7 @@ export default function SyncSheet({ open, onClose }: { open: boolean; onClose: (
                         onClick={() => removeViewer(v)}
                         className="shrink-0 text-xs text-shu"
                       >
-                        Rimuovi
+                        Remove
                       </button>
                     </li>
                   ))}
@@ -114,19 +114,19 @@ export default function SyncSheet({ open, onClose }: { open: boolean; onClose: (
             </Card>
 
             <Card>
-              <p className="mb-1 font-semibold text-ink">Guarda i dati di qualcuno</p>
+              <p className="mb-1 font-semibold text-ink">View someone’s data</p>
               <p className="mb-2 text-xs text-muted">
-                Incolla il codice di chi ti ha autorizzato per vedere i suoi dati in tempo reale.
+                Paste the code of someone who gave you access to see their data in real time.
               </p>
               <div className="flex gap-2">
                 <input
                   value={ownerCode}
                   onChange={(e) => setOwnerCode(e.target.value)}
-                  placeholder="Codice dell'altra persona"
+                  placeholder="Their code"
                   className="min-h-[44px] min-w-0 flex-1 rounded-2xl bg-black/[0.06] px-3 font-mono text-xs outline-none"
                 />
                 <Button onClick={startViewing} className="shrink-0 px-4">
-                  Guarda
+                  View
                 </Button>
               </div>
             </Card>

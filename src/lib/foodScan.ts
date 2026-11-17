@@ -34,7 +34,7 @@ interface AiResult {
 
 export async function analyzeFoodPhoto(file: File): Promise<FoodDraftScan> {
   const user = auth.currentUser
-  if (!user) throw new Error('Accedi per usare l’analisi delle foto.')
+  if (!user) throw new Error('Sign in to use photo analysis.')
   const dataUrl = await resizeImage(file, 1024, 0.85)
   const image = dataUrl.slice(dataUrl.indexOf(',') + 1)
   const res = await fetch('/api/food-photo', {
@@ -49,14 +49,14 @@ export async function analyzeFoodPhoto(file: File): Promise<FoodDraftScan> {
   } catch {
     throw new Error(
       res.status === 404
-        ? 'Analisi foto non disponibile: la funzione non è ancora pubblicata.'
-        : 'Risposta non valida dal servizio.',
+        ? 'Photo analysis isn’t available yet: the feature hasn’t been deployed.'
+        : 'The service returned an invalid response.',
     )
   }
   if (data.error) throw new Error(data.error)
-  if (!data.riconosciuto) throw new Error('Non vedo cibo in questa foto. Riprova inquadrando meglio.')
+  if (!data.riconosciuto) throw new Error('I can’t see any food in this photo. Try again with a clearer shot.')
   return {
-    nome: data.nome || 'Alimento',
+    nome: data.nome || 'Food',
     p100: r1(data.proteine_100g),
     c100: r1(data.carboidrati_100g),
     g100: r1(data.grassi_100g),
@@ -79,7 +79,7 @@ export async function decodeBarcode(file: File): Promise<string> {
     const result = await reader.decodeFromImageUrl(url)
     return result.getText()
   } catch {
-    throw new Error('Non riesco a leggere il codice a barre. Avvicinati e inquadralo dritto, ben illuminato.')
+    throw new Error('Couldn’t read the barcode. Move closer and frame it straight, in good light.')
   } finally {
     URL.revokeObjectURL(url)
   }
@@ -99,7 +99,7 @@ export async function lookupBarcode(code: string): Promise<FoodDraftScan> {
   const res = await fetch(
     `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(code)}.json?fields=product_name,product_name_it,brands,nutriments`,
   )
-  if (!res.ok && res.status !== 404) throw new Error('Open Food Facts non risponde: riprova.')
+  if (!res.ok && res.status !== 404) throw new Error('Open Food Facts isn’t responding: please try again.')
   const data = (await res.json()) as {
     status?: number
     product?: {
@@ -109,20 +109,20 @@ export async function lookupBarcode(code: string): Promise<FoodDraftScan> {
       nutriments?: Record<string, number>
     }
   }
-  if (data.status !== 1 || !data.product) throw new Error(`Prodotto ${code} non trovato in Open Food Facts.`)
+  if (data.status !== 1 || !data.product) throw new Error(`Product ${code} not found on Open Food Facts.`)
   const pr = data.product
   const n = pr.nutriments ?? {}
   const p = r1(n.proteins_100g)
   const c = r1(n.carbohydrates_100g)
   const g = r1(n.fat_100g)
   const kcal = Math.round(n['energy-kcal_100g'] ?? (n.energy_100g ? n.energy_100g / 4.184 : 0))
-  if (!p && !c && !g && !kcal) throw new Error('Il prodotto è stato trovato ma senza valori nutrizionali.')
+  if (!p && !c && !g && !kcal) throw new Error('Product found, but it has no nutrition values.')
   const base = (pr.product_name_it || pr.product_name || '').trim()
   const marca = pr.brands?.split(',')[0]?.trim() ?? ''
   // aggiungo la marca solo se non è già nel nome (evita "Nutella · Nutella")
   const nome = marca && !base.toLowerCase().includes(marca.toLowerCase()) ? `${base} · ${marca}` : base
   return {
-    nome: nome || `Prodotto ${code}`,
+    nome: nome || `Product ${code}`,
     p100: p,
     c100: c,
     g100: g,
@@ -130,6 +130,6 @@ export async function lookupBarcode(code: string): Promise<FoodDraftScan> {
     categoria: guessCategory(p, c, g, Number(n.sugars_100g) || 0),
     fonte: 'barcode',
     confidenza: 'alta',
-    note: `Codice ${code} · dati Open Food Facts`,
+    note: `Barcode ${code} · Open Food Facts data`,
   }
 }

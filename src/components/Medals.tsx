@@ -15,10 +15,10 @@ import {
 } from '../lib/medals'
 
 const TIERS: Record<Tier, { hi: string; mid: string; lo: string; ribbon: string; label: string }> = {
-  bronze: { hi: '#f2c59b', mid: '#c4844f', lo: '#7e4c28', ribbon: '#8a5530', label: 'Bronzo' },
-  silver: { hi: '#f6f7f9', mid: '#c3c8cf', lo: '#7d838c', ribbon: '#6b7079', label: 'Argento' },
-  gold: { hi: '#fbe7a0', mid: '#d9ad45', lo: '#8f6a18', ribbon: '#9a7420', label: 'Oro' },
-  platinum: { hi: '#f1f8fa', mid: '#a9cbd5', lo: '#5d828d', ribbon: '#4f6f79', label: 'Platino' },
+  bronze: { hi: '#f2c59b', mid: '#c4844f', lo: '#7e4c28', ribbon: '#8a5530', label: 'Bronze' },
+  silver: { hi: '#f6f7f9', mid: '#c3c8cf', lo: '#7d838c', ribbon: '#6b7079', label: 'Silver' },
+  gold: { hi: '#fbe7a0', mid: '#d9ad45', lo: '#8f6a18', ribbon: '#9a7420', label: 'Gold' },
+  platinum: { hi: '#f1f8fa', mid: '#a9cbd5', lo: '#5d828d', ribbon: '#4f6f79', label: 'Platinum' },
 }
 const LOCKED = { hi: '#f1eee8', mid: '#dcd7cd', lo: '#b5aea2', ribbon: '#cfc9be' }
 
@@ -86,10 +86,10 @@ export function MedalBadge({
   )
 }
 
-const fmtNum = (n: number) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+const fmtNum = (n: number) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 const fmtVal = (n: number, unit?: string) => (unit === 'kg' ? n.toFixed(1) : fmtNum(n))
 const fmtDate = (k: string) =>
-  parseKey(k).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })
+  parseKey(k).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })
 
 // ===================== BACHECA =====================
 export function MedalWall() {
@@ -104,7 +104,7 @@ export function MedalWall() {
       <Card>
         <div className="flex items-end justify-between">
           <div>
-            <div className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Medaglie</div>
+            <div className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Medals</div>
             <div className="mt-1 font-display text-4xl tabular">
               {earned.length}
               <span className="text-lg text-muted"> / {list.length}</span>
@@ -162,12 +162,12 @@ export function MedalWall() {
             <p className="mt-2 text-sm text-ink">{open.def.desc}</p>
             {open.earned ? (
               <p className="mt-4 rounded-full bg-teal/[0.08] px-4 py-1.5 text-sm font-medium text-teal">
-                {open.date ? `Conquistata il ${fmtDate(open.date)}` : 'Conquistata'}
+                {open.date ? `Earned on ${fmtDate(open.date)}` : 'Earned'}
               </p>
             ) : (
               <div className="mt-4 w-full">
                 <div className="mb-1.5 flex justify-between text-xs text-muted">
-                  <span>Progresso</span>
+                  <span>Progress</span>
                   <span className="font-mono tabular">
                     {fmtVal(open.value, open.def.unit)} / {fmtVal(open.def.goal, open.def.unit)} {open.def.unit}
                   </span>
@@ -197,7 +197,7 @@ export function MedalTeaser({ onOpen }: { onOpen: () => void }) {
     <Card>
       <button onClick={onOpen} className="w-full text-left">
         <div className="mb-3 flex items-center justify-between">
-          <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Medaglie</span>
+          <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Medals</span>
           <span className="text-xs text-teal">
             {earned.length} / {list.length} →
           </span>
@@ -206,12 +206,12 @@ export function MedalTeaser({ onOpen }: { onOpen: () => void }) {
           {recent.length ? (
             recent.map((m) => <MedalBadge key={m.def.id} label={medalLabel(m.def)} tier={m.def.tier} icon={m.def.icon} earned size={40} />)
           ) : (
-            <span className="text-sm text-muted">Ancora nessuna: la prima è vicina.</span>
+            <span className="text-sm text-muted">None yet. Your first one is close.</span>
           )}
         </div>
         {next && (
           <p className="mt-3 text-xs text-muted">
-            Prossima: <span className="text-ink">{next.def.nome}</span> · {Math.round(next.pct * 100)}%
+            Next: <span className="text-ink">{next.def.nome}</span> · {Math.round(next.pct * 100)}%
           </p>
         )}
       </button>
@@ -255,7 +255,7 @@ export function MedalWatcher() {
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-6" role="dialog">
       <div className="absolute inset-0 bg-black/40" onClick={() => setQueue((q) => q.slice(1))} />
       <div className="animate-pop relative w-full max-w-[340px] rounded-[28px] bg-surface2 px-6 pb-6 pt-7 text-center shadow-[0_20px_60px_-20px_rgba(33,29,25,0.35)]">
-        <div className="text-[11px] font-medium uppercase tracking-[0.24em] text-muted">Nuova medaglia</div>
+        <div className="text-[11px] font-medium uppercase tracking-[0.24em] text-muted">New medal</div>
         <div className="relative mx-auto mt-4 flex h-[170px] w-[170px] items-center justify-center">
           <span
             className="absolute inset-0 rounded-full"
@@ -272,7 +272,7 @@ export function MedalWatcher() {
         <div className="mt-1 text-xs uppercase tracking-[0.16em] text-muted">{TIERS[cur.tier].label}</div>
         <p className="mt-3 text-sm text-ink/80">{cur.desc}</p>
         <Button className="mt-5 w-full" onClick={() => setQueue((q) => q.slice(1))}>
-          {queue.length > 1 ? `Avanti (${queue.length - 1})` : 'Continua'}
+          {queue.length > 1 ? `Next (${queue.length - 1})` : 'Continue'}
         </Button>
       </div>
     </div>

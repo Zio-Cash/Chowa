@@ -3,6 +3,7 @@ import { firebaseReady } from '../lib/firebase'
 import { Card } from '../components/ui'
 import { useAuth } from './AuthProvider'
 import Welcome from './Welcome'
+import { dateKey } from '../lib/date'
 
 function Centered({ children }: { children: ReactNode }) {
   return (
@@ -34,9 +35,27 @@ function isInAppBrowser(): boolean {
 // basta perché il kanji si metta a fuoco, senza far aspettare a ogni apertura.
 const ANIM_MS = 1500
 
+// L'intro si vede una volta al giorno: le aperture successive vanno dritte all'app.
+const WELCOME_KEY = 'chowa:welcome-day'
+const todayStr = () => dateKey()
+function seenToday(): boolean {
+  try {
+    return localStorage.getItem(WELCOME_KEY) === todayStr()
+  } catch {
+    return false
+  }
+}
+function markSeen() {
+  try {
+    localStorage.setItem(WELCOME_KEY, todayStr())
+  } catch {
+    /* ignore */
+  }
+}
+
 export default function LoginGate({ children }: { children: ReactNode }) {
   const { user, loading, signIn, authError } = useAuth()
-  const [entered, setEntered] = useState(false)
+  const [entered, setEntered] = useState(seenToday)
   const [busy, setBusy] = useState(false)
   const intent = useRef(false)
   const [shownAt] = useState(() => performance.now())
@@ -44,6 +63,7 @@ export default function LoginGate({ children }: { children: ReactNode }) {
   // Se sei già autenticata, dopo l'animazione l'app si apre DA SOLA (niente pulsante).
   useEffect(() => {
     if (entered || !user) return
+    markSeen()
     const wait = Math.max(0, ANIM_MS - (performance.now() - shownAt))
     const t = setTimeout(() => setEntered(true), wait)
     return () => clearTimeout(t)
@@ -75,11 +95,11 @@ export default function LoginGate({ children }: { children: ReactNode }) {
     return (
       <Centered>
         <Card>
-          <h1 className="mb-2 font-display text-xl font-semibold text-ink">Configurazione mancante</h1>
+          <h1 className="mb-2 font-display text-xl font-semibold text-ink">Setup missing</h1>
           <p className="text-sm text-muted">
-            Il collegamento al cloud non è ancora configurato. Inserisci la configurazione Firebase in{' '}
-            <span className="font-mono text-ink">src/lib/firebase.ts</span> per attivare login e
-            sincronizzazione.
+            Cloud sync isn’t configured yet. Add your Firebase config in{' '}
+            <span className="font-mono text-ink">src/lib/firebase.ts</span> to enable sign-in and
+            sync.
           </p>
         </Card>
       </Centered>

@@ -12,15 +12,15 @@ export const XP = {
 } as const
 
 const LABELS = [
-  'Esordiente',
-  'Motivato',
-  'Determinato',
-  'Costante',
-  'Inarrestabile',
-  'Atleta',
-  'Veterano',
-  'Campione',
-  'Leggenda',
+  'Newcomer',
+  'Motivated',
+  'Determined',
+  'Consistent',
+  'Unstoppable',
+  'Athlete',
+  'Veteran',
+  'Champion',
+  'Legend',
 ]
 
 export interface LevelInfo {
@@ -56,13 +56,13 @@ export interface BadgeDef {
 }
 
 export const BADGES: BadgeDef[] = [
-  { id: 'pesata', label: 'Pesata', emoji: '⚖️', color: 'bg-blunotte' },
-  { id: 'calorie', label: 'Calorie', emoji: '🔥', color: 'bg-arancio' },
+  { id: 'pesata', label: 'Weigh-in', emoji: '⚖️', color: 'bg-blunotte' },
+  { id: 'calorie', label: 'Calories', emoji: '🔥', color: 'bg-arancio' },
   { id: 'macro', label: 'Macro', emoji: '🥗', color: 'bg-carb' },
   { id: 'workout', label: 'Workout', emoji: '🏋️', color: 'bg-verde' },
-  { id: 'acqua', label: 'Acqua', emoji: '💧', color: 'bg-teal' },
-  { id: 'passi', label: 'Passi', emoji: '👟', color: 'bg-magenta' },
-  { id: 'perfetta', label: 'Perfetta', emoji: '🏆', color: 'bg-viola' },
+  { id: 'acqua', label: 'Water', emoji: '💧', color: 'bg-teal' },
+  { id: 'passi', label: 'Steps', emoji: '👟', color: 'bg-magenta' },
+  { id: 'perfetta', label: 'Perfect day', emoji: '🏆', color: 'bg-viola' },
 ]
 
 export type BadgeState = Record<string, boolean>

@@ -19,9 +19,9 @@ const MINCHO = '"Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", "Songti SC
 
 // "Risultati di oggi": quattro obiettivi, in orizzontale.
 const RISULTATI: { id: string; label: string; icon: keyof typeof Icon }[] = [
-  { id: 'pesata', label: 'Weight check', icon: 'weight' },
+  { id: 'pesata', label: 'Weigh-in', icon: 'weight' },
   { id: 'calorie', label: 'Deficit', icon: 'flame' },
-  { id: 'acqua', label: 'Hydration', icon: 'drop' },
+  { id: 'acqua', label: 'Water', icon: 'drop' },
   { id: 'passi', label: 'Steps', icon: 'steps' },
 ]
 
@@ -30,12 +30,12 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
     useStore()
   const { user } = useAuth()
   const firstName =
-    state.account.nome?.trim().split(/\s+/)[0] || (user?.displayName || '').trim().split(/\s+/)[0] || 'Praticante'
+    state.account.nome?.trim().split(/\s+/)[0] || (user?.displayName || '').trim().split(/\s+/)[0] || 'there'
   const greeting = (() => {
     const h = new Date().getHours()
-    if (h < 12) return 'Buongiorno'
-    if (h < 18) return 'Buon pomeriggio'
-    return 'Buonasera'
+    if (h < 12) return 'Good morning'
+    if (h < 18) return 'Good afternoon'
+    return 'Good evening'
   })()
   const [today, setToday, oggi] = useDayCursor()
   const isToday = today === oggi
@@ -98,7 +98,7 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
   const quote = quoteOfDay(parseKey(oggi))
   const fmtGiorno = (k: string) => {
     const d = parseKey(k)
-    return `${d.getDate()} ${MESI_BREVI[d.getMonth()].toLowerCase()}`
+    return `${MESI_BREVI[d.getMonth()]} ${d.getDate()}`
   }
 
   return (
@@ -107,18 +107,18 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
       <div className="flex items-center justify-center gap-3 text-muted">
         <button
           onClick={() => shiftDay(-1)}
-          aria-label="Giorno precedente"
+          aria-label="Previous day"
           className="flex h-10 w-10 items-center justify-center rounded-full transition active:bg-black/[0.05]"
         >
           <Icon.chevronLeft size={16} />
         </button>
         <button onClick={() => setToday(oggi)} className="min-w-[96px] text-[11px] font-medium uppercase tracking-[0.22em]">
-          {isToday ? 'Oggi' : formatLong(parseKey(today))}
+          {isToday ? 'Today' : formatLong(parseKey(today))}
         </button>
         <button
           onClick={() => shiftDay(1)}
           disabled={isToday}
-          aria-label="Giorno successivo"
+          aria-label="Next day"
           className="flex h-10 w-10 items-center justify-center rounded-full transition active:bg-black/[0.05] disabled:opacity-20"
         >
           <Icon.chevronRight size={16} />
@@ -147,7 +147,7 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
         <Eyebrow>Streak</Eyebrow>
         <div className="mt-1.5 flex items-baseline gap-3">
           <span className="font-display text-4xl tabular">{streak}</span>
-          <span className="text-sm text-muted">{streak === 1 ? 'giorno consecutivo' : 'giorni consecutivi'}</span>
+          <span className="text-sm text-muted">{streak === 1 ? 'day in a row' : 'days in a row'}</span>
         </div>
       </Card>
 
@@ -156,48 +156,48 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
       {/* Ciclo */}
       <Card>
         <div className="flex items-baseline justify-between">
-          <Eyebrow>Ciclo</Eyebrow>
+          <Eyebrow>Cycle</Eyebrow>
           <button onClick={() => goTo('cycle')} className="text-xs text-teal transition active:opacity-60">
-            {cycle ? 'Apri →' : 'Imposta →'}
+            {cycle ? 'Open →' : 'Set up →'}
           </button>
         </div>
         {cycle ? (
           <>
             <div className="mt-1.5 flex items-baseline justify-between gap-3">
               <span className="font-display text-xl tracking-tight">{cycle.phase.nome}</span>
-              <span className="font-mono text-xs text-muted tabular">Giorno {cycle.day}</span>
+              <span className="font-mono text-xs text-muted tabular">Day {cycle.day}</span>
             </div>
             {pred && (
               <div className="mt-1 text-sm text-muted">
-                Prossima mestruazione:{' '}
+                Next period:{' '}
                 <span className="text-ink">
                   {fmtGiorno(pred.nextStart)}
                   {pred.daysToNext > 0
-                    ? ` · tra ${pred.daysToNext} ${pred.daysToNext === 1 ? 'giorno' : 'giorni'}`
+                    ? ` · in ${pred.daysToNext} ${pred.daysToNext === 1 ? 'day' : 'days'}`
                     : pred.daysToNext === 0
-                      ? ' · oggi'
-                      : ` · in ritardo di ${-pred.daysToNext}`}
+                      ? ' · today'
+                      : ` · ${-pred.daysToNext} ${-pred.daysToNext === 1 ? 'day' : 'days'} late`}
                 </span>
               </div>
             )}
             <p className="mt-3 border-l-2 border-teal/50 pl-3 text-sm leading-relaxed text-ink/85">
-              <span className="font-medium">Allenamento di oggi:</span> {cycle.phase.consiglio}
+              <span className="font-medium">Today’s training:</span> {cycle.phase.consiglio}
             </p>
           </>
         ) : (
-          <p className="mt-1.5 text-sm leading-relaxed text-muted">Segna l'inizio del ciclo per vedere qui la tua fase.</p>
+          <p className="mt-1.5 text-sm leading-relaxed text-muted">Log the first day of your period to see your phase here.</p>
         )}
       </Card>
 
       {/* Weight check */}
       <Card>
-        <CardTitle>Weight check</CardTitle>
+        <CardTitle>Weigh-in</CardTitle>
         <div className="flex items-center gap-2.5">
           <NumberInput value={peso || ''} onChange={setPeso} suffix="kg" className="flex-1" placeholder="0.0" />
-          <Button onClick={() => peso > 0 && setWeight(today, peso)}>Registra</Button>
+          <Button onClick={() => peso > 0 && setWeight(today, peso)}>Log</Button>
         </div>
         {today in state.weightLog && (
-          <p className="mt-2.5 font-mono text-xs text-verde tabular">Oggi · {state.weightLog[today]} kg</p>
+          <p className="mt-2.5 font-mono text-xs text-verde tabular">Today · {state.weightLog[today]} kg</p>
         )}
       </Card>
 
@@ -211,15 +211,15 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
           </MacroDonut>
         </div>
         <div className="mt-5 grid grid-cols-3 gap-2.5">
-          <MacroTile color="bg-prot" label="Proteine" c={consumed.proteine} t={targets.proteine} cp={consumedPct.p} tp={targetPct.p} />
-          <MacroTile color="bg-carb" label="Carbo" c={consumed.carboidrati} t={targets.carboidrati} cp={consumedPct.c} tp={targetPct.c} />
-          <MacroTile color="bg-fat" label="Grassi" c={consumed.grassi} t={targets.grassi} cp={consumedPct.g} tp={targetPct.g} />
+          <MacroTile color="bg-prot" label="Protein" c={consumed.proteine} t={targets.proteine} cp={consumedPct.p} tp={targetPct.p} />
+          <MacroTile color="bg-carb" label="Carbs" c={consumed.carboidrati} t={targets.carboidrati} cp={consumedPct.c} tp={targetPct.c} />
+          <MacroTile color="bg-fat" label="Fat" c={consumed.grassi} t={targets.grassi} cp={consumedPct.g} tp={targetPct.g} />
         </div>
         <div className={`mt-3 rounded-2xl px-3 py-2 text-center font-mono text-xs tabular ${badges.macro ? 'bg-verde/10 text-verde' : 'bg-black/[0.04] text-muted'}`}>
-          rapporto {consumedPct.p}/{consumedPct.c}/{consumedPct.g}% · obiettivo {targetPct.p}/{targetPct.c}/{targetPct.g}%
+          ratio {consumedPct.p}/{consumedPct.c}/{consumedPct.g}% · target {targetPct.p}/{targetPct.c}/{targetPct.g}%
         </div>
         <Button variant="soft" className="mt-4 w-full" onClick={() => goTo('dieta')}>
-          Apri il diario
+          Open food log
         </Button>
       </Card>
 
@@ -230,7 +230,7 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
           {assunte === 0 ? (
             <>
               <div className="font-mono text-3xl text-muted/60 tabular">—</div>
-              <div className="mt-0.5 text-xs text-muted">segna i pasti per vederlo</div>
+              <div className="mt-0.5 text-xs text-muted">tick your meals to see it</div>
             </>
           ) : (
             <>
@@ -238,18 +238,18 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
                 {bilancio > 0 ? '+' : bilancio < 0 ? '−' : ''}
                 {Math.abs(bilancio)}
               </div>
-              <div className="mt-0.5 text-xs text-muted">kcal · {bilancio < 0 ? 'deficit' : bilancio > 0 ? 'surplus' : 'in pari'}</div>
+              <div className="mt-0.5 text-xs text-muted">kcal · {bilancio < 0 ? 'deficit' : bilancio > 0 ? 'surplus' : 'even'}</div>
             </>
           )}
         </Card>
         <Card>
-          <CardTitle>Energia spesa</CardTitle>
+          <CardTitle>Active energy</CardTitle>
           <NumberInput value={attive || ''} onChange={setAttive} suffix="kcal" className="w-full" placeholder="0" integer />
           <Button className="mt-2 w-full" onClick={() => setActiveKcal(today, attive)}>
-            Registra
+            Log
           </Button>
           {(state.activeKcalLog[today] ?? 0) > 0 && (
-            <p className="mt-2 font-mono text-xs text-verde tabular">Oggi · {state.activeKcalLog[today]} kcal</p>
+            <p className="mt-2 font-mono text-xs text-verde tabular">Today · {state.activeKcalLog[today]} kcal</p>
           )}
         </Card>
       </div>
@@ -257,7 +257,7 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
       {/* Hydration + Steps, affiancate */}
       <div className="grid grid-cols-2 gap-4">
         <Card className="!p-4">
-          <CardTitle>Hydration</CardTitle>
+          <CardTitle>Water</CardTitle>
           <div className="mt-2 font-mono text-2xl tabular">{fmtWater(acqua)}</div>
           <div className="text-[11px] text-muted">/ {fmtWater(goals.waterTarget)}</div>
           <Progress value={acqua} max={goals.waterTarget} />
@@ -276,16 +276,16 @@ export default function Oggi({ goTo }: { goTo: (v: ViewId) => void }) {
           <div className="mt-2 font-mono text-2xl tabular">{fmtSteps(passiOggi)}</div>
           <div className="text-[11px] text-muted">/ {fmtSteps(goals.stepTarget)}</div>
           <Progress value={passiOggi} max={goals.stepTarget} />
-          <NumberInput value={passi || ''} onChange={setPassi} className="mt-3 w-full !px-3" placeholder="passi" integer />
+          <NumberInput value={passi || ''} onChange={setPassi} className="mt-3 w-full !px-3" placeholder="steps" integer />
           <SmallBtn className="mt-1.5 w-full" onClick={() => setSteps(today, passi)}>
-            Registra
+            Log
           </SmallBtn>
         </Card>
       </div>
 
       {/* Risultati di oggi — in orizzontale */}
       <Card>
-        <CardTitle>Risultati di oggi</CardTitle>
+        <CardTitle>Today’s results</CardTitle>
         <div className="grid grid-cols-4 gap-2">
           {RISULTATI.map((r) => {
             const on = badges[r.id]

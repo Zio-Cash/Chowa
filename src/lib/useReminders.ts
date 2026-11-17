@@ -7,6 +7,17 @@ import type { ReminderItem } from '../types'
  * Su iPhone/PWA le notifiche in background non sono garantite: per l'affidabilità
  * piena serve l'app nativa.
  */
+/** Etichette visibili per i promemoria di default (le label salvate restano in italiano). */
+const REMINDER_LABELS: Record<string, string> = {
+  pesata: 'Weigh in',
+  acqua: 'Drink water',
+  pranzo: 'Log lunch',
+  workout: 'Workout',
+  cena: 'Log dinner',
+}
+
+export const reminderLabel = (r: ReminderItem): string => REMINDER_LABELS[r.id] ?? r.label
+
 /** Android e le PWA installate su iPhone mostrano notifiche solo dal service worker. */
 function notify(body: string, tag: string) {
   const opts = { body, tag, icon: '/icon-192.png' }
@@ -49,7 +60,7 @@ export function useReminders(reminders: ReminderItem[]) {
           fired.current[r.id] = today
           // la prima volta (apertura dopo l'orario) non si notifica in ritardo
           if (!armed) continue
-          notify(r.label, r.id)
+          notify(reminderLabel(r), r.id)
         }
       }
     }

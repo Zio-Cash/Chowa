@@ -34,7 +34,7 @@ export default function Routine() {
   const renameDay = (dayId: string, nome: string) => mutateDay(dayId, (d) => ({ ...d, nome }))
 
   const addBlock = (dayId: string) =>
-    mutateDay(dayId, (d) => ({ ...d, blocchi: [...d.blocchi, { id: uid(), nome: 'Nuovo blocco', esercizi: [] }] }))
+    mutateDay(dayId, (d) => ({ ...d, blocchi: [...d.blocchi, { id: uid(), nome: 'New block', esercizi: [] }] }))
   const deleteBlock = (dayId: string, blockId: string) =>
     mutateDay(dayId, (d) => ({ ...d, blocchi: d.blocchi.filter((b) => b.id !== blockId) }))
   const renameBlock = (dayId: string, blockId: string, nome: string) =>
@@ -138,7 +138,7 @@ export default function Routine() {
     <div className="space-y-3 pb-4">
       {plan.length === 0 && (
         <p className="rounded-2xl bg-black/[0.04] p-4 text-center text-sm text-muted">
-          Nessun giorno. Crea il primo con “Aggiungi giorno”.
+          No days yet. Create your first one with “Add day”.
         </p>
       )}
 
@@ -153,16 +153,16 @@ export default function Routine() {
                 className="min-w-0 flex-1 rounded-xl bg-transparent px-1 py-1 font-display text-base outline-none focus:bg-black/[0.04]"
               />
               <button
-                onClick={() => confirm(`Eliminare ${day.nome}?`) && deleteDay(day.id)}
+                onClick={() => confirm(`Delete ${day.nome}?`) && deleteDay(day.id)}
                 className="flex h-8 w-8 items-center justify-center rounded-full text-shu"
-                aria-label="Elimina giorno"
+                aria-label="Delete day"
               >
                 <Icon.trash size={16} />
               </button>
               <button
                 onClick={() => setOpenDayId(isOpen ? null : day.id)}
                 className="flex h-8 w-8 items-center justify-center text-muted"
-                aria-label="Espandi"
+                aria-label={isOpen ? "Collapse" : "Expand"}
               >
                 {isOpen ? <Icon.chevronUp size={18} /> : <Icon.chevronDown size={18} />}
               </button>
@@ -181,7 +181,7 @@ export default function Routine() {
                       <button
                         onClick={() => deleteBlock(day.id, b.id)}
                         className="flex h-7 w-7 items-center justify-center text-muted"
-                        aria-label="Elimina blocco"
+                        aria-label="Delete block"
                       >
                         <Icon.close size={15} />
                       </button>
@@ -200,14 +200,14 @@ export default function Routine() {
                           <button
                             onClick={() => setEditEx({ dayId: day.id, blockId: b.id, ex })}
                             className="flex h-8 w-8 items-center justify-center rounded-full bg-black/[0.06] text-muted"
-                            aria-label="Modifica"
+                            aria-label="Edit"
                           >
                             <Icon.edit size={15} />
                           </button>
                           <button
                             onClick={() => deleteExercise(day.id, b.id, ex.id)}
                             className="flex h-8 w-8 items-center justify-center text-muted"
-                            aria-label="Rimuovi"
+                            aria-label="Remove"
                           >
                             <Icon.close size={15} />
                           </button>
@@ -217,13 +217,13 @@ export default function Routine() {
                         onClick={() => setPicker({ dayId: day.id, blockId: b.id })}
                         className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-black/10 py-2 text-sm text-muted"
                       >
-                        <Icon.plus size={16} /> Esercizio dal catalogo
+                        <Icon.plus size={16} /> Add exercise
                       </button>
                     </div>
                   </div>
                 ))}
                 <Button variant="soft" className="w-full" onClick={() => addBlock(day.id)}>
-                  <Icon.plus size={16} /> Aggiungi blocco
+                  <Icon.plus size={16} /> Add block
                 </Button>
               </div>
             )}
@@ -233,10 +233,10 @@ export default function Routine() {
 
       <div className="grid grid-cols-2 gap-2">
         <Button onClick={addDay}>
-          <Icon.plus size={16} /> Aggiungi giorno
+          <Icon.plus size={16} /> Add day
         </Button>
         <Button variant="soft" onClick={() => setImportOpen(true)}>
-          Importa giorno
+          Import day
         </Button>
       </div>
 
@@ -278,14 +278,14 @@ function ImportDaySheet({
     if (onImport(text.trim())) {
       onClose()
     } else {
-      alert('Testo non valido: controlla di aver incollato tutto.')
+      alert('Invalid text: make sure you pasted all of it.')
     }
   }
   return (
-    <Sheet open onClose={onClose} title="Importa giorno">
+    <Sheet open onClose={onClose} title="Import day">
       <p className="mb-3 text-sm leading-relaxed text-muted">
-        Incolla qui il testo del giorno (formato JSON). Gli esercizi mancanti verranno creati
-        automaticamente nel catalogo.
+        Paste a day in JSON format. Exercises that aren’t in your library yet are created
+        automatically.
       </p>
       <textarea
         value={text}
@@ -295,7 +295,7 @@ function ImportDaySheet({
         className="w-full resize-none rounded-2xl bg-surface2 px-4 py-3 font-mono text-xs leading-relaxed outline-none ring-1 ring-black/[0.05] focus:ring-teal/30"
       />
       <Button className="mt-3 w-full" onClick={doImport}>
-        Importa
+        Import
       </Button>
     </Sheet>
   )
@@ -323,7 +323,7 @@ function CatalogPicker({
   }
 
   return (
-    <Sheet open onClose={onClose} title="Aggiungi dal catalogo">
+    <Sheet open onClose={onClose} title="Add exercise">
       <div>
         <div className="mb-2 flex items-center gap-2 rounded-2xl bg-surface2 px-4 ring-1 ring-black/[0.05] focus-within:ring-teal/30">
           <span className="text-muted">
@@ -332,7 +332,7 @@ function CatalogPicker({
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Cerca esercizio…"
+            placeholder="Search exercises…"
             className="min-h-[44px] flex-1 bg-transparent outline-none"
           />
         </div>
@@ -356,7 +356,7 @@ function CatalogPicker({
       <div className="mt-2 h-72 space-y-1.5 overflow-y-auto">
         {list.length === 0 && (
           <p className="rounded-2xl bg-black/[0.04] p-3 text-center text-sm text-muted">
-            Nessun esercizio qui.
+            No exercises here.
           </p>
         )}
         {list.map((e) => (

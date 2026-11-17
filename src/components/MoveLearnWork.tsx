@@ -5,10 +5,10 @@ import { addDays, dateKey, MESI_BREVI, mondayOf, parseKey, rangeLabel } from '..
 import { GOALS, has, lastWeeks, monthStat, streak } from '../lib/mlw'
 
 const INK = '#211d19'
-const INIZ = ['L', 'M', 'M', 'G', 'V', 'S', 'D']
-const MESI_L = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre']
+const INIZ = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+const MESI_L = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 const todayDate = () => parseKey(dateKey())
-const giorni = (n: number) => (n === 1 ? '1 giorno di fila' : `${n} giorni di fila`)
+const giorni = (n: number) => (n === 1 ? '1 day in a row' : `${n} days in a row`)
 
 function Check({ on, color, size = 30 }: { on: boolean; color: string; size?: number }) {
   return (
@@ -63,7 +63,7 @@ export function MlwCard() {
         })}
       </div>
       <button onClick={() => setOpen(true)} className="mt-3 text-xs text-teal">
-        Settimana e andamento →
+        Week and trends →
       </button>
       {open && (
         <Sheet open onClose={() => setOpen(false)} title="Move · Learn · Work">
@@ -94,13 +94,13 @@ export function MlwFull() {
       {/* ---- Settimana ---- */}
       <section>
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="font-display text-base">Settimana</h3>
+          <h3 className="font-display text-base">Week</h3>
           <div className="flex items-center gap-1.5">
-            <NavBtn label="Settimana precedente" onClick={() => setWeekStart(addDays(weekStart, -7))}>‹</NavBtn>
+            <NavBtn label="Previous week" onClick={() => setWeekStart(addDays(weekStart, -7))}>‹</NavBtn>
             <span className="min-w-[104px] text-center font-mono text-xs tabular">
               {rangeLabel(weekStart, addDays(weekStart, 6))}
             </span>
-            <NavBtn label="Settimana successiva" disabled={isCurWeek} onClick={() => setWeekStart(addDays(weekStart, 7))}>›</NavBtn>
+            <NavBtn label="Next week" disabled={isCurWeek} onClick={() => setWeekStart(addDays(weekStart, 7))}>›</NavBtn>
           </div>
         </div>
         <div className="grid grid-cols-[48px_repeat(7,minmax(0,1fr))] items-center gap-1.5">
@@ -130,7 +130,7 @@ export function MlwFull() {
                     key={j}
                     onClick={() => toggleMlw(k, i)}
                     aria-pressed={on}
-                    aria-label={`${g.n}, ${d.getDate()} ${MESI_L[d.getMonth()]}: ${on ? 'fatto' : 'non fatto'}`}
+                    aria-label={`${g.n}, ${MESI_L[d.getMonth()]} ${d.getDate()}: ${on ? 'done' : 'not done'}`}
                     className={`aspect-square w-full max-w-[40px] justify-self-center rounded-lg border-[1.5px] transition-colors ${isT ? 'outline outline-2 outline-offset-2 outline-black/30' : ''}`}
                     style={{ borderColor: on ? INK : 'rgba(33,29,25,0.14)', background: on ? INK : 'transparent' }}
                   />
@@ -140,18 +140,18 @@ export function MlwFull() {
           ))}
         </div>
         <p className="mt-2.5 text-xs text-muted">
-          Tocca una casella per segnare o togliere un giorno. Con ‹ torni indietro e riporti le settimane passate.
+          Tap a box to mark or clear a day. Use ‹ to go back and fill in past weeks.
         </p>
       </section>
 
       {/* ---- Andamento ---- */}
       <section>
         <div className="mb-2 flex items-baseline justify-between">
-          <h3 className="font-display text-base">Andamento settimanale</h3>
-          <span className="font-mono text-[11px] text-muted">% di giorni fatti</span>
+          <h3 className="font-display text-base">Weekly trend</h3>
+          <span className="font-mono text-[11px] text-muted">% of days done</span>
         </div>
         {!anyData ? (
-          <p className="text-sm text-muted">Le barre compaiono quando segni i primi giorni: ogni gruppo è una settimana.</p>
+          <p className="text-sm text-muted">Bars appear once you mark your first days. Each group is one week.</p>
         ) : (
           <>
             <div className="mb-2 flex gap-3 text-xs text-muted">
@@ -179,7 +179,7 @@ export function MlwFull() {
                         key={w.key}
                         onClick={() => setSelWeek(w.key)}
                         className={`flex h-full items-end justify-center gap-[2px] rounded-t-md px-0.5 ${w.key === sel.key ? 'bg-black/[0.05]' : ''}`}
-                        aria-label={`Settimana del ${w.start.getDate()} ${MESI_L[w.start.getMonth()]}`}
+                        aria-label={`Week of ${MESI_L[w.start.getMonth()]} ${w.start.getDate()}`}
                       >
                         {GOALS.map((g, i) => (
                           <span
@@ -201,7 +201,7 @@ export function MlwFull() {
                 <span key={w.key} className={w.key === dateKey(cw) ? 'font-semibold text-ink' : ''}>
                   {w.start.getDate()}
                   <br />
-                  {MESI_BREVI[w.start.getMonth()].toLowerCase()}
+                  {MESI_BREVI[w.start.getMonth()]}
                 </span>
               ))}
             </div>
@@ -223,11 +223,11 @@ export function MlwFull() {
       {/* ---- Mese ---- */}
       <section>
         <div className="mb-2 flex items-baseline justify-between">
-          <h3 className="font-display text-base">{MESI_L[today.getMonth()].replace(/^./, (c) => c.toUpperCase())}</h3>
-          <span className="font-mono text-[11px] text-muted">giorni fatti</span>
+          <h3 className="font-display text-base">{MESI_L[today.getMonth()]}</h3>
+          <span className="font-mono text-[11px] text-muted">days done</span>
         </div>
         {month.den === 0 ? (
-          <p className="text-sm text-muted">Qui vedi quanti giorni hai fatto ogni obiettivo nel mese, così capisci quale stai trascurando.</p>
+          <p className="text-sm text-muted">See how many days you hit each goal this month, so you can tell which one needs attention.</p>
         ) : (
           <div className="space-y-2.5">
             {GOALS.map((g, i) => {

@@ -59,7 +59,7 @@ export default function Calorie() {
   function imposta() {
     setProfile(profilo)
     setTargets({ kcal, proteine: macros.proteine, carboidrati: macros.carboidrati, grassi: macros.grassi })
-    alert('Obiettivi impostati')
+    alert('Targets updated')
   }
 
   return (
@@ -67,34 +67,34 @@ export default function Calorie() {
       <AdaptiveCard state={state} onApply={(t) => setTargets(t, true)} />
 
       <Card>
-        <CardTitle>Calcolatore fabbisogno</CardTitle>
-        <p className="-mt-2 mb-3 text-xs text-muted">Harris-Benedict riveduta (Roza–Shizgal)</p>
+        <CardTitle>Daily needs calculator</CardTitle>
+        <p className="-mt-2 mb-3 text-xs text-muted">Revised Harris-Benedict (Roza–Shizgal)</p>
         <div className="space-y-3">
-          <Field label="Sesso">
+          <Field label="Sex">
             <Segmented options={sexOpts} value={profilo.sesso} onChange={(v) => patch({ sesso: v })} />
           </Field>
           <div className="grid grid-cols-3 gap-2">
-            <Field label="Peso kg">
+            <Field label="Weight kg">
               <NumberInput value={profilo.peso} onChange={(v) => patch({ peso: v })} />
             </Field>
-            <Field label="Altezza cm">
+            <Field label="Height cm">
               <NumberInput value={profilo.altezza} onChange={(v) => patch({ altezza: v })} />
             </Field>
-            <Field label="Età">
+            <Field label="Age">
               <NumberInput value={profilo.eta} onChange={(v) => patch({ eta: v })} />
             </Field>
           </div>
-          <Field label="Livello attività">
+          <Field label="Activity level">
             <Segmented options={actOpts} value={profilo.attivita} onChange={(v) => patch({ attivita: v })} />
           </Field>
-          <Field label="Obiettivo">
+          <Field label="Goal">
             <Segmented options={goalOpts} value={profilo.obiettivo} onChange={(v) => patch({ obiettivo: v })} />
           </Field>
           <div className="grid grid-cols-2 gap-2">
-            <Field label="Proteine g/kg">
+            <Field label="Protein g/kg">
               <NumberInput value={profilo.protGkg} onChange={(v) => patch({ protGkg: v })} />
             </Field>
-            <Field label="Grassi g/kg">
+            <Field label="Fat g/kg">
               <NumberInput value={profilo.grassiGkg} onChange={(v) => patch({ grassiGkg: v })} />
             </Field>
           </div>
@@ -118,7 +118,7 @@ export default function Calorie() {
         <div className="mt-4 space-y-2">
           <MacroRow
             color="bg-prot"
-            label="Proteine"
+            label="Protein"
             grams={macros.proteine}
             kcal={macros.proteine * 4}
             pct={pct.p}
@@ -126,7 +126,7 @@ export default function Calorie() {
           />
           <MacroRow
             color="bg-carb"
-            label="Carboidrati"
+            label="Carbs"
             grams={macros.carboidrati}
             kcal={macros.carboidrati * 4}
             pct={pct.c}
@@ -134,7 +134,7 @@ export default function Calorie() {
           />
           <MacroRow
             color="bg-fat"
-            label="Grassi"
+            label="Fat"
             grams={macros.grassi}
             kcal={macros.grassi * 9}
             pct={pct.g}
@@ -144,22 +144,22 @@ export default function Calorie() {
 
         <div className="mt-4 grid grid-cols-2 gap-2">
           <Button variant="ghost" onClick={ricalcola}>
-            <Icon.reset size={16} /> Ricalcola
+            <Icon.reset size={16} /> Recalculate
           </Button>
           <Button onClick={imposta}>
-            <Icon.check size={16} /> Imposta obiettivi
+            <Icon.check size={16} /> Set targets
           </Button>
         </div>
       </Card>
 
       <Card>
-        <CardTitle>Obiettivi giornalieri</CardTitle>
-        <p className="-mt-2 mb-3 text-xs text-muted">Usati per i traguardi e la giornata perfetta</p>
+        <CardTitle>Daily goals</CardTitle>
+        <p className="-mt-2 mb-3 text-xs text-muted">Used for milestones and the perfect day</p>
         <div className="space-y-2">
           <GoalRow
             color="bg-magenta"
             icon="steps"
-            label="Passi"
+            label="Steps"
             value={goals.stepTarget}
             step={500}
             min={500}
@@ -169,7 +169,7 @@ export default function Calorie() {
           <GoalRow
             color="bg-teal"
             icon="drop"
-            label="Acqua"
+            label="Water"
             value={goals.waterTarget}
             step={250}
             min={250}
@@ -179,7 +179,7 @@ export default function Calorie() {
           <GoalRow
             color="bg-arancio"
             icon="flame"
-            label="Kcal minime"
+            label="Minimum kcal"
             value={goals.kcalMin}
             step={50}
             suffix="kcal"
@@ -187,8 +187,8 @@ export default function Calorie() {
           />
         </div>
         <p className="mt-3 rounded-2xl bg-black/[0.05] px-3 py-2 text-xs text-muted">
-          Traguardo calorie: tra <b>{goals.kcalMin}</b> e <b>{state.settings.targets.kcal}</b> kcal
-          (massimo dal fabbisogno).
+          Calorie milestone: between <b>{goals.kcalMin}</b> and <b>{state.settings.targets.kcal}</b> kcal
+          (the maximum comes from your daily needs).
         </p>
       </Card>
     </div>
@@ -284,12 +284,12 @@ function AdaptiveCard({ state, onApply }: { state: AppState; onApply: (t: Target
   let msg = ''
   if (vuoleDimagrire && s >= -0.05) {
     delta = -150
-    msg = `Il peso è quasi fermo (${s > 0 ? '+' : ''}${s.toFixed(2)} kg/sett) nelle ultime settimane. Per ripartire puoi togliere circa 150 kcal al giorno.`
+    msg = `Your weight has barely moved (${s > 0 ? '+' : ''}${s.toFixed(2)} kg/wk) over the last few weeks. To get going again, you can cut about 150 kcal a day.`
   } else if (s <= -0.9) {
     delta = 150
-    msg = `Stai calando in fretta (${s.toFixed(2)} kg/sett): meglio aggiungere circa 150 kcal per preservare massa muscolare e metabolismo.`
+    msg = `You’re losing weight fast (${s.toFixed(2)} kg/wk): better add about 150 kcal to protect muscle mass and metabolism.`
   } else {
-    msg = `Il tuo ritmo è buono (${s < 0 ? '' : '+'}${s.toFixed(2)} kg/sett): mantieni le calorie attuali.`
+    msg = `Your pace is good (${s < 0 ? '' : '+'}${s.toFixed(2)} kg/wk): keep your current calories.`
   }
 
   // Dopo un aggiustamento si aspettano 2 settimane prima di proporne un altro:
@@ -298,7 +298,7 @@ function AdaptiveCard({ state, onApply }: { state: AppState; onApply: (t: Target
     !!state.settings.adattivoIl && daysBetween(state.settings.adattivoIl, dateKey()) < 14
   if (applicatoDaPoco && delta !== 0) {
     delta = 0
-    msg = `Hai aggiornato le calorie il ${parseKey(state.settings.adattivoIl!).getDate()}/${parseKey(state.settings.adattivoIl!).getMonth() + 1}: aspetta un paio di settimane per vedere l'effetto sul peso.`
+    msg = `You updated your calories on ${parseKey(state.settings.adattivoIl!).getDate()}/${parseKey(state.settings.adattivoIl!).getMonth() + 1}: give it a couple of weeks to see the effect on your weight.`
   }
 
   const nuove: Targets = {
@@ -309,7 +309,7 @@ function AdaptiveCard({ state, onApply }: { state: AppState; onApply: (t: Target
 
   return (
     <Card>
-      <CardTitle>Calorie adattive</CardTitle>
+      <CardTitle>Adaptive calories</CardTitle>
       <p className="-mt-2 text-sm leading-relaxed text-ink/85">{msg}</p>
       {delta !== 0 && (
         <div className="mt-3 flex items-center justify-between rounded-2xl bg-black/[0.04] px-3 py-2 text-sm">
@@ -317,7 +317,7 @@ function AdaptiveCard({ state, onApply }: { state: AppState; onApply: (t: Target
             {targets.kcal} → <b className="text-ink">{nuove.kcal}</b> kcal
           </span>
           <Button onClick={() => onApply(nuove)}>
-            Applica {delta > 0 ? '+' : ''}
+            Apply {delta > 0 ? '+' : ''}
             {delta}
           </Button>
         </div>

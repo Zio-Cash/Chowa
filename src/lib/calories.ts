@@ -16,18 +16,18 @@ export const GOAL_MULT: Record<Goal, number> = {
   bulkplus: 1.2,
 }
 
-export const SEX_LABEL: Record<Sex, string> = { donna: 'Donna', uomo: 'Uomo' }
+export const SEX_LABEL: Record<Sex, string> = { donna: 'Woman', uomo: 'Man' }
 export const ACTIVITY_LABEL: Record<Activity, string> = {
-  seden: 'Seden.',
-  poco: 'Poco',
-  attivo: 'Attivo',
-  molto: 'Molto',
+  seden: 'Low',
+  poco: 'Light',
+  attivo: 'Active',
+  molto: 'High',
   pro: 'Pro',
 }
 export const GOAL_LABEL: Record<Goal, string> = {
   cutplus: 'Cut+',
   cut: 'Cut',
-  manten: 'Manten.',
+  manten: 'Maintain',
   bulk: 'Bulk',
   bulkplus: 'Bulk+',
 }

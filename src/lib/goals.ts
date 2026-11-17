@@ -10,9 +10,9 @@ export const DEFAULT_GOALS: DailyGoals = {
 
 export const WATER_STEP_ML = 250 // un bicchiere
 
-/** Numero con separatore migliaia "." (es. 9.000), robusto a prescindere dal locale. */
+/** Numero con separatore migliaia "," (es. 9,000), robusto a prescindere dal locale. */
 export const fmtSteps = (n: number) =>
-  n ? Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '—'
+  n ? Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '—'
 
 /** ml -> stringa breve: 1.5 L oppure 750 ml */
 export function fmtWater(ml: number): string {

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useStore } from '../store/store'
-import { dateKey, MONITOR_START, parseKey, rangeLabel, weekMonthOf } from '../lib/date'
+import { addDays, dateKey, formatLong, MESI_BREVI, MONITOR_START, parseKey, weekMonthOf } from '../lib/date'
 import { fmtSteps, fmtWater } from '../lib/goals'
 import { dayRating, periodStats, weeksForMonth, type DaySummary } from '../lib/history'
 import { weeklyCoach } from '../lib/coach'
@@ -8,25 +8,23 @@ import { Icon } from '../components/brand'
 import { Card, CardTitle, NavArrows } from '../components/ui'
 
 const MESI = [
-  'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
-  'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre',
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
 ]
-const GIORNI = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab']
+const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
 interface Area {
   key: string
-  emoji: string
   label: string
-  color: string
   on: (d: DaySummary) => boolean
 }
 const AREAS: Area[] = [
-  { key: 'weight', emoji: 'P', label: 'Peso', color: 'bg-blunotte', on: (d) => d.weight != null },
-  { key: 'kcal', emoji: 'N', label: 'Nutrimento', color: 'bg-arancio', on: (d) => d.kcalOk },
-  { key: 'macro', emoji: 'M', label: 'Macro', color: 'bg-carb', on: (d) => d.macroOk },
-  { key: 'workout', emoji: 'A', label: 'Pratica', color: 'bg-verde', on: (d) => d.workoutDone },
-  { key: 'water', emoji: 'I', label: 'Acqua', color: 'bg-teal', on: (d) => d.waterOk },
-  { key: 'steps', emoji: 'S', label: 'Passi', color: 'bg-magenta', on: (d) => d.stepsOk },
+  { key: 'weight', label: 'Weight', on: (d) => d.weight != null },
+  { key: 'kcal', label: 'Calories', on: (d) => d.kcalOk },
+  { key: 'macro', label: 'Macros', on: (d) => d.macroOk },
+  { key: 'workout', label: 'Workout', on: (d) => d.workoutDone },
+  { key: 'water', label: 'Water', on: (d) => d.waterOk },
+  { key: 'steps', label: 'Steps', on: (d) => d.stepsOk },
 ]
 
 /** "−320" / "+150" / "—" */
@@ -75,7 +73,7 @@ export default function Storico() {
     <div className="space-y-4 pb-4">
       {coach.messages.length > 0 && (
         <Card>
-          <CardTitle>Coach della settimana</CardTitle>
+          <CardTitle>This week’s coach</CardTitle>
           <div className="space-y-2.5">
             {coach.messages.map((m, i) => (
               <div key={i} className="flex items-start gap-2.5 text-sm leading-snug">
@@ -99,110 +97,141 @@ export default function Storico() {
           <NavArrows onPrev={prev} onNext={next} prevDisabled={atStart} nextDisabled={atEnd} />
         </div>
         <div className="mt-1 grid grid-cols-3 gap-2">
-          <Stat n={stats.allenamenti} label="Allenamenti" />
-          <Stat n={stats.giorniDieta} label="Dieta ok" />
-          <Stat n={stats.giorniPerfetti} label="Perfetti" />
-          <Stat n={stats.mediaKcal} label="Media kcal" />
-          <Stat n={fmtDeficit(stats.mediaDeficit)} label="Media deficit" />
-          <Stat n={fmtSteps(stats.mediaPassi)} label="Media passi" />
+          <Stat n={stats.allenamenti} label="Workouts" />
+          <Stat n={stats.giorniDieta} label="On-target days" />
+          <Stat n={stats.giorniPerfetti} label="Perfect days" />
+          <Stat n={stats.mediaKcal} label="Avg kcal" />
+          <Stat n={fmtDeficit(stats.mediaDeficit)} label="Avg balance" />
+          <Stat n={fmtSteps(stats.mediaPassi)} label="Avg steps" />
         </div>
       </Card>
 
-      {/* Legenda */}
-      <div className="flex flex-wrap gap-2 px-1">
-        {AREAS.map((a) => (
-          <span key={a.key} className="flex items-center gap-1.5 text-xs text-muted">
-            <span className="h-2 w-2 rounded-full bg-ink/40" />
-            {a.label}
-          </span>
-        ))}
-      </div>
+      {/* Medie settimana per settimana (la più recente in alto) */}
+      {weeks.some((w) => w.days.length > 0) && (
+        <Card>
+          <CardTitle>Weekly averages</CardTitle>
+          <div className="divide-y divide-black/[0.06]">
+            {[...weeks]
+              .filter((w) => w.days.length > 0)
+              .reverse()
+              .map((w) => {
+                const ws = periodStats(w.days)
+                const logged = w.days.filter((d) => d.dietKcal > 0).length
+                const isCur = w.days.some((d) => d.date === todayKey)
+                return (
+                  <div key={w.startDate.getTime()} className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0">
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-medium">{isCur ? 'This week' : weekLabel(w.startDate, w.endDate)}</div>
+                      <div className="truncate text-[11px] text-muted">
+                        {logged}/{w.days.length} days logged · {ws.allenamenti}{' '}
+                        {ws.allenamenti === 1 ? 'workout' : 'workouts'}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-mono text-lg font-bold tabular">
+                        {ws.mediaKcal > 0 ? ws.mediaKcal.toLocaleString('en-US') : '—'}
+                      </div>
+                      <div className="text-[11px] text-muted">avg kcal</div>
+                    </div>
+                    <div className="w-16 text-right">
+                      <div
+                        className={`font-mono text-lg font-bold tabular ${
+                          logged === 0 ? 'text-muted/60' : ws.mediaDeficit < 0 ? 'text-verde' : ws.mediaDeficit > 0 ? 'text-arancio' : ''
+                        }`}
+                      >
+                        {logged === 0 ? '—' : fmtDeficit(ws.mediaDeficit)}
+                      </div>
+                      <div className="text-[11px] text-muted">balance</div>
+                    </div>
+                  </div>
+                )
+              })}
+          </div>
+        </Card>
+      )}
 
-      {weeks.map((w, wi) => {
-        const wStats = periodStats(w.days)
+      {/* Mese a colpo d'occhio: un quadratino per giorno, più scuro = più obiettivi */}
+      <Card>
+        <div className="grid grid-cols-7 gap-1.5 text-center text-[11px] font-medium text-ink/60">
+          {WEEKDAYS.map((g, i) => (
+            <span key={i}>{g}</span>
+          ))}
+        </div>
+        <div className="mt-2 space-y-1.5">
+          {weeks.map((w, wi) => {
+            const byDate = new Map(w.days.map((d) => [d.date, d]))
+            return (
+              <div key={wi} className="grid grid-cols-7 gap-1.5">
+                {Array.from({ length: 7 }, (_, i) => {
+                  const key = dateKey(addDays(w.startDate, i))
+                  const d = byDate.get(key)
+                  const n = d ? AREAS.filter((a) => a.on(d)).length : 0
+                  const sel = key === openDay
+                  return (
+                    <button
+                      key={key}
+                      disabled={!d}
+                      onClick={() => setOpenDay(key)}
+                      aria-label={`${formatLong(parseKey(key))}: ${n} of ${AREAS.length} goals${d?.perfetta ? ', perfect day' : ''}`}
+                      className={`relative flex aspect-square items-center justify-center rounded-xl font-mono text-xs tabular transition active:scale-95 disabled:opacity-30 ${
+                        sel ? 'ring-2 ring-ink ring-offset-2 ring-offset-surface2' : ''
+                      }`}
+                      style={{ background: d ? heat(n) : 'rgba(33,29,25,0.03)', color: n >= 4 ? '#faf7f1' : '#211d19' }}
+                    >
+                      {parseKey(key).getDate()}
+                      {d?.perfetta && <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-[#faf7f1]" />}
+                    </button>
+                  )
+                })}
+              </div>
+            )
+          })}
+        </div>
+        <div className="mt-3 flex items-center justify-end gap-1.5 text-[11px] text-ink/65">
+          Fewer goals
+          {[0, 2, 4, 6].map((n) => (
+            <span key={n} className="h-3 w-3 rounded-[4px]" style={{ background: heat(n) }} />
+          ))}
+          More
+        </div>
+      </Card>
+
+      {openDay && (() => {
+        const d = weeks.flatMap((w) => w.days).find((x) => x.date === openDay)
+        if (!d) return null
+        const rating = dayRating(d.score)
         return (
-          <Card key={wi} className="!p-3">
-            <div className="mb-2 flex items-baseline justify-between gap-2">
-              <span className="font-display text-base">{rangeLabel(w.startDate, w.endDate)}</span>
-              <span className="font-mono text-xs text-muted tabular">
-                {wStats.allenamenti} allen · {wStats.giorniPerfetti} perf
-              </span>
+          <Card>
+            <div className="mb-2 flex items-center justify-between">
+              <CardTitle>{openDay === todayKey ? 'Today' : formatLong(parseKey(openDay))}</CardTitle>
+              {rating && <span className={`-mt-4 rounded-full px-2 py-0.5 text-[11px] font-bold ${rating.cls}`}>{rating.label}</span>}
             </div>
-            <div className="mb-2 flex gap-2 font-mono text-xs tabular">
-              {wStats.mediaKcal > 0 && (
-                <span className="rounded-full bg-black/[0.05] px-2 py-0.5 text-muted">
-                  media {wStats.mediaKcal} kcal
-                </span>
-              )}
-              {wStats.mediaDeficit !== 0 && (
-                <span
-                  className={`rounded-full px-2 py-0.5 ${
-                    wStats.mediaDeficit < 0 ? 'bg-verde/15 text-verde' : 'bg-arancio/15 text-arancio'
-                  }`}
-                >
-                  deficit {fmtDeficit(wStats.mediaDeficit)}
-                </span>
-              )}
-            </div>
-            <div className="space-y-1.5">
-              {w.days.map((d) => (
-                <DayRow
-                  key={d.date}
-                  d={d}
-                  open={openDay === d.date}
-                  onToggle={() => setOpenDay(openDay === d.date ? null : d.date)}
-                />
-              ))}
-            </div>
+            <DayDetail d={d} />
           </Card>
         )
-      })}
+      })()}
     </div>
   )
+}
+
+/** "3–9 Nov" oppure "27 Oct – 2 Nov" se la settimana scavalca il mese. */
+function weekLabel(a: Date, b: Date): string {
+  return a.getMonth() === b.getMonth()
+    ? `${a.getDate()}–${b.getDate()} ${MESI_BREVI[b.getMonth()]}`
+    : `${a.getDate()} ${MESI_BREVI[a.getMonth()]} – ${b.getDate()} ${MESI_BREVI[b.getMonth()]}`
+}
+
+/** Scala onice: 0 obiettivi = carta, 6 = onice pieno. */
+function heat(n: number): string {
+  const a = [0.05, 0.14, 0.26, 0.4, 0.58, 0.76, 0.92][Math.max(0, Math.min(6, n))]
+  return `rgba(33, 29, 25, ${a})`
 }
 
 function Stat({ n, label }: { n: number | string; label: string }) {
   return (
-    <div className="rounded-2xl bg-black/15 px-2 py-2 text-center">
+    <div className="rounded-2xl bg-black/[0.06] px-2 py-2 text-center">
       <div className="font-mono text-xl font-bold tabular">{n}</div>
-      <div className="text-[10px] opacity-80">{label}</div>
-    </div>
-  )
-}
-
-function DayRow({ d, open, onToggle }: { d: DaySummary; open: boolean; onToggle: () => void }) {
-  const date = parseKey(d.date)
-  const isToday = d.date === dateKey()
-  const rating = dayRating(d.score)
-  return (
-    <div className={`rounded-2xl ${d.perfetta ? 'bg-viola/10' : 'bg-black/[0.05]'}`}>
-      <button onClick={onToggle} className="flex w-full items-center gap-2 px-3 py-2 text-left">
-        <span className="flex w-16 shrink-0 flex-col items-start leading-tight">
-          <span className="font-mono text-sm font-bold tabular">
-            {isToday ? 'Oggi' : `${GIORNI[date.getDay()]} ${date.getDate()}`}
-          </span>
-          {rating && (
-            <span className={`mt-0.5 rounded-full px-1.5 text-[10px] font-semibold ${rating.cls}`}>{rating.label}</span>
-          )}
-        </span>
-        <span className="flex min-w-0 flex-1 items-center gap-1">
-          {AREAS.map((a) => {
-            const on = a.on(d)
-            return (
-              <span
-                key={a.key}
-                className={`flex h-7 w-7 items-center justify-center rounded-full font-mono text-[11px] font-medium transition ${
-                  on ? 'bg-teal text-[#faf7f1] shadow-sm' : 'bg-black/[0.05] text-muted/40'
-                }`}
-              >
-                {a.emoji}
-              </span>
-            )
-          })}
-        </span>
-        {open ? <Icon.chevronUp size={14} className="shrink-0 text-muted" /> : <Icon.chevronDown size={14} className="shrink-0 text-muted" />}
-      </button>
-      {open && <DayDetail d={d} />}
+      <div className="text-[11px] text-ink/75">{label}</div>
     </div>
   )
 }
@@ -211,43 +240,43 @@ function DayDetail({ d }: { d: DaySummary }) {
   const { state } = useStore()
   const g = state.settings.goals
   const rows: { icon: keyof typeof Icon; label: string; value: string; ok?: boolean }[] = [
-    { icon: 'weight', label: 'Peso', value: d.weight != null ? `${d.weight} kg` : 'non registrato', ok: d.weight != null },
+    { icon: 'weight', label: 'Weight', value: d.weight != null ? `${d.weight} kg` : 'not logged', ok: d.weight != null },
     {
       icon: 'bowl',
-      label: 'Calorie',
-      value: d.mealsTotal ? `${Math.round(d.dietKcal)} kcal` : 'nessun pasto',
+      label: 'Calories',
+      value: d.mealsTotal ? `${Math.round(d.dietKcal)} kcal` : 'no meals',
       ok: d.kcalOk,
     },
     {
       icon: 'practice',
-      label: 'Allenamento',
+      label: 'Workout',
       value: d.workoutDone
-        ? `${d.workoutNome ?? 'Sessione'}${d.workoutSetsTotal ? ` · ${d.workoutSetsDone}/${d.workoutSetsTotal} serie` : ''}`
-        : 'riposo',
+        ? `${d.workoutNome ?? 'Session'}${d.workoutSetsTotal ? ` · ${d.workoutSetsDone}/${d.workoutSetsTotal} sets` : ''}`
+        : 'rest',
       ok: d.workoutDone,
     },
-    { icon: 'drop', label: 'Acqua', value: `${fmtWater(d.water)} / ${fmtWater(g.waterTarget)}`, ok: d.waterOk },
-    { icon: 'steps', label: 'Passi', value: `${fmtSteps(d.steps)} / ${fmtSteps(g.stepTarget)}`, ok: d.stepsOk },
+    { icon: 'drop', label: 'Water', value: `${fmtWater(d.water)} / ${fmtWater(g.waterTarget)}`, ok: d.waterOk },
+    { icon: 'steps', label: 'Steps', value: `${fmtSteps(d.steps)} / ${fmtSteps(g.stepTarget)}`, ok: d.stepsOk },
     {
       icon: 'flame',
-      label: 'Attive bruciate',
-      value: d.activeKcal > 0 ? `${d.activeKcal} kcal` : 'non registrate',
+      label: 'Active energy',
+      value: d.activeKcal > 0 ? `${d.activeKcal} kcal` : 'not logged',
       ok: d.activeKcal > 0,
     },
     {
       icon: 'progress',
-      label: 'Deficit',
-      value: d.dietKcal > 0 ? `${fmtDeficit(d.deficit)} kcal` : 'nessun pasto',
+      label: 'Balance',
+      value: d.dietKcal > 0 ? `${fmtDeficit(d.deficit)} kcal` : 'no meals',
       ok: d.dietKcal > 0 && d.deficit < 0,
     },
   ]
   return (
-    <div className="border-t border-black/[0.07] px-3 py-2">
+    <div>
       {rows.map((r) => (
         <div key={r.label} className="flex items-center gap-2 py-1">
           <span className="flex w-5 justify-center text-muted">{(() => { const Ico = Icon[r.icon]; return <Ico size={15} /> })()}</span>
-          <span className="w-24 text-xs font-semibold text-muted">{r.label}</span>
-          <span className={`flex-1 text-right font-mono text-xs tabular ${r.ok ? 'text-verde' : 'text-ink'}`}>
+          <span className="w-28 text-sm text-ink/80">{r.label}</span>
+          <span className={`flex-1 text-right font-mono text-sm tabular ${r.ok ? 'text-verde' : 'text-ink'}`}>
             {r.value}
           </span>
         </div>
