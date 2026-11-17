@@ -170,6 +170,8 @@ export const Icon = {
     ),
   camera: ({ size, className }: IconProps) =>
     svg(<><path d="M4 8h3l1.6-2.2h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" /><circle cx="12" cy="13" r="3.4" /></>, size, className),
+  image: ({ size, className }: IconProps) =>
+    svg(<><rect x="3.5" y="5" width="17" height="14" rx="2" /><circle cx="9" cy="10" r="1.6" /><path d="M20.5 16l-5-4.5L7 19" /></>, size, className),
   barcode: ({ size, className }: IconProps) =>
     svg(<><path d="M4 6v12" /><path d="M7 6v12" /><path d="M10 6v12" /><path d="M14 6v12" /><path d="M16 6v12" /><path d="M20 6v12" /></>, size, className),
   cart: ({ size, className }: IconProps) =>

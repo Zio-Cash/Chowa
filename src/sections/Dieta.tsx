@@ -951,8 +951,9 @@ function FoodDB({ open, onClose }: { open: boolean; onClose: () => void }) {
         // ---- Lista alimenti (a tutta altezza) ----
         <>
           <div className="shrink-0">
-            <input ref={photoInput} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => onScan('ia', e)} />
-            <input ref={barcodeInput} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => onScan('barcode', e)} />
+            {/* niente "capture": il telefono chiede se scattare o scegliere dalla libreria */}
+            <input ref={photoInput} type="file" accept="image/*" className="hidden" onChange={(e) => onScan('ia', e)} />
+            <input ref={barcodeInput} type="file" accept="image/*" className="hidden" onChange={(e) => onScan('barcode', e)} />
             <Button className="mb-2 w-full" onClick={openNew}>
               <Icon.plus size={18} /> New food
             </Button>
