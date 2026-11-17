@@ -8,6 +8,13 @@ import ExerciseEditor from '../components/ExerciseEditor'
 import { uid } from '../store/seed'
 
 const CATS: ExCategoria[] = ['Active', 'Build', 'Control', 'Reset']
+const SUBS: CatalogExercise['sub'][] = ['Legs', 'Upper', 'Back', 'Core', 'Cardio']
+
+/** Numero valido e positivo dal JSON importato, altrimenti il default. */
+const num = (v: unknown, def: number) => {
+  const n = Number(v)
+  return Number.isFinite(n) && n >= 0 ? Math.round(n) : def
+}
 
 const scheme = (ex: ExExercise) =>
   ex.tipo === 'reps' ? `${ex.serie}×${ex.reps}` : `${ex.serie} × ${mmss(ex.durataSec ?? 0)}`
@@ -107,25 +114,29 @@ export default function Routine() {
       esercizi: (b.esercizi ?? []).map((e) => {
         let catalogId = byName.get(e.nome.toLowerCase())?.id
         if (!catalogId) {
+          // categoria/sotto-categoria sconosciute → default, altrimenti
+          // l'esercizio finirebbe in nessuna scheda del catalogo
           catalogId = addCatalogExercise({
-            nome: e.nome,
-            categoria: e.categoria ?? 'Build',
-            sub: e.sub ?? 'Legs',
+            nome: e.nome.trim(),
+            categoria: e.categoria && CATS.includes(e.categoria) ? e.categoria : 'Build',
+            sub: e.sub && SUBS.includes(e.sub) ? e.sub : 'Legs',
             descrizione: e.descrizione,
           })
+          byName.set(e.nome.toLowerCase(), { id: catalogId } as CatalogExercise)
         }
-        const tipo = e.tipo ?? (e.durataSec ? 'tempo' : 'reps')
+        const tipo = e.tipo === 'reps' || e.tipo === 'tempo' ? e.tipo : e.durataSec ? 'tempo' : 'reps'
+        const carico = Number(e.carico)
         return {
           id: uid(),
           catalogId,
-          nome: e.nome,
+          nome: e.nome.trim(),
           tipo,
-          serie: e.serie ?? 3,
-          reps: e.reps ?? 10,
-          durataSec: e.durataSec ?? 60,
-          carico: e.carico,
-          riposoSec: e.riposoSec ?? 60,
-          note: e.note,
+          serie: Math.max(1, num(e.serie, 3)),
+          reps: Math.max(1, num(e.reps, 10)),
+          durataSec: num(e.durataSec, 60),
+          carico: Number.isFinite(carico) && carico > 0 ? carico : undefined,
+          riposoSec: num(e.riposoSec, 60),
+          note: typeof e.note === 'string' ? e.note : undefined,
         } as ExExercise
       }),
     }))
@@ -150,10 +161,12 @@ export default function Routine() {
               <input
                 value={day.nome}
                 onChange={(e) => renameDay(day.id, e.target.value)}
+                onBlur={(e) => !e.target.value.trim() && renameDay(day.id, `Day ${plan.indexOf(day) + 1}`)}
+                aria-label="Day name"
                 className="min-w-0 flex-1 rounded-xl bg-transparent px-1 py-1 font-display text-base outline-none focus:bg-black/[0.04]"
               />
               <button
-                onClick={() => confirm(`Delete ${day.nome}?`) && deleteDay(day.id)}
+                onClick={() => confirm(`Delete ${day.nome.trim() || 'this day'}?`) && deleteDay(day.id)}
                 className="flex h-8 w-8 items-center justify-center rounded-full text-shu"
                 aria-label="Delete day"
               >
@@ -176,10 +189,15 @@ export default function Routine() {
                       <input
                         value={b.nome}
                         onChange={(e) => renameBlock(day.id, b.id, e.target.value)}
+                        aria-label="Block name"
                         className="min-w-0 flex-1 rounded-lg bg-transparent px-1 text-[11px] font-medium uppercase tracking-[0.14em] text-muted outline-none focus:bg-black/[0.04]"
                       />
                       <button
-                        onClick={() => deleteBlock(day.id, b.id)}
+                        onClick={() =>
+                          (b.esercizi.length === 0 ||
+                            confirm(`Delete “${b.nome}” and its ${b.esercizi.length} ${b.esercizi.length === 1 ? 'exercise' : 'exercises'}?`)) &&
+                          deleteBlock(day.id, b.id)
+                        }
                         className="flex h-7 w-7 items-center justify-center text-muted"
                         aria-label="Delete block"
                       >
@@ -205,7 +223,7 @@ export default function Routine() {
                             <Icon.edit size={15} />
                           </button>
                           <button
-                            onClick={() => deleteExercise(day.id, b.id, ex.id)}
+                            onClick={() => confirm(`Remove ${ex.nome} from ${day.nome}?`) && deleteExercise(day.id, b.id, ex.id)}
                             className="flex h-8 w-8 items-center justify-center text-muted"
                             aria-label="Remove"
                           >
@@ -370,7 +388,7 @@ function CatalogPicker({
               <div className="text-[11px] text-muted">{e.categoria} · {e.sub}</div>
             </div>
             {added.includes(e.id) && (
-              <span className="text-[10px] font-medium text-teal">aggiunto</span>
+              <span className="text-[10px] font-medium text-teal">Added</span>
             )}
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-teal/15 text-teal">
               <Icon.plus size={18} />

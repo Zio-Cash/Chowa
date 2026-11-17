@@ -573,10 +573,25 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const updateCatalogExercise = useCallback((id: string, patch: Partial<CatalogExercise>) => {
-    setState((s) => ({
-      ...s,
-      exerciseCatalog: s.exerciseCatalog.map((e) => (e.id === id ? { ...e, ...patch } : e)),
-    }))
+    setState((s) => {
+      const old = s.exerciseCatalog.find((e) => e.id === id)
+      const exerciseCatalog = s.exerciseCatalog.map((e) => (e.id === id ? { ...e, ...patch } : e))
+      // Rinomina anche nella scheda: solo dove il nome era ancora quello del
+      // catalogo (un nome personalizzato nella routine resta com'è).
+      const rename = old && patch.nome && patch.nome !== old.nome
+      const executionPlan = rename
+        ? s.executionPlan.map((d) => ({
+            ...d,
+            blocchi: d.blocchi.map((b) => ({
+              ...b,
+              esercizi: b.esercizi.map((x) =>
+                x.catalogId === id && x.nome === old.nome ? { ...x, nome: patch.nome! } : x,
+              ),
+            })),
+          }))
+        : s.executionPlan
+      return { ...s, exerciseCatalog, executionPlan }
+    })
   }, [])
 
   const deleteCatalogExercise = useCallback((id: string) => {
@@ -854,9 +869,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const prev = s.workoutProgress[date]
         const sess = prev && prev.dayId === dayId ? prev : emptySession(date, dayId)
         const exr = sess.esercizi[exId] ?? { sets: [] }
+        // campo svuotato = nessun carico (non "0 kg")
+        const v = carico > 0 ? carico : undefined
         const next: SessionProgress = {
           ...sess,
-          esercizi: { ...sess.esercizi, [exId]: { ...exr, carico } },
+          esercizi: { ...sess.esercizi, [exId]: { ...exr, carico: v } },
         }
         return { ...s, workoutProgress: { ...s.workoutProgress, [date]: next } }
       })
@@ -865,14 +882,31 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   )
 
   const completeWorkout = useCallback((date: string, dayId: string) => {
-    setState((s) => applyAward(s, date, `workout:${dayId}`, XP.workout))
+    setState((s) => {
+      // un solo allenamento completato al giorno: niente XP doppi
+      if ((s.gamification.eventi[date] ?? []).some((e) => e.startsWith('workout:'))) return s
+      return applyAward(s, date, `workout:${dayId}`, XP.workout)
+    })
   }, [])
 
+  // Azzera la sessione E il "completato": altrimenti il giorno resta segnato
+  // come allenamento fatto nel Journey e nelle medaglie.
   const resetSession = useCallback((date: string) => {
     setState((s) => {
       const wp = { ...s.workoutProgress }
       delete wp[date]
-      return { ...s, workoutProgress: wp }
+      const ev = s.gamification.eventi[date] ?? []
+      const tolti = ev.filter((e) => e.startsWith('workout:')).length
+      if (!tolti) return { ...s, workoutProgress: wp }
+      const eventi = { ...s.gamification.eventi }
+      const resto = ev.filter((e) => !e.startsWith('workout:'))
+      if (resto.length) eventi[date] = resto
+      else delete eventi[date]
+      return {
+        ...s,
+        workoutProgress: wp,
+        gamification: { ...s.gamification, xp: Math.max(0, s.gamification.xp - tolti * XP.workout), eventi },
+      }
     })
   }, [])
 

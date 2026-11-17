@@ -32,7 +32,9 @@ export default function ExerciseEditor({
               { value: 'tempo', label: 'Timed' },
             ]}
             value={d.tipo}
-            onChange={(v) => setD({ ...d, tipo: v })}
+            onChange={(v) =>
+              setD({ ...d, tipo: v, reps: d.reps || 10, durataSec: d.durataSec || 60 })
+            }
           />
         </Field>
         <div className="grid grid-cols-2 gap-2">
@@ -65,7 +67,17 @@ export default function ExerciseEditor({
             className="min-h-[46px] w-full rounded-2xl bg-surface2 px-4 outline-none ring-1 ring-black/[0.05] focus:ring-teal/30"
           />
         </Field>
-        <Button className="w-full" onClick={() => onSave(d)}>
+        <Button
+          className="w-full"
+          onClick={() =>
+            onSave({
+              ...d,
+              nome: d.nome.trim() || ex.nome,
+              carico: d.carico && d.carico > 0 ? d.carico : undefined,
+              note: d.note?.trim() || undefined,
+            })
+          }
+        >
           Save
         </Button>
       </div>

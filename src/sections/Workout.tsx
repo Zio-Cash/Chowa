@@ -9,6 +9,7 @@ import { Icon } from '../components/brand'
 import Esercizi from './Esercizi'
 import Routine from './Routine'
 import { useDayCursor } from '../lib/useToday'
+import { sessionSets } from '../lib/history'
 
 /** Riferimento "ultima volta" per un esercizio. */
 interface LastRef {
@@ -105,9 +106,23 @@ function Execution() {
   }
   const plan = state.executionPlan
   const sessionRaw = getSession(today)
-  // Giornata mostrata: quella scelta, altrimenti quella già iniziata in quella data.
+  const eventi = state.gamification.eventi[today] ?? []
+  const completedId = eventi.find((e) => e.startsWith('workout:'))?.slice('workout:'.length)
+  // Giornata proposta: quella già iniziata/completata in quella data,
+  // altrimenti la successiva nella rotazione rispetto all'ultima sessione.
+  const suggestedId = useMemo(() => {
+    const own = sessionRaw?.dayId ?? completedId
+    if (own && plan.some((d) => d.id === own)) return own
+    const prev = Object.values(state.workoutProgress)
+      .filter((x) => x.date < today && x.dayId !== '' && plan.some((d) => d.id === x.dayId))
+      .sort((a, b) => b.date.localeCompare(a.date))[0]
+    if (!prev) return plan[0]?.id ?? ''
+    const i = plan.findIndex((d) => d.id === prev.dayId)
+    return plan[(i + 1) % plan.length].id
+  }, [sessionRaw?.dayId, completedId, state.workoutProgress, plan, today])
+  // Giornata mostrata: quella scelta a mano, altrimenti quella proposta.
   const [picked, setPicked] = useState<{ date: string; id: string } | null>(null)
-  const dayId = picked?.date === today ? picked.id : (sessionRaw?.dayId ?? plan[0]?.id ?? '')
+  const dayId = picked?.date === today ? picked.id : suggestedId
   const setDayId = (id: string) => setPicked({ date: today, id })
   const day = plan.find((d) => d.id === dayId) ?? plan[0]
   const session = sessionRaw && sessionRaw.dayId === day?.id ? sessionRaw : undefined
@@ -156,14 +171,8 @@ function Execution() {
     )
   }
 
-  const totalSets = day.blocchi
-    .flatMap((b) => b.esercizi)
-    .filter((e) => e.tipo === 'reps')
-    .reduce((a, e) => a + e.serie, 0)
-  const doneSets = Object.values(session?.esercizi ?? {}).reduce(
-    (a, e) => a + e.sets.filter(Boolean).length,
-    0,
-  )
+  const { done: doneSets, total: totalSets } = sessionSets(day, session)
+  const completed = completedId != null
 
   return (
     <>
@@ -200,17 +209,25 @@ function Execution() {
                 d.id === day.id ? 'bg-teal text-[#faf7f1]' : 'bg-surface2 text-muted'
               }`}
             >
-              {d.nome}
+              {d.nome.trim() || 'Untitled'}
             </button>
           ))}
         </div>
       )}
 
       <Card>
-        <CardTitle>{day.nome}</CardTitle>
+        <CardTitle>{day.nome.trim() || 'Untitled'}</CardTitle>
         <div className="-mt-2 mb-1 font-mono text-xs text-muted tabular">
           {doneSets}/{totalSets} sets done
         </div>
+        {totalSets > 0 && (
+          <div className="mt-2 h-1 overflow-hidden rounded-full bg-black/[0.06]">
+            <div
+              className="h-full w-full origin-left rounded-full bg-verde transition-transform duration-300"
+              style={{ transform: `scaleX(${Math.min(1, doneSets / totalSets)})` }}
+            />
+          </div>
+        )}
 
         <div className="mt-3 space-y-4">
           {day.blocchi.map((b) => (
@@ -229,7 +246,7 @@ function Execution() {
                     onToggleSet={(i, wasDone) => {
                       if (!canWrite()) return
                       toggleSet(today, day.id, ex.id, i, ex.serie)
-                      if (!wasDone && ex.tipo === 'reps') startTimer(ex.riposoSec, `Rest · ${ex.nome}`)
+                      if (!wasDone && ex.riposoSec > 0) startTimer(ex.riposoSec, `Rest · ${ex.nome}`)
                     }}
                     onLoad={(v) => canWrite() && setSessionLoad(today, day.id, ex.id, v)}
                     onStartTime={() => startTimer(ex.durataSec ?? 60, ex.nome)}
@@ -244,12 +261,28 @@ function Execution() {
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-2">
-          <Button variant="ghost" onClick={() => confirm('Reset today’s session?') && resetSession(today)}>
+          <Button
+            variant="ghost"
+            onClick={() =>
+              confirm(isToday ? 'Reset today’s session?' : 'Reset this session?') && resetSession(today)
+            }
+          >
             <Icon.reset size={16} /> Reset
           </Button>
-          <Button onClick={() => completeWorkout(today, day.id)}>
-            <Icon.check size={16} /> Complete
-          </Button>
+          {completed ? (
+            <div className="flex min-h-[46px] items-center justify-center gap-2 rounded-2xl bg-verde/15 text-sm font-medium tracking-wide text-verde">
+              <Icon.check size={16} /> Completed
+            </div>
+          ) : (
+            <Button
+              onClick={() => {
+                if (doneSets === 0 && !confirm('No sets ticked yet. Mark the workout as done anyway?')) return
+                completeWorkout(today, day.id)
+              }}
+            >
+              <Icon.check size={16} /> Complete
+            </Button>
+          )}
         </div>
       </Card>
     </>
@@ -293,8 +326,8 @@ function ExerciseRow({
   onLoad: (v: number) => void
   onStartTime: () => void
 }) {
-  const schemeTxt = ex.tipo === 'reps' ? `${ex.serie}×${ex.reps}` : mmss(ex.durataSec ?? 0)
-  const showLast = ex.tipo === 'reps' && last && (last.carico || last.done)
+  const schemeTxt = ex.tipo === 'reps' ? `${ex.serie}×${ex.reps}` : `${ex.serie} × ${mmss(ex.durataSec ?? 0)}`
+  const showLast = last && (last.carico || last.done)
   return (
     <div className="rounded-2xl bg-surface2 p-2.5 ring-1 ring-black/[0.03]">
       <div className="flex items-center justify-between gap-2">
@@ -319,7 +352,7 @@ function ExerciseRow({
         )}
       </div>
 
-      {ex.tipo === 'reps' && (
+      {ex.serie > 0 && (
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
           {Array.from({ length: ex.serie }).map((_, i) => {
             const done = sets[i]
@@ -327,6 +360,8 @@ function ExerciseRow({
               <button
                 key={i}
                 onClick={() => onToggleSet(i, !!done)}
+                aria-label={`Set ${i + 1}${done ? ', done' : ''}`}
+                aria-pressed={!!done}
                 className={`h-9 w-9 rounded-xl font-mono text-sm transition active:scale-90 ${
                   done ? 'bg-verde text-[#faf7f1]' : 'bg-black/[0.06] text-ink'
                 }`}
@@ -335,9 +370,11 @@ function ExerciseRow({
               </button>
             )
           })}
-          <div className="ml-auto w-28">
-            <NumberInput value={carico ?? ''} onChange={onLoad} suffix="kg" placeholder="load" />
-          </div>
+          {ex.tipo === 'reps' && (
+            <div className="ml-auto w-28">
+              <NumberInput value={carico ?? ''} onChange={onLoad} suffix="kg" placeholder="load" />
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -1,7 +1,27 @@
-import type { AppState } from '../types'
+import type { AppState, ExDay, SessionProgress } from '../types'
 import { addDays, dateKey, mondayOf, MONITOR_START, weekBelongsToMonth } from './date'
 import { bmr } from './calories'
 import { dayMacros, macroRatioOk } from './nutrition'
+
+/**
+ * Serie fatte / totali di una sessione, contate solo sugli esercizi e sulle
+ * serie che la giornata ha ADESSO: se togli un esercizio o riduci le serie,
+ * le spunte rimaste in archivio non gonfiano il conteggio (niente "5/3").
+ */
+export function sessionSets(day: ExDay | undefined, sess: SessionProgress | undefined) {
+  if (!day) {
+    const done = sess ? Object.values(sess.esercizi).reduce((a, e) => a + e.sets.filter(Boolean).length, 0) : 0
+    return { done, total: 0 }
+  }
+  let done = 0
+  let total = 0
+  for (const ex of day.blocchi.flatMap((b) => b.esercizi)) {
+    total += ex.serie
+    const sets = sess?.esercizi[ex.id]?.sets ?? []
+    for (let i = 0; i < ex.serie; i++) if (sets[i]) done++
+  }
+  return { done, total }
+}
 
 export interface DaySummary {
   date: string
@@ -55,16 +75,9 @@ export function buildDaySummary(s: AppState, date: string): DaySummary {
     const day = s.executionPlan.find((d) => d.id === sess.dayId)
     workoutNome = day?.nome
     workoutEmoji = day?.emoji
-    if (day) {
-      workoutSetsTotal = day.blocchi
-        .flatMap((b) => b.esercizi)
-        .filter((e) => e.tipo === 'reps')
-        .reduce((a, e) => a + e.serie, 0)
-    }
-    workoutSetsDone = Object.values(sess.esercizi).reduce(
-      (a, e) => a + e.sets.filter(Boolean).length,
-      0,
-    )
+    const c = sessionSets(day, sess)
+    workoutSetsDone = c.done
+    workoutSetsTotal = c.total
   }
   const eventi = s.gamification.eventi[date] ?? []
   const workoutDone = workoutSetsDone > 0 || eventi.some((e) => e.startsWith('workout:'))

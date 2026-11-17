@@ -52,7 +52,16 @@ function MyExercises({ onOpenLibrary }: { onOpenLibrary: () => void }) {
     reloadImgs()
   }, [])
 
-  const list = state.exerciseCatalog.filter((e) => e.categoria === cat)
+  // categoria/sotto-categoria non riconosciute (es. da un import) non devono
+  // far sparire l'esercizio: finiscono in Build e nel gruppo "Other"
+  const catOf = (e: CatalogExercise): ExCategoria => (CATS.includes(e.categoria) ? e.categoria : 'Build')
+  const list = state.exerciseCatalog.filter((e) => catOf(e) === cat)
+  const groups: { key: string; items: CatalogExercise[] }[] = [
+    ...SUBS.map((sub) => ({ key: sub as string, items: list.filter((e) => e.sub === sub) })),
+    { key: 'Other', items: list.filter((e) => !SUBS.includes(e.sub)) },
+  ]
+  const usedIn = (id: string) =>
+    state.executionPlan.filter((d) => d.blocchi.some((b) => b.esercizi.some((x) => x.catalogId === id))).length
   // immagini: foto caricata da te (locale) > libreria (online, sincronizzata)
   const imagesOf = (e: CatalogExercise): string[] => {
     if (localImgs[e.id]) return [localImgs[e.id]]
@@ -91,13 +100,12 @@ function MyExercises({ onOpenLibrary }: { onOpenLibrary: () => void }) {
         </p>
       )}
 
-      {SUBS.map((sub) => {
-        const items = list.filter((e) => e.sub === sub)
+      {groups.map(({ key, items }) => {
         if (items.length === 0) return null
         return (
-          <div key={sub}>
+          <div key={key}>
             <div className="mb-1.5 px-1 text-[11px] font-medium uppercase tracking-[0.14em] text-muted">
-              {sub}
+              {key}
             </div>
             <div className="space-y-2">
               {items.map((e) => {
@@ -130,7 +138,11 @@ function MyExercises({ onOpenLibrary }: { onOpenLibrary: () => void }) {
                           </button>
                           <button
                             onClick={() => {
-                              if (!confirm(`Delete ${e.nome}?`)) return
+                              const n = usedIn(e.id)
+                              const msg = n
+                                ? `Delete ${e.nome} from your exercises? It stays in your routine (${n} ${n === 1 ? 'day' : 'days'}).`
+                                : `Delete ${e.nome}?`
+                              if (!confirm(msg)) return
                               deleteCatalogExercise(e.id)
                               deleteExImage(e.id).then(reloadImgs)
                             }}
@@ -494,8 +506,10 @@ function ExerciseCatalogEditor({
 }) {
   const { addCatalogExercise, updateCatalogExercise } = useStore()
   const [nome, setNome] = useState(exercise?.nome ?? '')
-  const [categoria, setCategoria] = useState<ExCategoria>(exercise?.categoria ?? defaultCat)
-  const [sub, setSub] = useState<ExSub>(exercise?.sub ?? 'Legs')
+  const [categoria, setCategoria] = useState<ExCategoria>(
+    exercise && CATS.includes(exercise.categoria) ? exercise.categoria : defaultCat,
+  )
+  const [sub, setSub] = useState<ExSub>(exercise && SUBS.includes(exercise.sub) ? exercise.sub : 'Legs')
   const [descrizione, setDescrizione] = useState(exercise?.descrizione ?? '')
   // '' = nessuna immagine dalla libreria (evita che l'abbinamento per nome la rimetta)
   const [libId, setLibId] = useState<string | undefined>(
